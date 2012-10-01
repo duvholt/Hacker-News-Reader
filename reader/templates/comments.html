@@ -10,7 +10,7 @@
 	<ul>
 	{% recursetree comments %}
 		<li{% if node.level|divisibleby:"2" %} class="even"{% endif %}>
-			<div>{{ node.username }} <span>{{ node.time|timesince }} ago</span></div>
+			<div>{{ node.username }} <span> TEST|{{ node.time }} {{ node.time|timesince }} ago</span></div>
 			<div style="color: {{ node.hiddencolor }};">{{ node.text|safe|urlizetrunc:"63" }}</div>
 			{% if not node.is_leaf_node %}
 			<ul class="children">

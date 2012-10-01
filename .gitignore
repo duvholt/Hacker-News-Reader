@@ -5,3 +5,4 @@ venv
 local_settings.py
 .sublime-workspace
 .sublime-project
+activate.bat

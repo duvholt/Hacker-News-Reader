@@ -11,11 +11,13 @@ import operator
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.utils import html
 from collections import OrderedDict
-
+import random
+import time
 
 now = timezone.now()
 c = pdc.Constants()
 p = pdt.Calendar(c)
+norway = pytz.timezone('Europe/Oslo')
 
 
 def update_stories(cache_time=20):
@@ -37,25 +39,26 @@ def update_stories(cache_time=20):
 					story['url'] = urllib2.unquote(story_soup[1].find('a')['href'])
 					story['title'] = ''.join(story_soup[1].find('a'))
 					story['score'] = ''.join(subtext.find("span")).rstrip(" points")
+					story['username'] = ''.join(subtext.findAll("a")[0])
 					story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
 					if(story['comments'] == ""):
 						story['comments'] = 0
 					story['domain'] = ''.join(story_soup[1].find('a').findNext('span'))
-					story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=pytz.timezone('Europe/Oslo'))
+					story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=norway)
+					# This might be incorrect, but it doesn't seem like parsedatetime supports DST
+					if time.localtime().tm_isdst == 1:
+						story['time'] = story['time'] + datetime.timedelta(hours=-1)
 					story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
 					stories.append(story)
 					sql_story = Stories(id=story['id'], title=story['title'],
 												url=story['url'], score=story['score'], domain=story['domain'],
-												comments=story['comments'], time=story['time'], cache=now)
+												username=story['username'], comments=story['comments'], time=story['time'], cache=now)
 					sql_story.save()
 
 
 def update_comments(story_id, cache_time=20, html_escape=False):
 	try:
-		cache = HNComments.objects.filter(story_id=story_id)[0]
-		cache = cache.cache
-	except HNComments.DoesNotExist:
-		cache = now - datetime.timedelta(days=1)
+		cache = HNComments.objects.filter(story_id=story_id)[0].cache
 	except IndexError:
 		cache = now - datetime.timedelta(days=1)
 	if(cache + datetime.timedelta(minutes=cache_time) < now or 1 == 1):
@@ -75,14 +78,17 @@ def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 		# Comment <td> container shortcut
 		td_default = comment_soup.tr.find('td', {'class': 'default'})
 		# Retrieving comment id from the reply id
-		comment['id'] = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
+		try:
+			comment['id'] = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
+		except IndexError:
+			return False
 		comment['username'] = ''.join(td_default.find('a').findAll(text=True))
 		# Get html contents of the comment excluding <span> and <font>
 		comment['text'] = ''.join([unicode(x) for x in td_default.find('span', {'class': 'comment'}).font])
 		# Remove <a>
 		comment['text'] = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment['text'])
 		# Remove <code>, it is not needed inside <pre>
-		comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*</code>\s*', r'  \1', comment['text'], flags=re.DOTALL)
+		# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # Bug here
 		# Not sure if I am going to use HTML Escaping for Android yet
 		if html_escape:
 			# Convert <i> to *
@@ -94,9 +100,10 @@ def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 		# Get percent by grabbing the red part of the color (#XY), converting to int and dividing by (250/100)
 		comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
 		comment['hiddencolor'] = hex_color
+		comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=norway)
+		if time.localtime().tm_isdst == 1:
+			comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
 		indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
-		# Save to database
-		comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=pytz.timezone('Europe/Oslo'))
 		comment_object = HNComments(id=comment['id'], story_id=story_id, username=comment['username'],
 									text=comment['text'], hiddenpercent=comment['hiddenpercent'],
 									hiddencolor=comment['hiddencolor'], time=comment['time'], cache=now, parent=parent_object)

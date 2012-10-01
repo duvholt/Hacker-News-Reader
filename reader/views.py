@@ -5,6 +5,7 @@ from django.core import serializers
 import json
 import reader.cache as cache
 from reader.models import HNComments, Stories
+from django.utils import timesince, timezone
 
 
 def index(request, page=1, limit=20):
@@ -46,4 +47,9 @@ def comments(request, commentid):
 	cache.update_comments(commentid)
 	comments = cache.comments(commentid)
 	story = Stories.objects.get(pk=commentid)
+	time = HNComments.objects.get(pk=4599355).time
+	now = timezone.now()
+	print time
+	print now
+	print timesince.timesince(time, now)
 	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)
