@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block container %}
+<table class="table table-striped table-hover table-condensed">
+	<tbody>
+		<thead class="hidden-phone">
+			<tr>
+				<th>Comments</th>
+				<th>Score</th>
+				<th>Submission</th>
+			</tr>
+		</thead>
+		{% for story in stories %}
+		<tr>
+			<td><a class="comments" href="/comments/{{ story.id }}">{{ story.comments|default:"0" }}</a></td>
+			<td><a class="score" href="/comments/{{ story.id }}">{{ story.score|default:"0" }}</a></td>
+			<td><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</td>
+			
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% if pages|length > 1 %}
+<div class="pagination pagination-centered">
+	<ul>
+		{% if stories.number != 1 %}
+		<li><a href="/1/{{ limit }}">&laquo;</a></li>
+		{% else %}
+		<li class="disabled"><span>&laquo;</span></li>
+		{% endif %}
+		
+		{% if stories.has_previous %}
+		<li><a href="/{{ stories.previous_page_number }}/{{ limit }}">&lsaquo;</a></li>
+		{% else %}
+		<li class="disabled"><span>&lsaquo;</span></li>
+		{% endif %}
+		
+		{% for page in pages %}
+		<li{% if page == stories.number %} class="active" {% endif %}><a href="/{{ page }}/{{ limit }}">{{ page }}</a></li>
+		{% endfor %}
+		
+		{% if stories.has_next %}
+		<li><a href="/{{ stories.next_page_number }}/{{ limit }}">&rsaquo;</a></li>
+		{% else %}
+		<li class="disabled"><span>&rsaquo;</span></li>
+		{% endif %}
+			
+		{% if stories.number != stories.paginator.num_pages %}
+		<li><a href="/{{ stories.paginator.num_pages }}/{{ limit }}">&raquo;</a></li>
+		{% else %}
+		<li class="disabled"><span>&raquo;</span></li>
+		{% endif %}
+
+	</ul>
+</div>
+{% endif %}
+<div class="btn-group btn-group-centered">
+	{{ limit }}
+	<a href="/1/20" class="btn btn-small{% ifequal limit 20 %} btn-primary{% endifequal %}">top 20</a>
+	<a href="/1/50" class="btn btn-small{% ifequal limit 50 %} btn-primary{% endifequal %}">top 50</a>
+	<a href="/1/100" class="btn btn-small{% ifequal limit 100 %} btn-primary{% endifequal %}">top 100</a>
+</div>
+{% endblock %}

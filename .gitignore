@@ -1,2 +1,7 @@
 venv
 *.pyc
+*.log
+*.pot
+local_settings.py
+.sublime-workspace
+.sublime-project
