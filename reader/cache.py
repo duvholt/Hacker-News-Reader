@@ -31,10 +31,11 @@ def update_stories(cache_time=20):
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		for story_soup in stories_soup:
 			story = story_info(story_soup)
-			story_object = Stories(id=story['id'], title=story['title'],
-							url=story['url'], score=story['score'], domain=story['domain'],
-							username=story['username'], comments=story['comments'], time=story['time'], cache=now)
-			story_object.save()
+			if story:
+				story_object = Stories(id=story['id'], title=story['title'],
+								url=story['url'], score=story['score'], domain=story['domain'],
+								username=story['username'], comments=story['comments'], time=story['time'], cache=now)
+				story_object.save()
 
 
 def update_comments(story_id, cache_time=20, html_escape=False):
@@ -45,6 +46,12 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 	if(cache + datetime.timedelta(minutes=cache_time) < now):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(story_id))
 		soup = BeautifulSoup(''.join(doc))
+		story_soup = soup.html.body.table.findAll('table')[1].find('tr')
+		story = story_info(story_soup)
+		story_object = Stories(id=story['id'], title=story['title'],
+						url=story['url'], score=story['score'], domain=story['domain'],
+						username=story['username'], comments=story['comments'], time=story['time'], cache=now)
+		story_object.save()
 		comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
 		for comment_soup in comments_soup:
 			td_default = comment_soup.tr.find('td', {'class': 'default'})
@@ -54,20 +61,38 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 
 
 def story_info(story_soup):
+	if not story_soup.find('td'):
+		return False
 	i = 0
-	if(story_soup.findAll('td')[0] == story_soup.find('td', {'class': 'title'})):
+	title = story_soup.find('td', {'class': 'title'})
+	if story_soup.findAll('td')[0] == title:
 		i += 1
-	subtext = story_soup.find('td', {'class': 'subtext'})
-	if(subtext.findAll("a")):
-		
+		title = story_soup.findAll('td', {'class': 'title'})[1]
+	subtext = story_soup.findNext('tr').find('td', {'class': 'subtext'})
+	if subtext.findAll("a"):
+		story = OrderedDict()
+		story['url'] = urllib2.unquote(title.find('a')['href'])
+		story['title'] = ''.join(title.find('a'))
+		story['domain'] = ''.join(title.find('span', {'class': 'comhead'}))
+		story['score'] = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
+		story['username'] = ''.join(subtext.findAll("a")[0])
+		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
+		if(story['comments'] == ""):
+			story['comments'] = 0
+		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=norway)
+		# This might be incorrect, but it doesn't seem like parsedatetime supports DST
+		if time.localtime().tm_isdst == 1:
+			story['time'] = story['time'] + datetime.timedelta(hours=-1)
+		story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
+		return story
+	else:
+		return False
 	# story_soup = story_soup.findAll('td', {"class": "title"})
 	# if story_soup:
 	# 	subtext = story_soup[1].findNext('tr').find("td", {"class": "subtext"})
 	# 	if(subtext.findAll("a")):
-	# 		story = OrderedDict()
-	# 		story['url'] = urllib2.unquote(story_soup[1].find('a')['href'])
+	#
 	# 		story['title'] = ''.join(story_soup[1].find('a'))
-	# 		story['score'] = ''.join(subtext.find("span")).rstrip(" points")
 	# 		story['username'] = ''.join(subtext.findAll("a")[0])
 	# 		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
 	# 		if(story['comments'] == ""):
@@ -78,7 +103,7 @@ def story_info(story_soup):
 	# 		if time.localtime().tm_isdst == 1:
 	# 			story['time'] = story['time'] + datetime.timedelta(hours=-1)
 	# 		story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
-	return story
+
 
 def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 

@@ -24,10 +24,10 @@ urlpatterns = patterns('',
 	url(r'^comments/(?P<commentid>\d*).json', 'reader.views.comments_json', name=''),
 
 	# Uncomment the admin/doc line below to enable admin documentation:
-	url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+	# url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
 	# Uncomment the next line to enable the admin:
-	url(r'^admin/', include(admin.site.urls)),
+	# url(r'^admin/', include(admin.site.urls)),
 	url(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/img/favicon.ico'}),
 )
 urlpatterns += staticfiles_urlpatterns()
