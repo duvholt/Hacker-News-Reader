@@ -3,7 +3,7 @@ django==1.4.1
 beautifulsoup4==4.1.3
 pytz
 parsedatetime
-south
+South==0.7.3
 django-mptt
 dj-database-url==0.2.1
 psycopg2==2.4.5

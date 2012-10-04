@@ -25,35 +25,16 @@ def update_stories(cache_time=20):
 		cache = Stories.objects.latest('cache').cache
 	except Stories.DoesNotExist:
 		cache = now - datetime.timedelta(days=1)  # Force updating cache
-	stories = []
 	if(cache + datetime.timedelta(minutes=cache_time) < now):
 		doc = urllib2.urlopen('http://news.ycombinator.com/').read()
 		soup = BeautifulSoup(''.join(doc))
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		for story_soup in stories_soup:
-			story_soup = story_soup.findAll('td', {"class": "title"})
-			if story_soup:
-				subtext = story_soup[1].findNext('tr').find("td", {"class": "subtext"})
-				if(subtext.findAll("a")):
-					story = OrderedDict()
-					story['url'] = urllib2.unquote(story_soup[1].find('a')['href'])
-					story['title'] = ''.join(story_soup[1].find('a'))
-					story['score'] = ''.join(subtext.find("span")).rstrip(" points")
-					story['username'] = ''.join(subtext.findAll("a")[0])
-					story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
-					if(story['comments'] == ""):
-						story['comments'] = 0
-					story['domain'] = ''.join(story_soup[1].find('a').findNext('span'))
-					story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=norway)
-					# This might be incorrect, but it doesn't seem like parsedatetime supports DST
-					if time.localtime().tm_isdst == 1:
-						story['time'] = story['time'] + datetime.timedelta(hours=-1)
-					story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
-					stories.append(story)
-					sql_story = Stories(id=story['id'], title=story['title'],
-												url=story['url'], score=story['score'], domain=story['domain'],
-												username=story['username'], comments=story['comments'], time=story['time'], cache=now)
-					sql_story.save()
+			story = story_info(story_soup)
+			story_object = Stories(id=story['id'], title=story['title'],
+							url=story['url'], score=story['score'], domain=story['domain'],
+							username=story['username'], comments=story['comments'], time=story['time'], cache=now)
+			story_object.save()
 
 
 def update_comments(story_id, cache_time=20, html_escape=False):
@@ -61,7 +42,7 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 		cache = HNComments.objects.filter(story_id=story_id)[0].cache
 	except IndexError:
 		cache = now - datetime.timedelta(days=1)
-	if(cache + datetime.timedelta(minutes=cache_time) < now or 1 == 1):
+	if(cache + datetime.timedelta(minutes=cache_time) < now):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(story_id))
 		soup = BeautifulSoup(''.join(doc))
 		comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
@@ -71,6 +52,33 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 			if indenting == 0:
 				traverse_comment(comment_soup, None, story_id, html_escape)
 
+
+def story_info(story_soup):
+	i = 0
+	if(story_soup.findAll('td')[0] == story_soup.find('td', {'class': 'title'})):
+		i += 1
+	subtext = story_soup.find('td', {'class': 'subtext'})
+	if(subtext.findAll("a")):
+		
+	# story_soup = story_soup.findAll('td', {"class": "title"})
+	# if story_soup:
+	# 	subtext = story_soup[1].findNext('tr').find("td", {"class": "subtext"})
+	# 	if(subtext.findAll("a")):
+	# 		story = OrderedDict()
+	# 		story['url'] = urllib2.unquote(story_soup[1].find('a')['href'])
+	# 		story['title'] = ''.join(story_soup[1].find('a'))
+	# 		story['score'] = ''.join(subtext.find("span")).rstrip(" points")
+	# 		story['username'] = ''.join(subtext.findAll("a")[0])
+	# 		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
+	# 		if(story['comments'] == ""):
+	# 			story['comments'] = 0
+	# 		story['domain'] = ''.join(story_soup[1].find('a').findNext('span'))
+	# 		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=norway)
+	# 		# This might be incorrect, but it doesn't seem like parsedatetime supports DST
+	# 		if time.localtime().tm_isdst == 1:
+	# 			story['time'] = story['time'] + datetime.timedelta(hours=-1)
+	# 		story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
+	return story
 
 def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 
