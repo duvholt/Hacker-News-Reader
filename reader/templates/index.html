@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
 {% block container %}
+<div class="btn-group btn-group-centered">
+	{{ limit }}
+	<a href="/1/20" class="btn btn-small{% ifequal limit 20 %} btn-primary{% endifequal %}">top 20</a>
+	<a href="/1/50" class="btn btn-small{% ifequal limit 50 %} btn-primary{% endifequal %}">top 50</a>
+	<a href="/1/100" class="btn btn-small{% ifequal limit 100 %} btn-primary{% endifequal %}">top 100</a>
+</div>
 <table class="table table-striped table-hover table-condensed">
 	<tbody>
 		<thead class="hidden-phone">
@@ -54,10 +60,4 @@
 	</ul>
 </div>
 {% endif %}
-<div class="btn-group btn-group-centered">
-	{{ limit }}
-	<a href="/1/20" class="btn btn-small{% ifequal limit 20 %} btn-primary{% endifequal %}">top 20</a>
-	<a href="/1/50" class="btn btn-small{% ifequal limit 50 %} btn-primary{% endifequal %}">top 50</a>
-	<a href="/1/100" class="btn btn-small{% ifequal limit 100 %} btn-primary{% endifequal %}">top 100</a>
-</div>
 {% endblock %}
