@@ -7,3 +7,4 @@ local_settings.py
 .sublime-project
 activate.bat
 runserver.bat
+secret_key.py

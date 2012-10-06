@@ -1,5 +1,7 @@
 # Django settings for a generic project.
 import os
+from generate_secret_key import generate_secret_key
+import dj_database_url
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -101,8 +103,14 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
+try:
+    from secret_key import *
+except ImportError:
+    SETTINGS_DIR = os.path.abspath(os.path.dirname(__file__))
+    generate_secret_key(os.path.join(SETTINGS_DIR, 'secret_key.py'))
+    from secret_key import *
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '0tc6gk^8x=lfzyh0&amp;%1u^7tu0wb(aho7o6+6!*yr!=#c#b4c$@'
+# SECRET_KEY = '0tc6gk^8x=lfzyh0&amp;%1u^7tu0wb(aho7o6+6!*yr!=#c#b4c$@'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -226,6 +234,4 @@ INSTALLED_APPS = (
 #         },
 #     }
 # }
-import dj_database_url
-# DATABASES = {'default': dj_database_url.config(default='postgres://localhost')}
 DATABASES = {'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))}
