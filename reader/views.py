@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template import RequestContext
 from django.core import serializers
 import reader.cache as cache
@@ -44,5 +44,8 @@ def comments(request, commentid):
 	context_instance = RequestContext(request)
 	cache.update_comments(commentid)
 	comments = cache.comments(commentid)
-	story = Stories.objects.get(pk=commentid)
+	try:
+		story = Stories.objects.get(pk=commentid)
+	except Stories.DoesNotExist:
+		raise Http404
 	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)

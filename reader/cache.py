@@ -4,14 +4,12 @@ from django.utils import timezone
 import parsedatetime.parsedatetime as pdt
 import parsedatetime.parsedatetime_consts as pdc
 import datetime
-import pytz
 import re
 from reader.models import Stories, HNComments
 import operator
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.utils import html
 from collections import OrderedDict
-import random
 import time
 from tzlocal import get_localzone
 
@@ -19,6 +17,7 @@ now = timezone.now()
 c = pdc.Constants()
 p = pdt.Calendar(c)
 tz = get_localzone()
+
 
 def update_stories(cache_time=20):
 	try:
@@ -48,16 +47,17 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 		soup = BeautifulSoup(''.join(doc))
 		story_soup = soup.html.body.table.findAll('table')[1].find('tr')
 		story = story_info(story_soup)
-		story_object = Stories(id=story['id'], title=story['title'],
-						url=story['url'], score=story['score'], domain=story['domain'],
-						username=story['username'], comments=story['comments'], time=story['time'], cache=now)
-		story_object.save()
-		comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
-		for comment_soup in comments_soup:
-			td_default = comment_soup.tr.find('td', {'class': 'default'})
-			indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
-			if indenting == 0:
-				traverse_comment(comment_soup, None, story_id, html_escape)
+		if story:
+			story_object = Stories(id=story['id'], title=story['title'],
+							url=story['url'], score=story['score'], domain=story['domain'],
+							username=story['username'], comments=story['comments'], time=story['time'], cache=now)
+			story_object.save()
+			comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
+			for comment_soup in comments_soup:
+				td_default = comment_soup.tr.find('td', {'class': 'default'})
+				indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
+				if indenting == 0:
+					traverse_comment(comment_soup, None, story_id, html_escape)
 
 
 def story_info(story_soup):
