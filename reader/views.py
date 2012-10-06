@@ -6,8 +6,15 @@ import reader.cache as cache
 from reader.models import Stories
 
 
-def index(request, page=1, limit=20):
-	limit = int(limit)
+def index(request, page=1, limit=None):
+	if not limit:
+		limit_cookie = request.COOKIES.get('stories_limit')
+		if limit_cookie:
+			limit = int(limit_cookie)
+		else:
+			limit = 20
+	else:
+		limit = int(limit)
 	page = int(page)
 	context_instance = RequestContext(request)
 	cache.update_stories(0)
@@ -25,7 +32,9 @@ def index(request, page=1, limit=20):
 			left = 0
 			right = visible_pages
 		pages = pages[left:right]
-	return render_to_response("templates/index.html", {"stories": stories, "pages": pages, 'limit': limit}, context_instance)
+	response = render_to_response("templates/index.html", {"stories": stories, "pages": pages, 'limit': limit}, context_instance)
+	response.set_cookie('stories_limit', limit)
+	return response
 
 
 def stories_json(request, page=1, limit=20):

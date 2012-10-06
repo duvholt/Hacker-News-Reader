@@ -30,29 +30,29 @@
 <div class="pagination pagination-centered">
 	<ul>
 		{% if stories.number != 1 %}
-		<li><a href="/1/{{ limit }}">&laquo;</a></li>
+		<li><a href="/1">&laquo;</a></li>
 		{% else %}
 		<li class="disabled"><span>&laquo;</span></li>
 		{% endif %}
 		
 		{% if stories.has_previous %}
-		<li><a href="/{{ stories.previous_page_number }}/{{ limit }}">&lsaquo;</a></li>
+		<li><a href="/{{ stories.previous_page_number }}">&lsaquo;</a></li>
 		{% else %}
 		<li class="disabled"><span>&lsaquo;</span></li>
 		{% endif %}
 		
 		{% for page in pages %}
-		<li{% if page == stories.number %} class="active" {% endif %}><a href="/{{ page }}/{{ limit }}">{{ page }}</a></li>
+		<li{% if page == stories.number %} class="active" {% endif %}><a href="/{{ page }}">{{ page }}</a></li>
 		{% endfor %}
 		
 		{% if stories.has_next %}
-		<li><a href="/{{ stories.next_page_number }}/{{ limit }}">&rsaquo;</a></li>
+		<li><a href="/{{ stories.next_page_number }}">&rsaquo;</a></li>
 		{% else %}
 		<li class="disabled"><span>&rsaquo;</span></li>
 		{% endif %}
 			
 		{% if stories.number != stories.paginator.num_pages %}
-		<li><a href="/{{ stories.paginator.num_pages }}/{{ limit }}">&raquo;</a></li>
+		<li><a href="/{{ stories.paginator.num_pages }}">&raquo;</a></li>
 		{% else %}
 		<li class="disabled"><span>&raquo;</span></li>
 		{% endif %}

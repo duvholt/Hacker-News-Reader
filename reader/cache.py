@@ -81,7 +81,7 @@ def story_info(story_soup):
 			story['comments'] = 0
 		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=tz)
 		# This might be incorrect, but it doesn't seem like parsedatetime supports DST
-		if time.localtime().tm_isdst == 1:
+		if time.localtime().tm_isdst:
 			story['time'] = story['time'] + datetime.timedelta(hours=-1)
 		story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
 		return story
