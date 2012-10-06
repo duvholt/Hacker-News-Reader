@@ -13,12 +13,12 @@ from django.utils import html
 from collections import OrderedDict
 import random
 import time
+from tzlocal import get_localzone
 
 now = timezone.now()
 c = pdc.Constants()
 p = pdt.Calendar(c)
-norway = pytz.timezone('Europe/Oslo')
-
+tz = get_localzone()
 
 def update_stories(cache_time=20):
 	try:
@@ -79,7 +79,7 @@ def story_info(story_soup):
 		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
 		if(story['comments'] == ""):
 			story['comments'] = 0
-		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=norway)
+		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=tz)
 		# This might be incorrect, but it doesn't seem like parsedatetime supports DST
 		if time.localtime().tm_isdst == 1:
 			story['time'] = story['time'] + datetime.timedelta(hours=-1)
@@ -87,22 +87,6 @@ def story_info(story_soup):
 		return story
 	else:
 		return False
-	# story_soup = story_soup.findAll('td', {"class": "title"})
-	# if story_soup:
-	# 	subtext = story_soup[1].findNext('tr').find("td", {"class": "subtext"})
-	# 	if(subtext.findAll("a")):
-	#
-	# 		story['title'] = ''.join(story_soup[1].find('a'))
-	# 		story['username'] = ''.join(subtext.findAll("a")[0])
-	# 		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
-	# 		if(story['comments'] == ""):
-	# 			story['comments'] = 0
-	# 		story['domain'] = ''.join(story_soup[1].find('a').findNext('span'))
-	# 		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=norway)
-	# 		# This might be incorrect, but it doesn't seem like parsedatetime supports DST
-	# 		if time.localtime().tm_isdst == 1:
-	# 			story['time'] = story['time'] + datetime.timedelta(hours=-1)
-	# 		story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
 
 
 def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
@@ -133,7 +117,7 @@ def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 		# Get percent by grabbing the red part of the color (#XY), converting to int and dividing by (250/100)
 		comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
 		comment['hiddencolor'] = hex_color
-		comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=norway)
+		comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
 		if time.localtime().tm_isdst == 1:
 			comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
 		indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
