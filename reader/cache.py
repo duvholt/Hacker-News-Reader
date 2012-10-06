@@ -45,7 +45,10 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 	if(cache + datetime.timedelta(minutes=cache_time) < now):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(story_id))
 		soup = BeautifulSoup(''.join(doc))
-		story_soup = soup.html.body.table.findAll('table')[1].find('tr')
+		try:
+			story_soup = soup.html.body.table.findAll('table')[1].find('tr')
+		except AttributeError:
+			return False
 		story = story_info(story_soup)
 		if story:
 			story_object = Stories(id=story['id'], title=story['title'],
@@ -79,6 +82,8 @@ def story_info(story_soup):
 		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
 		if(story['comments'] == ""):
 			story['comments'] = 0
+		# Unfortunalely HN doesn't show any form timestamp other than "x hours" meaning that
+		# the time scraped is only approximately correct.
 		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=tz)
 		# This might be incorrect, but it doesn't seem like parsedatetime supports DST
 		if time.localtime().tm_isdst:
