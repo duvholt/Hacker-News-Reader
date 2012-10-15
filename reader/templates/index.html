@@ -7,7 +7,7 @@
 	<a href="/1/50" class="btn btn-small{% ifequal limit 50 %} btn-primary{% endifequal %}">top 50</a>
 	<a href="/1/100" class="btn btn-small{% ifequal limit 100 %} btn-primary{% endifequal %}">top 100</a>
 </div>
-<table class="table table-striped table-hover table-condensed">
+<table id="stories" class="table table-striped table-hover table-condensed">
 	<tbody>
 		<thead class="hidden-phone">
 			<tr>
@@ -26,7 +26,7 @@
 			{% else %}
 			<td><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</td>
 			{% endif %}
-			<td><time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time></td>
+			<td><time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }}</time></td>
 		</tr>
 		{% endfor %}
 	</tbody>
