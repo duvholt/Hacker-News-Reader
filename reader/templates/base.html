@@ -1,13 +1,11 @@
-{% load menutag %}
+{% load tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<title>{% block title %}Home{% endblock %} - Hacker News Reader</title>
-	<link href="{{ STATIC_URL }}css/bootstrap.css" rel="stylesheet">
-
+	<link href="{{ STATIC_URL }}css/bootswatchr.css" rel="stylesheet">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<link href="{{ STATIC_URL }}css/bootstrap-responsive.css" rel="stylesheet">
-	<link href="{{ STATIC_URL }}css/stylesheet.css" rel="stylesheet">
+	<link href="{{ STATIC_URL }}css/stylesheet2.css" rel="stylesheet">
 	<link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico" type="image/x-icon" />
 </head>
 <body>
@@ -37,8 +35,7 @@
 	{% endblock %}
 	</div>
 	<script src="{{ STATIC_URL }}js/jquery-1.8.1.js"></script>
-	<script src="{{ STATIC_URL }}js/jquery.color.js"></script>
 	<script src="{{ STATIC_URL }}js/bootstrap.js"></script>
 	<script src="{{ STATIC_URL }}js/scripts.js"></script>
-</body>
+</body> 
 </html>

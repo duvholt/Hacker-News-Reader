@@ -7,10 +7,4 @@ $(function () {
 	}).bind("mouseout", function() {
 		$(this).closest("td").siblings("td").find("a.comments, a.score").removeClass("onhover");
 	});
-	
-	// $("a.score").each(function() {
-	// 	var color = $.Color($(this).css("color")).saturation("0.5");
-	// 	log(color);
-	// 	$(this).css("color", color)
-	// });
 });

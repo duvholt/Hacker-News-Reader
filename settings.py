@@ -14,35 +14,6 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-# ## Pull in CloudFoundry's production settings
-# if 'VCAP_SERVICES' in os.environ:
-# 	import json
-# 	vcap_services = json.loads(os.environ['VCAP_SERVICES'])
-# 	# XXX: avoid hardcoding here
-# 	mysql_srv = vcap_services['mysql-5.1'][0]
-# 	cred = mysql_srv['credentials']
-# 	DATABASES = {
-# 		'default': {
-# 			'ENGINE': 'django.db.backends.mysql',
-# 			'NAME': cred['name'],
-# 			'USER': cred['user'],
-# 			'PASSWORD': cred['password'],
-# 			'HOST': cred['hostname'],
-# 			'PORT': cred['port'],
-# 			}
-# 		}
-# else:
-# 	DATABASES = {
-# 		"default": {
-# 			"ENGINE": "django.db.backends.sqlite3",
-# 			"NAME": "dev.db",
-# 			"USER": "",
-# 			"PASSWORD": "",
-# 			"HOST": "",
-# 			"PORT": "",
-# 			}
-# 		}
-
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -156,7 +127,7 @@ INSTALLED_APPS = (
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
 	# Uncomment the next line to enable the admin:
-	# 'django.contrib.admin',
+	'django.contrib.admin',
 	# Uncomment the next line to enable admin documentation:
 	# 'django.contrib.admindocs',
 	'reader',
@@ -233,4 +204,24 @@ INSTALLED_APPS = (
 # 		},
 # 	}
 # }
-DATABASES = {'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))}
+
+# AppFog database connection
+if 'VCAP_SERVICES' in os.environ:
+	import json
+	vcap_services = json.loads(os.environ['VCAP_SERVICES'])
+	# XXX: avoid hardcoding here
+	psql_srv = vcap_services['postgresql-9.1'][0]
+	cred = psql_srv['credentials']
+	DATABASES = {
+		'default': {
+			'ENGINE': 'django.db.backends.postgresql_psycopg2',
+			'NAME': cred['name'],
+			'USER': cred['user'],
+			'PASSWORD': cred['password'],
+			'HOST': cred['hostname'],
+			'PORT': cred['port'],
+			}
+		}
+else:
+	# Heroku and local database
+	DATABASES = {'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))}

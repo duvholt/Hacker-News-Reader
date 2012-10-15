@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load tags %}
 {% block container %}
 <div class="btn-group btn-group-centered">
 	{{ limit }}
@@ -14,14 +14,19 @@
 				<th>Comments</th>
 				<th>Score</th>
 				<th>Submission</th>
+				<th>Time</th>
 			</tr>
 		</thead>
 		{% for story in stories %}
 		<tr>
 			<td><a class="comments" href="/comments/{{ story.id }}">{{ story.comments|default:"0" }}</a></td>
 			<td><a class="score" href="/comments/{{ story.id }}">{{ story.score|default:"0" }}</a></td>
+			{% if story.selfpost %}
+			<td><a class="link" href="/comments/{{ story.id }}">{{ story.title }}</a></td>
+			{% else %}
 			<td><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</td>
-			
+			{% endif %}
+			<td><time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time></td>
 		</tr>
 		{% endfor %}
 	</tbody>

@@ -4,6 +4,8 @@ from django.template import RequestContext
 from django.core import serializers
 import reader.cache as cache
 from reader.models import Stories
+from django.core import management
+from StringIO import StringIO
 
 
 def index(request, page=1, limit=None):
@@ -17,7 +19,7 @@ def index(request, page=1, limit=None):
 		limit = int(limit)
 	page = int(page)
 	context_instance = RequestContext(request)
-	cache.update_stories(0)
+	cache.update_stories()
 	stories = cache.stories(page, limit)
 	pages = stories.paginator.page_range
 	visible_pages = 6
@@ -58,3 +60,16 @@ def comments(request, commentid):
 	except Stories.DoesNotExist:
 		raise Http404
 	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)
+
+
+def south_migrate(request, task):
+	if task == 'initial':
+		management.call_command('schemamigration', 'reader', initial=True)
+		response = 'Initial migration created'
+	elif task == 'migrate':
+		management.call_command('migrate', all_apps=True)
+		response = 'Migration done'
+	elif task == 'auto':
+		management.call_command('schemamigration', 'reader', auto=True)
+		response = 'Auto migration created'
+	return HttpResponse(response)

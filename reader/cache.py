@@ -25,15 +25,17 @@ def update_stories(cache_time=20):
 	except Stories.DoesNotExist:
 		cache = now - datetime.timedelta(days=1)  # Force updating cache
 	if(cache + datetime.timedelta(minutes=cache_time) < now):
-		doc = urllib2.urlopen('http://news.ycombinator.com/').read()
+		print 'Updating story cache'
+		doc = urllib2.urlopen('http://news.ycombinator.com/ask').read()
 		soup = BeautifulSoup(''.join(doc))
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		for story_soup in stories_soup:
 			story = story_info(story_soup)
 			if story:
 				story_object = Stories(id=story['id'], title=story['title'],
-								url=story['url'], score=story['score'], domain=story['domain'],
-								username=story['username'], comments=story['comments'], time=story['time'], cache=now)
+								url=story['url'], score=story['score'], selfpost=story['selfpost'],
+								domain=story['domain'], username=story['username'], comments=story['comments'],
+								time=story['time'], cache=now)
 				story_object.save()
 
 
@@ -42,7 +44,7 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 		cache = HNComments.objects.filter(story_id=story_id)[0].cache
 	except IndexError:
 		cache = now - datetime.timedelta(days=1)
-	if(cache + datetime.timedelta(minutes=cache_time) < now):
+	if(cache + datetime.timedelta(minutes=cache_time) < now or 1 == 1):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(story_id))
 		soup = BeautifulSoup(''.join(doc))
 		try:
@@ -50,10 +52,15 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 		except AttributeError:
 			return False
 		story = story_info(story_soup)
+		if len(story_soup.parent.findAll('tr')) == 6:
+			story['selfpost_text'] = ''.join([unicode(x) for x in story_soup.parent.findAll('tr')[3].findAll('td')[1]])
+		else:
+			story['selfpost_text'] = ''
 		if story:
 			story_object = Stories(id=story['id'], title=story['title'],
-							url=story['url'], score=story['score'], domain=story['domain'],
-							username=story['username'], comments=story['comments'], time=story['time'], cache=now)
+							url=story['url'], score=story['score'], selfpost=story['selfpost'],
+							selfpost_text=story['selfpost_text'], domain=story['domain'], username=story['username'],
+							comments=story['comments'], time=story['time'], cache=now)
 			story_object.save()
 			comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
 			for comment_soup in comments_soup:
@@ -76,7 +83,14 @@ def story_info(story_soup):
 		story = OrderedDict()
 		story['url'] = urllib2.unquote(title.find('a')['href'])
 		story['title'] = ''.join(title.find('a'))
-		story['domain'] = ''.join(title.find('span', {'class': 'comhead'}))
+		try:
+			story['selfpost'] = False
+			story['domain'] = ''.join(title.find('span', {'class': 'comhead'}))
+		except TypeError:
+			# No domain provided, must be a Ask HN post
+			story['selfpost'] = True
+			story['domain'] = ''
+			story['url'] = ''
 		story['score'] = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
 		story['username'] = ''.join(subtext.findAll("a")[0])
 		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
@@ -149,7 +163,7 @@ def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 
 
 def stories(page=1, limit=20):
-	stories = Stories.objects.all().filter(time__year=now.year, time__month=now.month, time__day=now.day).order_by('-score')
+	stories = Stories.objects.all().order_by('-score') # .filter(time__year=now.year, time__month=now.month, time__day=now.day)
 	stories = sorted(stories, key=operator.attrgetter('time'), reverse=True)
 	paginator = Paginator(stories, limit)
 	try:

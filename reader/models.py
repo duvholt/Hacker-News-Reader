@@ -6,6 +6,8 @@ class Stories(models.Model):
 	id = models.PositiveIntegerField(primary_key=True)
 	title = models.CharField(max_length=200)
 	url = models.CharField(max_length=2083)
+	selfpost = models.BooleanField(default=False)
+	selfpost_text = models.TextField(default="", null=True)
 	domain = models.CharField(max_length=200, null=True)
 	username = models.CharField(max_length=150, null=True)
 	score = models.PositiveIntegerField(max_length=5)
@@ -26,4 +28,4 @@ class HNComments(MPTTModel):
 	parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
 
 	class MPTTMeta:
-		order_insertion_by = ['username']
+		order_insertion_by = ['cache']  # lft gives None error

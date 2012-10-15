@@ -23,6 +23,8 @@ urlpatterns = patterns('',
 	url(r'^comments/(?P<commentid>\d*)/$', 'reader.views.comments', name='comments'),
 	url(r'^comments/(?P<commentid>\d*).json', 'reader.views.comments_json', name=''),
 
+	url(r'^south_migrate/(?P<task>\w*)/$', 'reader.views.south_migrate'),
+
 	# Uncomment the admin/doc line below to enable admin documentation:
 	# url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

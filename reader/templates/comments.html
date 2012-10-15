@@ -6,13 +6,16 @@
 {% block container %}
 <div class="story">
 	<h4><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</h4>
-	<p>{{ story.score|default:"0" }} points  by {{ story.username|default:"[unknown]" }} <time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince }} ago</time> | {{ story.comments|default:"0" }} comment{{ story.comments|pluralize }}</a></td>
+	{% if story.selfpost %}
+	<div>{{ story.selfpost_text|safe|urlizetrunc:"63" }}</div>
+	{% endif %}
+	<p>{{ story.score|default:"0" }} points  by <a href="http://news.ycombinator.com/user?id={{ story.username }}">{{ story.username }}</a> <time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince }} ago</time> | {{ story.comments|default:"0" }} comment{{ story.comments|pluralize }}</a></td>
 </div>
 <div class="comments">
 	<ul>
 	{% recursetree comments %}
 		<li{% if node.level|divisibleby:"2" %} class="even"{% endif %}>
-			<div>{{ node.username }} <span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span></div>
+			<div><a href="http://news.ycombinator.com/user?id={{ node.username }}">{{ node.username }}</a> <span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span></div>
 			<div style="color: {{ node.hiddencolor }};">{{ node.text|safe|urlizetrunc:"63" }}</div>
 			{% if not node.is_leaf_node %}
 			<ul class="children">

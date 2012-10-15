@@ -42,6 +42,11 @@ div.story {
 	margin-left: 5px;
 }
 
+div.story > p {
+	font-size: 12px;
+	color: #5F5F5F;
+}
+
 .btn-group {
 	padding-bottom: 10px;
 }
@@ -70,6 +75,11 @@ div.comments li > div:first-child {
 	font-size: 12px;
 	color: #5F5F5F;
 }
+
+div.comments li > div:first-child a {
+	color: #5F5F5F;
+}
+
 
 div.comments > ul > li {
 	margin-bottom: 10px;
