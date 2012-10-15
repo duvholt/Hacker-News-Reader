@@ -26,7 +26,7 @@ def update_stories(cache_time=20):
 		cache = now - datetime.timedelta(days=1)  # Force updating cache
 	if(cache + datetime.timedelta(minutes=cache_time) < now):
 		print 'Updating story cache'
-		doc = urllib2.urlopen('http://news.ycombinator.com/ask').read()
+		doc = urllib2.urlopen('http://news.ycombinator.com/').read()
 		soup = BeautifulSoup(''.join(doc))
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		for story_soup in stories_soup:
@@ -44,7 +44,7 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 		cache = HNComments.objects.filter(story_id=story_id)[0].cache
 	except IndexError:
 		cache = now - datetime.timedelta(days=1)
-	if(cache + datetime.timedelta(minutes=cache_time) < now or 1 == 1):
+	if(cache + datetime.timedelta(minutes=cache_time) < now):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(story_id))
 		soup = BeautifulSoup(''.join(doc))
 		try:
