@@ -1,25 +1,20 @@
 table.table {	
-	
 	a:visited {
 		color: #C7C7C7;	
 	}
-
 	a.comments, a.score {
 		color: #555;
 	}
-
 	a.comments, a.score {
 		width: 100%;
 		height: 100%;
 		display: block;
 	}
 }
-
 /* Hacky way for hover effect */
 .onhover {
 	text-decoration: underline;
 }
-
 @media (max-width: 767px) {
 	body {
 		padding-right: 0px;
@@ -31,12 +26,10 @@ table.table {
 	div.story {
 		margin-left: 8px;
 	}
-	
 	div.comments ul {
 		margin: 0 0 10px 5px;
 	}
 }
-
 div.story {
 	margin-left: 5px;
 	> p {
@@ -44,8 +37,6 @@ div.story {
 	color: #5F5F5F;
 	}
 }
-
-
 div.comments {
 	> ul {
 		margin: 0 0 10px 0px;
@@ -53,7 +44,6 @@ div.comments {
 			margin-bottom: 10px;
 		}
 	}
-
 	li {
 		line-height: 20px;
 		background-color: white;
@@ -80,7 +70,6 @@ div.comments {
 		word-wrap:break-word;
 	}
 }
-
 /* Bootstrap related */
 .btn-group-centered {
   text-align: center;
