@@ -13,20 +13,17 @@ from collections import OrderedDict
 import time
 from tzlocal import get_localzone
 
-now = timezone.now()
 c = pdc.Constants()
 p = pdt.Calendar(c)
 tz = get_localzone()
 
 
 def update_stories(cache_time=20):
-	print cache_time
 	try:
 		cache = Stories.objects.latest('cache').cache
 	except Stories.DoesNotExist:
-		cache = now - datetime.timedelta(days=1)  # Force updating cache
-	if(cache + datetime.timedelta(seconds=cache_time) < now):
-		print 'Updating story cache'
+		cache = timezone.now() - datetime.timedelta(days=1)  # Force updating cache
+	if(cache + datetime.timedelta(seconds=cache_time) < timezone.now()):
 		doc = urllib2.urlopen('http://news.ycombinator.com/').read()
 		soup = BeautifulSoup(''.join(doc))
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
@@ -36,7 +33,7 @@ def update_stories(cache_time=20):
 				story_object = Stories(id=story['id'], title=story['title'],
 								url=story['url'], score=story['score'], selfpost=story['selfpost'],
 								domain=story['domain'], username=story['username'], comments=story['comments'],
-								time=story['time'], cache=now)
+								time=story['time'], cache=timezone.now())
 				story_object.save()
 
 
@@ -44,8 +41,8 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 	try:
 		cache = HNComments.objects.filter(story_id=story_id)[0].cache
 	except IndexError:
-		cache = now - datetime.timedelta(days=1)
-	if(cache + datetime.timedelta(minutes=cache_time) < now):
+		cache = timezone.now() - datetime.timedelta(days=1)
+	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(story_id))
 		soup = BeautifulSoup(''.join(doc))
 		try:
@@ -61,7 +58,7 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 			story_object = Stories(id=story['id'], title=story['title'],
 							url=story['url'], score=story['score'], selfpost=story['selfpost'],
 							selfpost_text=story['selfpost_text'], domain=story['domain'], username=story['username'],
-							comments=story['comments'], time=story['time'], cache=now)
+							comments=story['comments'], time=story['time'], cache=timezone.now())
 			story_object.save()
 			comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
 			for comment_soup in comments_soup:
@@ -143,7 +140,7 @@ def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 		indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
 		comment_object = HNComments(id=comment['id'], story_id=story_id, username=comment['username'],
 									text=comment['text'], hiddenpercent=comment['hiddenpercent'],
-									hiddencolor=comment['hiddencolor'], time=comment['time'], cache=now, parent=parent_object)
+									hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object)
 		comment_object.save()
 		# Traversing over child comments:
 		# Since comments aren't actually children in the HTML we will have to parse all the siblings
