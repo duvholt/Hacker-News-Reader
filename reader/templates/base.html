@@ -5,6 +5,7 @@
 	<title>{% block title %}Home{% endblock %} - Hacker News Reader</title>
 	<link href="{{ STATIC_URL }}css/bootswatchr.css" rel="stylesheet">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	
 	<link href="{{ STATIC_URL }}css/stylesheet.css" rel="stylesheet">
 	<link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico" type="image/x-icon" />
 </head>
@@ -34,9 +35,10 @@
 		<p>Default template text</p>
 	{% endblock %}
 	</div>
-	<script src="{{ STATIC_URL }}js/jquery-1.8.1.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>
 	<script src="{{ STATIC_URL }}js/jquery.ba-throttle-debounce.js"></script>
-	<script src="{{ STATIC_URL }}js/bootstrap.js"></script>
+	
 	<script src="{{ STATIC_URL }}js/scripts.js"></script>
 </body> 
 </html>
