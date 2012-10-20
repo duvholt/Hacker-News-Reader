@@ -32,3 +32,4 @@ urlpatterns = patterns('',
 	# url(r'^admin/', include(admin.site.urls)),
 	url(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/img/favicon.ico'}),
 )
+urlpatterns += staticfiles_urlpatterns()
