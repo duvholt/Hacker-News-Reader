@@ -23,7 +23,7 @@ def update_stories(cache_time=20):
 		cache = Stories.objects.latest('cache').cache
 	except Stories.DoesNotExist:
 		cache = timezone.now() - datetime.timedelta(days=1)  # Force updating cache
-	if(cache + datetime.timedelta(seconds=cache_time) < timezone.now()):
+	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
 		doc = urllib2.urlopen('http://news.ycombinator.com/').read()
 		soup = BeautifulSoup(''.join(doc))
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
