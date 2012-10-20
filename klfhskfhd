@@ -1,0 +1,101 @@
+[33mcommit 0be07ada74ff3e59767368af646027c9c3bbbe39[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Mon Oct 8 22:51:21 2012 +0200
+
+    Changed timezone to UTC
+
+[33mcommit 8ca59b2f3e178ce34936f4129faae2aa5129cad5[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Sun Oct 7 00:06:22 2012 +0200
+
+    Added simple handling for stories that do no exist
+
+[33mcommit 8ffcd9849c05e7dbcd741a6725808d47392c760a[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Sun Oct 7 00:04:07 2012 +0200
+
+    Story limit on frontpage now uses cookies
+
+[33mcommit af17394a0898122fe1974ea6e409a2594fe2906c[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Sat Oct 6 18:58:01 2012 +0200
+
+    Fixed a  bug that would happen when the story has been deleted
+
+[33mcommit 8179a00972ff7c97fd4eaf3c086850252366f084[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Sat Oct 6 18:08:55 2012 +0200
+
+    Formatting
+
+[33mcommit 06bcf2284649d4d1914836a1aadd74cedf1da4ab[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Sat Oct 6 17:49:50 2012 +0200
+
+    Secret key not included in git anymore. Will now be generated if missing.
+
+[33mcommit e8fa067df30a17200c9622202a280237b0da52cb[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Sat Oct 6 15:48:45 2012 +0200
+
+    Added proper support for local timezones
+
+[33mcommit c19b44f99a35e5b21be2c83b812a248280b69c7d[m
+Author: cXhristian <cxhristian@gmail.com>
+Date:   Fri Oct 5 14:17:25 2012 +0200
+
+    Moving 'top x' buttons to top of the page
+
+[33mcommit 1447b1c36506326a9bec88b1ef6130a12217241a[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Thu Oct 4 23:47:32 2012 +0200
+
+    Cleaned up and added simple readme
+
+[33mcommit 2fc79d94aa5f6e1f6d5511f31446d6ad21a450b9[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Thu Oct 4 23:38:09 2012 +0200
+
+    Updating comments for a story will also update story info
+
+[33mcommit ebca461e4f114a948ea80f48027c578350b6dc76[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Thu Oct 4 23:03:07 2012 +0200
+
+    Reworking parsing method
+
+[33mcommit ebddacb3455943057a83ad7b69fe3ec84c079ff1[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Tue Oct 2 01:26:00 2012 +0200
+
+    Removed more debug code. (sigh)
+
+[33mcommit c5a9dc345ea32300a082f78e16f4e7dcff7f816d[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Tue Oct 2 01:24:30 2012 +0200
+
+    Removed debug code
+
+[33mcommit 545186414f2453029afe9b5f17d56afb7811a044[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Tue Oct 2 01:20:50 2012 +0200
+
+    Fixed several things
+
+[33mcommit 24dd202531b1ac3315a838badccea97b54e0651f[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Mon Oct 1 17:47:03 2012 +0200
+
+    Remove logging
+
+[33mcommit df8d3145c8c4db0083298048a92e367df9d3b551[m
+Author: Christian Duvholt <cxhristian@gmail.com>
+Date:   Mon Oct 1 14:49:50 2012 +0200
+
+    Adding code
+
+[33mcommit 2f126fa4ee931127591671aa411cc6eeb81130c4[m
+Author: Mark Pundsack <mp@heroku.com>
+Date:   Thu Aug 16 21:30:57 2012 -0700
+
+    my django app

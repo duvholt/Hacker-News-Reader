@@ -20,11 +20,12 @@ tz = get_localzone()
 
 
 def update_stories(cache_time=20):
+	print cache_time
 	try:
 		cache = Stories.objects.latest('cache').cache
 	except Stories.DoesNotExist:
 		cache = now - datetime.timedelta(days=1)  # Force updating cache
-	if(cache + datetime.timedelta(minutes=cache_time) < now):
+	if(cache + datetime.timedelta(seconds=cache_time) < now):
 		print 'Updating story cache'
 		doc = urllib2.urlopen('http://news.ycombinator.com/').read()
 		soup = BeautifulSoup(''.join(doc))

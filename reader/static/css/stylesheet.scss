@@ -1,4 +1,7 @@
-table.table {	
+body {
+	padding-bottom: 20px;
+}
+table.table {
 	a:visited {
 		color: #C7C7C7;	
 	}
@@ -53,7 +56,7 @@ div.comments {
 		list-style-type: none;
 		border: 1px solid #ECECEC;
 		&.even {
-			background-color: #EBEBEB; /* #EBEBEB; */
+			background-color: #EBEBEB;
 			pre {
 				background-color: white;
 			}

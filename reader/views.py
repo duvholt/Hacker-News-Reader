@@ -5,7 +5,6 @@ from django.core import serializers
 import reader.cache as cache
 from reader.models import Stories
 from django.core import management
-from StringIO import StringIO
 
 
 def index(request, page=1, limit=None):
@@ -63,13 +62,13 @@ def comments(request, commentid):
 
 
 def south_migrate(request, task):
-	if task == 'initial':
-		management.call_command('schemamigration', 'reader', initial=True)
-		response = 'Initial migration created'
-	elif task == 'migrate':
+	# if task == 'initial':
+	# 	management.call_command('schemamigration', 'reader', initial=True)
+	# 	response = 'Initial migration created'
+	if task == 'migrate':
 		management.call_command('migrate', all_apps=True)
 		response = 'Migration done'
-	elif task == 'auto':
-		management.call_command('schemamigration', 'reader', auto=True)
-		response = 'Auto migration created'
+	# elif task == 'auto':
+	# 	management.call_command('schemamigration', 'reader', auto=True)
+	# 	response = 'Auto migration created'
 	return HttpResponse(response)
