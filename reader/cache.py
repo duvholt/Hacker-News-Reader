@@ -13,6 +13,7 @@ from collections import OrderedDict
 import time
 from tzlocal import get_localzone
 
+
 c = pdc.Constants()
 p = pdt.Calendar(c)
 tz = get_localzone()
@@ -49,32 +50,43 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 			story_soup = soup.html.body.table.findAll('table')[1].find('tr')
 		except AttributeError:
 			return False
-		story = story_info(story_soup)
-		if len(story_soup.parent.findAll('tr')) == 6:
-			story['selfpost_text'] = ''.join([unicode(x) for x in story_soup.parent.findAll('tr')[3].findAll('td')[1]])
+		if story_soup.findNext('tr').find('td', {'class': 'subtext'}):
+			story = story_info(story_soup)
+			parent_object = None
+			permalink = False
 		else:
-			story['selfpost_text'] = ''
+			try:
+				parent_object = HNComments.objects.get(id=story_id)
+			except HNComments.DoesNotExist:
+				traverse_comment(story_soup.parent, None, story_id, perma=True)
+				parent_object = HNComments.objects.get(id=story_id)
+			story_id = parent_object.story_id
+			permalink = True
+			story = False
 		if story:
+			if len(story_soup.parent.findAll('tr')) == 6:
+				story['selfpost_text'] = ''.join([unicode(x) for x in story_soup.parent.findAll('tr')[3].findAll('td')[1]])
+			else:
+				story['selfpost_text'] = ''
 			story_object = Stories(id=story['id'], title=story['title'],
 							url=story['url'], score=story['score'], selfpost=story['selfpost'],
 							selfpost_text=story['selfpost_text'], domain=story['domain'], username=story['username'],
 							comments=story['comments'], time=story['time'], cache=timezone.now())
 			story_object.save()
+		if story or permalink:
 			comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
 			for comment_soup in comments_soup:
 				td_default = comment_soup.tr.find('td', {'class': 'default'})
 				indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
 				if indenting == 0:
-					traverse_comment(comment_soup, None, story_id, html_escape)
+					traverse_comment(comment_soup, parent_object, story_id, html_escape)
 
 
 def story_info(story_soup):
 	if not story_soup.find('td'):
 		return False
-	i = 0
 	title = story_soup.find('td', {'class': 'title'})
 	if story_soup.findAll('td')[0] == title:
-		i += 1
 		title = story_soup.findAll('td', {'class': 'title'})[1]
 	subtext = story_soup.findNext('tr').find('td', {'class': 'subtext'})
 	if subtext.findAll("a"):
@@ -106,47 +118,53 @@ def story_info(story_soup):
 		return False
 
 
-def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
-
-		comment = OrderedDict()
-		# Comment <td> container shortcut
-		td_default = comment_soup.tr.find('td', {'class': 'default'})
-		# Retrieving comment id from the reply id
+def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_escape=False):
+	comment = OrderedDict()
+	# Comment <td> container shortcut
+	td_default = comment_soup.tr.find('td', {'class': 'default'})
+	# Retrieving comment id from the reply id
+	try:
+		comment['id'] = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
+	except IndexError:
+		return False
+	comment['username'] = ''.join(td_default.find('a').findAll(text=True))
+	# Get html contents of the comment excluding <span> and <font>
+	comment['text'] = ''.join([unicode(x) for x in td_default.find('span', {'class': 'comment'}).font])
+	# Remove <a>
+	comment['text'] = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment['text'])
+	# Remove <code>, it is not needed inside <pre>
+	# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # Bug here
+	# Not sure if I am going to use HTML Escaping for Android yet
+	if html_escape:
+		# Convert <i> to *
+		comment['text'] = re.sub(r'\s*<i>\s*(.+)\s*</i>\s*', r' *\1* ', comment['text'])
+		# HTML Escape
+		comment['text'] = html.escape(comment['text'])
+	hex_color = td_default.find('span', {'class': 'comment'}).font['color']
+	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
+	# Get percent by grabbing the red part of the color (#XY), converting to int and dividing by (250/100)
+	comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
+	comment['hiddencolor'] = hex_color
+	comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
+	if time.localtime().tm_isdst == 1:
+		comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
+	if perma:
+		parent_id = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[2]['href']).group(1), 10)
 		try:
-			comment['id'] = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
-		except IndexError:
-			return False
-		comment['username'] = ''.join(td_default.find('a').findAll(text=True))
-		# Get html contents of the comment excluding <span> and <font>
-		comment['text'] = ''.join([unicode(x) for x in td_default.find('span', {'class': 'comment'}).font])
-		# Remove <a>
-		comment['text'] = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment['text'])
-		# Remove <code>, it is not needed inside <pre>
-		# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # Bug here
-		# Not sure if I am going to use HTML Escaping for Android yet
-		if html_escape:
-			# Convert <i> to *
-			comment['text'] = re.sub(r'\s*<i>\s*(.+)\s*</i>\s*', r' *\1* ', comment['text'])
-			# HTML Escape
-			comment['text'] = html.escape(comment['text'])
-		hex_color = td_default.find('span', {'class': 'comment'}).font['color']
-		# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
-		# Get percent by grabbing the red part of the color (#XY), converting to int and dividing by (250/100)
-		comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
-		comment['hiddencolor'] = hex_color
-		comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
-		if time.localtime().tm_isdst == 1:
-			comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
+			parent_object = HNComments.objects.get(pk=parent_id)
+		except HNComments.DoesNotExist:
+			parent_object = None
+	comment_object = HNComments(id=comment['id'], story_id=story_id, username=comment['username'],
+								text=comment['text'], hiddenpercent=comment['hiddenpercent'],
+								hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object)
+	comment_object.save()
+	# Traversing over child comments:
+	# Since comments aren't actually children in the HTML we will have to parse all the siblings
+	# and check if they have +1 indent indicating that they are a child.
+	# However if a following comment has the same indent value it is not a child and neither a sub child meaning that all child comments
+	# have been parsed.
+	if not perma:
 		indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
-		comment_object = HNComments(id=comment['id'], story_id=story_id, username=comment['username'],
-									text=comment['text'], hiddenpercent=comment['hiddenpercent'],
-									hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object)
-		comment_object.save()
-		# Traversing over child comments:
-		# Since comments aren't actually children in the HTML we will have to parse all the siblings
-		# and check if they have +1 indent indicating that they are a child.
-		# However if a following comment has the same indent value it is not a child and neither a sub child meaning that all child comments
-		# have been parsed.
 		for sibling_soup in comment_soup.parent.parent.findNextSiblings('tr'):
 			sibling_soup = sibling_soup.table
 			# TODO: Check why this is needed for some comments
@@ -157,11 +175,11 @@ def traverse_comment(comment_soup, parent_object, story_id, html_escape=False):
 					traverse_comment(sibling_soup, comment_object, story_id, html_escape)
 				if sibling_indenting == indenting:
 					break
-		return True
+	return True
 
 
 def stories(page=1, limit=20):
-	stories = Stories.objects.all().order_by('-score') # .filter(time__year=now.year, time__month=now.month, time__day=now.day)
+	stories = Stories.objects.all().order_by('-score')  # .filter(time__year=now.year, time__month=now.month, time__day=now.day)
 	stories = sorted(stories, key=operator.attrgetter('time'), reverse=True)
 	paginator = Paginator(stories, limit)
 	try:

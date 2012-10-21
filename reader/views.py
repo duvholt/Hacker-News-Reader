@@ -3,7 +3,7 @@ from django.http import HttpResponse, Http404
 from django.template import RequestContext
 from django.core import serializers
 import reader.cache as cache
-from reader.models import Stories
+from reader.models import Stories, HNComments
 from django.core import management
 
 
@@ -54,21 +54,19 @@ def comments(request, commentid):
 	context_instance = RequestContext(request)
 	cache.update_comments(commentid)
 	comments = cache.comments(commentid)
+	story = None
 	try:
 		story = Stories.objects.get(pk=commentid)
 	except Stories.DoesNotExist:
-		raise Http404
+		try:
+			comments = HNComments.tree.get(id=commentid).get_descendants(True)
+		except HNComments.DoesNotExist:
+			raise Http404
 	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)
 
 
 def south_migrate(request, task):
-	# if task == 'initial':
-	# 	management.call_command('schemamigration', 'reader', initial=True)
-	# 	response = 'Initial migration created'
 	if task == 'migrate':
 		management.call_command('migrate', all_apps=True)
 		response = 'Migration done'
-	# elif task == 'auto':
-	# 	management.call_command('schemamigration', 'reader', auto=True)
-	# 	response = 'Auto migration created'
 	return HttpResponse(response)

@@ -18,7 +18,7 @@ class Stories(models.Model):
 
 class HNComments(MPTTModel):
 	id = models.PositiveIntegerField(primary_key=True)
-	story_id = models.PositiveIntegerField(max_length=10, default=0)
+	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
 	username = models.CharField(max_length=150)
 	text = models.TextField(default="")
 	hiddenpercent = models.PositiveIntegerField(max_length=10, default=0)

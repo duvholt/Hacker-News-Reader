@@ -4,18 +4,33 @@
 {% block title %}{{ story.title }}{% endblock %}
 
 {% block container %}
+{% if story %}
 <div class="story">
 	<h4><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</h4>
 	{% if story.selfpost %}
 	<div>{{ story.selfpost_text|safe|urlizetrunc:"63" }}</div>
 	{% endif %}
-	<p>{{ story.score|default:"0" }} points  by <a href="http://news.ycombinator.com/user?id={{ story.username }}">{{ story.username }}</a> <time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince }} ago</time> | {{ story.comments|default:"0" }} comment{{ story.comments|pluralize }}</a></td>
+	<p>
+		{{ story.score|default:"0" }} points  by <a href="http://news.ycombinator.com/user?id={{ story.username }}">{{ story.username }}</a>
+		<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince }} ago</time> | 
+		{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }}</a>
+	</p>
 </div>
+{% endif %}
 <div class="comments">
 	<ul>
 	{% recursetree comments %}
 		<li{% if node.level|divisibleby:"2" %} class="even"{% endif %}>
-			<div><a href="http://news.ycombinator.com/user?id={{ node.username }}">{{ node.username }}</a> <span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span></div>
+			<div>
+				<a href="http://news.ycombinator.com/user?id={{ node.username }}">{{ node.username }}</a> 
+				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span> 
+				<a href="/comments/{{ node.id }}">permalink</a> 
+				{% if not story and comments|first == node and node.parent_id %}
+				<a href="/comments/{{ node.parent_id }}">parent</a>
+				{% elif not story and comments|first == node %}
+				<a href="/comments/{{ node.story_id }}">parent</a>
+				{% endif %}
+			</div>
 			<div style="color: {{ node.hiddencolor }};">{{ node.text|safe|urlizetrunc:"63" }}</div>
 			{% if not node.is_leaf_node %}
 			<ul class="children">
@@ -26,5 +41,4 @@
 	{% endrecursetree %}
 	</ul>
 </div>
-
 {% endblock %}
