@@ -24,7 +24,7 @@ class HNComments(MPTTModel):
 	hiddenpercent = models.PositiveIntegerField(max_length=10, default=0)
 	hiddencolor = models.CharField(max_length=7, default="#000000")
 	time = models.DateTimeField(null=True)
-	cache = models.DateTimeField(auto_now_add=True, null=True)
+	cache = models.DateTimeField(null=True)
 	parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
 
 	class MPTTMeta:

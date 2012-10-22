@@ -57,6 +57,9 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 		else:
 			try:
 				parent_object = HNComments.objects.get(id=story_id)
+				if(parent_object.cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
+					traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
+					parent_object = HNComments.objects.get(id=story_id)
 			except HNComments.DoesNotExist:
 				traverse_comment(story_soup.parent, None, story_id, perma=True)
 				parent_object = HNComments.objects.get(id=story_id)
@@ -122,7 +125,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	comment = OrderedDict()
 	# Comment <td> container shortcut
 	td_default = comment_soup.tr.find('td', {'class': 'default'})
-	# Retrieving comment id from the reply id
+	# Retrieving comment id from the permalink
 	try:
 		comment['id'] = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
 	except IndexError:
@@ -133,7 +136,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	# Remove <a>
 	comment['text'] = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment['text'])
 	# Remove <code>, it is not needed inside <pre>
-	# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # Bug here
+	# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # This was too buggy
 	# Not sure if I am going to use HTML Escaping for Android yet
 	if html_escape:
 		# Convert <i> to *
@@ -142,7 +145,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 		comment['text'] = html.escape(comment['text'])
 	hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
-	# Get percent by grabbing the red part of the color (#XY), converting to int and dividing by (250/100)
+	# Get percent by grabbing the red part of the color (#XY)
 	comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
 	comment['hiddencolor'] = hex_color
 	comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
@@ -152,11 +155,22 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 		parent_id = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[2]['href']).group(1), 10)
 		try:
 			parent_object = HNComments.objects.get(pk=parent_id)
+			story_id = parent_object.story_id
 		except HNComments.DoesNotExist:
 			parent_object = None
+			try:
+				story_id = HNComments.objects.get(pk=story_id).story_id
+			except HNComments.DoesNotExist:
+				story_id = story_id  # Please ignore
 	comment_object = HNComments(id=comment['id'], story_id=story_id, username=comment['username'],
 								text=comment['text'], hiddenpercent=comment['hiddenpercent'],
 								hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object)
+	if perma and not parent_object and parent_id:
+		cache = timezone.now() - datetime.timedelta(days=1)
+		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
+		parent_object.save()
+		comment_object.parent = parent_object
+		print parent_object
 	comment_object.save()
 	# Traversing over child comments:
 	# Since comments aren't actually children in the HTML we will have to parse all the siblings
