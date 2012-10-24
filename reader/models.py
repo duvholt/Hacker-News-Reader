@@ -29,3 +29,14 @@ class HNComments(MPTTModel):
 
 	class MPTTMeta:
 		order_insertion_by = ['cache']  # lft gives None error
+
+
+class StoryCache(models.Model):
+	name = models.CharField(max_length=30)
+	time = models.DateTimeField(null=True)
+	over = models.IntegerField(null=True)
+
+
+class HNCommentsCache(models.Model):
+	id = models.PositiveIntegerField(primary_key=True)
+	time = models.DateTimeField(null=True, auto_now=True)

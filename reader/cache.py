@@ -5,7 +5,7 @@ import parsedatetime.parsedatetime as pdt
 import parsedatetime.parsedatetime_consts as pdc
 import datetime
 import re
-from reader.models import Stories, HNComments
+from reader.models import Stories, HNComments, StoryCache, HNCommentsCache
 import operator
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.utils import html
@@ -19,13 +19,20 @@ p = pdt.Calendar(c)
 tz = get_localzone()
 
 
-def update_stories(cache_time=20):
+def update_stories(cache_time=20, story_type='news', over_filter=0):
 	try:
-		cache = Stories.objects.latest('cache').cache
-	except Stories.DoesNotExist:
+		cache = StoryCache.objects.get(name=story_type).time
+	except StoryCache.DoesNotExist:
 		cache = timezone.now() - datetime.timedelta(days=1)  # Force updating cache
 	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
-		doc = urllib2.urlopen('http://news.ycombinator.com/').read()
+		if story_type in ['news', 'best', 'active', 'new']:
+			url_type = story_type
+		elif story_type == 'over' and isinstance(over_filter, int):
+			url_type = 'over?points=' + str(over_filter)
+		else:
+			url_type = 'news'
+			story_type = 'news'
+		doc = urllib2.urlopen('http://news.ycombinator.com/' + url_type).read()
 		soup = BeautifulSoup(''.join(doc))
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		for story_soup in stories_soup:
@@ -36,15 +43,21 @@ def update_stories(cache_time=20):
 								domain=story['domain'], username=story['username'], comments=story['comments'],
 								time=story['time'], cache=timezone.now())
 				story_object.save()
+				if not story_type == 'over':
+					story_cache = StoryCache.objects.get(name=story_type)
+				else:
+					story_cache = StoryCache.objects.get_or_create(name=story_type, over=int(over_filter, 10))
+				story_cache.time = timezone.now()
+				story_cache.save()
 
 
-def update_comments(story_id, cache_time=20, html_escape=False):
+def update_comments(comment_id, cache_time=20, html_escape=False):
 	try:
-		cache = HNComments.objects.filter(story_id=story_id)[0].cache
-	except IndexError:
+		cache = HNCommentsCache.objects.get(pk=comment_id).time
+	except HNCommentsCache.DoesNotExist:
 		cache = timezone.now() - datetime.timedelta(days=1)
 	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
-		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(story_id))
+		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(comment_id))
 		soup = BeautifulSoup(''.join(doc))
 		try:
 			story_soup = soup.html.body.table.findAll('table')[1].find('tr')
@@ -54,15 +67,16 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 			story = story_info(story_soup)
 			parent_object = None
 			permalink = False
+			story_id = comment_id
 		else:
 			try:
-				parent_object = HNComments.objects.get(id=story_id)
+				parent_object = HNComments.objects.get(id=comment_id)
 				if(parent_object.cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
-					traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
-					parent_object = HNComments.objects.get(id=story_id)
+					traverse_comment(story_soup.parent, parent_object.parent, parent_object.comment_id, perma=True)
+					parent_object = HNComments.objects.get(id=comment_id)
 			except HNComments.DoesNotExist:
-				traverse_comment(story_soup.parent, None, story_id, perma=True)
-				parent_object = HNComments.objects.get(id=story_id)
+				traverse_comment(story_soup.parent, None, comment_id, perma=True)
+				parent_object = HNComments.objects.get(id=comment_id)
 			story_id = parent_object.story_id
 			permalink = True
 			story = False
@@ -77,6 +91,9 @@ def update_comments(story_id, cache_time=20, html_escape=False):
 							comments=story['comments'], time=story['time'], cache=timezone.now())
 			story_object.save()
 		if story or permalink:
+			comments_cache, created = HNCommentsCache.objects.get_or_create(pk=comment_id, defaults={'time': timezone.now})
+			comments_cache.time = timezone.now()
+			comments_cache.save()
 			comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
 			for comment_soup in comments_soup:
 				td_default = comment_soup.tr.find('td', {'class': 'default'})

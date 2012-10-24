@@ -9,3 +9,4 @@ activate.bat
 runserver.bat
 secret_key.py
 .sass-cache
+manifest.yml
