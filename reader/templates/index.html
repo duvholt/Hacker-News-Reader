@@ -1,68 +1,94 @@
 {% extends "base.html" %}
 {% load tags %}
 {% block container %}
-<div class="btn-group btn-group-centered">
-	{{ limit }}
-	<a href="/1/20" class="btn btn-small{% ifequal limit 20 %} btn-primary{% endifequal %}">top 20</a>
-	<a href="/1/50" class="btn btn-small{% ifequal limit 50 %} btn-primary{% endifequal %}">top 50</a>
-	<a href="/1/100" class="btn btn-small{% ifequal limit 100 %} btn-primary{% endifequal %}">top 100</a>
-</div>
-<table id="stories" class="table table-striped table-hover table-condensed">
-	<tbody>
-		<thead class="hidden-phone">
-			<tr>
-				<th>Comments</th>
-				<th>Score</th>
-				<th>Submission</th>
-				<th>Time</th>
-			</tr>
-		</thead>
-		{% for story in stories %}
-		<tr>
-			<td><a class="comments" href="/comments/{{ story.id }}">{{ story.comments|default:"0" }}</a></td>
-			<td><a class="score" href="/comments/{{ story.id }}">{{ story.score|default:"0" }}</a></td>
-			{% if story.selfpost %}
-			<td><a class="link" href="/comments/{{ story.id }}">{{ story.title }}</a></td>
-			{% else %}
-			<td><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</td>
-			{% endif %}
-			<td><time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }}</time></td>
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>
-{% if pages|length > 1 %}
-<div class="pagination pagination-centered">
-	<ul>
-		{% if stories.number != 1 %}
-		<li><a href="/1">&laquo;</a></li>
-		{% else %}
-		<li class="disabled"><span>&laquo;</span></li>
-		{% endif %}
-		
-		{% if stories.has_previous %}
-		<li><a href="/{{ stories.previous_page_number }}">&lsaquo;</a></li>
-		{% else %}
-		<li class="disabled"><span>&lsaquo;</span></li>
-		{% endif %}
-		
-		{% for page in pages %}
-		<li{% if page == stories.number %} class="active" {% endif %}><a href="/{{ page }}">{{ page }}</a></li>
-		{% endfor %}
-		
-		{% if stories.has_next %}
-		<li><a href="/{{ stories.next_page_number }}">&rsaquo;</a></li>
-		{% else %}
-		<li class="disabled"><span>&rsaquo;</span></li>
-		{% endif %}
-			
-		{% if stories.number != stories.paginator.num_pages %}
-		<li><a href="/{{ stories.paginator.num_pages }}">&raquo;</a></li>
-		{% else %}
-		<li class="disabled"><span>&raquo;</span></li>
-		{% endif %}
+<div class="row">
+	<div class="span2">
+		<ul class="nav nav-list">
+			<li class="nav-header">Sorting
+				<ul class="nav nav-list">
+					<li class="{% active request '(^/$|^/page/|^/limit/|^/over/)' %}"><a href="/">Frontpage</a></li>
+					<li class="{% active request '^/ask' %}"><a href="/ask">Ask HN</a></li>			
+					<li class="{% active request '^/best' %}"><a href="/best">Best</a></li>	
+					<li class="{% active request '^/active' %}"><a href="/active">Active</a></li>	
+					<li class="{% active request '^/newest' %}"><a href="/newest">Newest</a></li>
+				</ul>
+			</li>
+			<li class="nav-header">Score over
+				<ul class="nav nav-list">
+					<li class="{% active_score request '0' %}"><a href="{% create_url request 0 'over' %}">Show All</a></li>
+					<li class="{% active_score request '50' %}"><a href="{% create_url request 50 'over' %}">50</a></li>
+					<li class="{% active_score request '75' %}"><a href="{% create_url request 75 'over' %}">75</a></li>
+					<li class="{% active_score request '100' %}"><a href="{% create_url request 100 'over' %}">100</a></li>
+				</ul>
+			</li>
+			<li class="nav-header">Show per page
+				<ul class="nav nav-list">
+					<li{% if limit == 20 %} class="active"{% endif %}><a href="{% create_url request 20 'limit' %}">20</a></li>
+					<li{% if limit == 50 %} class="active"{% endif %}><a href="{% create_url request 50 'limit' %}">50</a></li>
+					<li{% if limit == 100 %} class="active"{% endif %}><a href="{% create_url request 100 'limit' %}">100</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<div class="span10">
+		<table id="stories" class="table table-striped table-hover table-condensed">
+			<tbody>
+				<thead class="hidden-phone">
+					<tr>
+						<th>Comments</th>
+						<th>Score</th>
+						<th>Submission</th>
+						<th>Time</th>
+					</tr>
+				</thead>
+				{% for story in stories %}
+				<tr>
+					<td><a class="comments" href="/comments/{{ story.id }}">{{ story.comments|default:"0" }}</a></td>
+					<td><a class="score" href="/comments/{{ story.id }}">{{ story.score|default:"0" }}</a></td>
+					{% if story.selfpost %}
+					<td><a class="link" href="/comments/{{ story.id }}">{{ story.title }}</a></td>
+					{% else %}
+					<td><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</td>
+					{% endif %}
+					<td><time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }}</time></td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% if pages|length > 1 %}
+		<div class="pagination pagination-centered">
+			<ul>
+				{% if stories.number != 1 %}
+				<li><a href="{% create_url request 1 %}">&laquo;</a></li>
+				{% else %}
+				<li class="disabled"><span>&laquo;</span></li>
+				{% endif %}
+				
+				{% if stories.has_previous %}
+				<li><a href="{% create_url request stories.previous_page_number %}">&lsaquo;</a></li>
+				{% else %}
+				<li class="disabled"><span>&lsaquo;</span></li>
+				{% endif %}
+				
+				{% for page in pages %}
+				<li{% if page == stories.number %} class="active" {% endif %}><a href="{% create_url request page %}">{{ page }}</a></li>
+				{% endfor %}
+				
+				{% if stories.has_next %}
+				<li><a href="{% create_url request stories.next_page_number %}">&rsaquo;</a></li>
+				{% else %}
+				<li class="disabled"><span>&rsaquo;</span></li>
+				{% endif %}
+					
+				{% if stories.number != stories.paginator.num_pages %}
+				<li><a href="{% create_url request stories.paginator.num_pages %}">&raquo;</a></li>
+				{% else %}
+				<li class="disabled"><span>&raquo;</span></li>
+				{% endif %}
 
-	</ul>
+			</ul>
+		</div>
+	</div>
 </div>
 {% endif %}
 {% endblock %}

@@ -6,7 +6,6 @@ import parsedatetime.parsedatetime_consts as pdc
 import datetime
 import re
 from reader.models import Stories, HNComments, StoryCache, HNCommentsCache
-import operator
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.utils import html
 from collections import OrderedDict
@@ -19,13 +18,18 @@ p = pdt.Calendar(c)
 tz = get_localzone()
 
 
-def update_stories(cache_time=20, story_type='news', over_filter=0):
+def update_stories(cache_time=20, story_type=None, over_filter=0):
+	if not story_type:
+		story_type = 'news'
 	try:
-		cache = StoryCache.objects.get(name=story_type).time
+		if not story_type == 'over':
+			cache = StoryCache.objects.get(name=story_type).time
+		else:
+			cache = StoryCache.objects.get(name=story_type, over=over_filter).time
 	except StoryCache.DoesNotExist:
 		cache = timezone.now() - datetime.timedelta(days=1)  # Force updating cache
 	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
-		if story_type in ['news', 'best', 'active', 'new']:
+		if story_type in ['news', 'best', 'active', 'newest', 'ask']:
 			url_type = story_type
 		elif story_type == 'over' and isinstance(over_filter, int):
 			url_type = 'over?points=' + str(over_filter)
@@ -41,12 +45,12 @@ def update_stories(cache_time=20, story_type='news', over_filter=0):
 				story_object = Stories(id=story['id'], title=story['title'],
 								url=story['url'], score=story['score'], selfpost=story['selfpost'],
 								domain=story['domain'], username=story['username'], comments=story['comments'],
-								time=story['time'], cache=timezone.now())
+								story_type=story_type, time=story['time'], cache=timezone.now())
 				story_object.save()
 				if not story_type == 'over':
 					story_cache = StoryCache.objects.get(name=story_type)
 				else:
-					story_cache = StoryCache.objects.get_or_create(name=story_type, over=int(over_filter, 10))
+					story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over_filter)
 				story_cache.time = timezone.now()
 				story_cache.save()
 
@@ -187,7 +191,6 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
 		parent_object.save()
 		comment_object.parent = parent_object
-		print parent_object
 	comment_object.save()
 	# Traversing over child comments:
 	# Since comments aren't actually children in the HTML we will have to parse all the siblings
@@ -209,9 +212,18 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	return True
 
 
-def stories(page=1, limit=20):
-	stories = Stories.objects.all().order_by('-score')  # .filter(time__year=now.year, time__month=now.month, time__day=now.day)
-	stories = sorted(stories, key=operator.attrgetter('time'), reverse=True)
+def stories(page=1, limit=20, story_type=None, over_filter=0):
+	now = timezone.now()
+	if story_type:
+		stories = Stories.objects.all().filter(story_type=story_type).filter(time__year=now.year, time__month=now.month, time__day=now.day)
+		if story_type == 'newest':
+			stories = stories.order_by('-time')
+	else:
+		stories = Stories.objects.all().filter(time__year=now.year, time__month=now.month, time__day=now.day)
+	if over_filter > 0:
+		stories = stories.filter(score__gte=over_filter)
+	# Removing this for now
+	# stories = sorted(stories, key=operator.attrgetter('time'), reverse=True)
 	paginator = Paginator(stories, limit)
 	try:
 		stories = paginator.page(page)

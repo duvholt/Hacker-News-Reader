@@ -7,29 +7,44 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 # from django.contrib import admin
 # admin.autodiscover()
 
+story_types = '(?P<story_type>news|newest|best|active|ask)'
+
 urlpatterns = patterns('',
-	url(r'^about', 'reader.views.index', name='about'),
-	url(r'^contact', 'reader.views.index', name='contact'),
-	# Submission json
-	url(r'^json/stories/$', 'reader.views.stories_json', name=''),
-	url(r'^json/stories/(?P<page>\d+)/$', 'reader.views.stories_json', name=''),
-	url(r'^json/stories/(?P<page>\d+)/(?P<limit>\d+)/$', 'reader.views.stories_json', name=''),
+	url(r'^about', 'reader.views.index'),
+	url(r'^contact', 'reader.views.index'),
+	url(r'^migrate/$', 'reader.views.migrate'),
 	# Main page submssions
-	url(r'^$', 'reader.views.index', name='home'),
-	url(r'^(?P<page>\d+)/$', 'reader.views.index', name=''),
-	url(r'^(?P<page>\d+)/(?P<limit>\d+)/$', 'reader.views.index', name=''),
+	# I hope there is a better way to do this
+	url(r'^$', 'reader.views.index'),
+	url(r'^page/(?P<page>\d+)(/limit/(?P<limit>\d+))?/$', 'reader.views.index'),
+	url(r'^limit/(?P<limit>\d+)(/page/(?P<page>\d+))?/$', 'reader.views.index'),
 
-	# url(r'^comments', 'reader.views.comments', name='comments'),
-	url(r'^comments/(?P<commentid>\d*)/$', 'reader.views.comments', name='comments'),
-	url(r'^comments/(?P<commentid>\d*).json', 'reader.views.comments_json', name=''),
+	url(r'^limit/(?P<limit>\d+)/over/(?P<over>\d+)(/page/(?P<page>\d+))?/$', 'reader.views.index'),
+	url(r'^limit/(?P<limit>\d+)(/page/(?P<page>\d+))?/over/(?P<over>\d+)/$', 'reader.views.index'),
+	url(r'^page/(?P<page>\d+)/over/(?P<over>\d+)(/limit/(?P<limit>\d+))?/$', 'reader.views.index'),
+	url(r'^page/(?P<page>\d+)(/limit/(?P<limit>\d+))?/over/(?P<over>\d+)/$', 'reader.views.index'),
+	
+	url(r'^' + story_types + '/$', 'reader.views.index'),
+	url(r'^' + story_types + '/page/(?P<page>\d+)(/limit/(?P<limit>\d+))?/$', 'reader.views.index'),
+	url(r'^' + story_types + '/limit/(?P<limit>\d+)(/page/(?P<page>\d+))?/$', 'reader.views.index'),
 
-	url(r'^south_migrate/(?P<task>\w*)/$', 'reader.views.south_migrate'),
-
-	# Uncomment the admin/doc line below to enable admin documentation:
-	# url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
+	url(r'^over/(?P<over>\d+)/$', 'reader.views.index'),
+	url(r'^over/(?P<over>\d+)/page/(?P<page>\d+)(/limit/(?P<limit>\d+))?/$', 'reader.views.index'),
+	url(r'^over/(?P<over>\d+)/limit/(?P<limit>\d+)(/page/(?P<page>\d+))?/$', 'reader.views.index'),
+	# Ugh, so messy
+	url(r'^' + story_types + '/over/(?P<over>\d+)/$', 'reader.views.index'),
+	url(r'^' + story_types + '/over/(?P<over>\d+)/page/(?P<page>\d+)(/limit/(?P<limit>\d+))?/$', 'reader.views.index'),
+	url(r'^' + story_types + '/over/(?P<over>\d+)/limit/(?P<limit>\d+)(/page/(?P<page>\d+))?/$', 'reader.views.index'),
+	url(r'^' + story_types + '/limit/(?P<limit>\d+)/over/(?P<over>\d+)(/page/(?P<page>\d+))?/$', 'reader.views.index'),
+	url(r'^' + story_types + '/page/(?P<page>\d+)/over/(?P<over>\d+)(/limit/(?P<limit>\d+))?/$', 'reader.views.index'),
+	url(r'^' + story_types + '/limit/(?P<limit>\d+)(/page/(?P<page>\d+))?/over/(?P<over>\d+)/$', 'reader.views.index'),
+	url(r'^' + story_types + '/page/(?P<page>\d+)(/limit/(?P<limit>\d+))?/over/(?P<over>\d+)/$', 'reader.views.index'),
+	# Comments
+	url(r'^comments/(?P<commentid>\d*)/$', 'reader.views.comments'),
+	url(r'^comments/(?P<commentid>\d*).json', 'reader.views.comments_json'),
 	# Uncomment the next line to enable the admin:
 	# url(r'^admin/', include(admin.site.urls)),
+	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/img/favicon.ico'}),
 )
 urlpatterns += staticfiles_urlpatterns()

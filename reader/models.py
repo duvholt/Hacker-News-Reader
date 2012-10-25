@@ -12,6 +12,7 @@ class Stories(models.Model):
 	username = models.CharField(max_length=150, null=True)
 	score = models.PositiveIntegerField(max_length=5)
 	comments = models.PositiveIntegerField(max_length=5)
+	story_type = models.CharField(max_length=30, default='news')
 	time = models.DateTimeField()
 	cache = models.DateTimeField(auto_now_add=True, null=True)
 

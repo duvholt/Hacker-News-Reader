@@ -7,7 +7,7 @@ from reader.models import Stories, HNComments
 from django.core import management
 
 
-def index(request, page=1, limit=None):
+def index(request, page=1, limit=None, story_type=None, over=None):
 	if not limit:
 		limit_cookie = request.COOKIES.get('stories_limit')
 		if limit_cookie:
@@ -15,11 +15,16 @@ def index(request, page=1, limit=None):
 		else:
 			limit = 20
 	else:
-		limit = int(limit)
+		limit = int(limit, 10)
+	if over:
+		over = int(over, 10)
+		story_type = 'over'
+	if not page:
+		page = 1
 	page = int(page)
 	context_instance = RequestContext(request)
-	cache.update_stories()
-	stories = cache.stories(page, limit)
+	cache.update_stories(story_type=story_type, over_filter=over)
+	stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 	pages = stories.paginator.page_range
 	visible_pages = 6
 	if stories.paginator.num_pages > visible_pages:
@@ -65,8 +70,9 @@ def comments(request, commentid):
 	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)
 
 
-def south_migrate(request, task):
-	if task == 'migrate':
-		management.call_command('migrate', all_apps=True)
-		response = 'Migration done'
+def migrate(request):
+	# Secure this with some admin login
+	# Although there isn't really anything bad you can do with it
+	management.call_command('migrate', all_apps=True)
+	response = 'Migration done'
 	return HttpResponse(response)
