@@ -2,8 +2,10 @@ Django==1.4.1
 South==0.7.6
 beautifulsoup4==4.1.3
 dj-database-url==0.2.1
+django-debug-toolbar==0.9.4
 django-mptt==0.5.4
 parsedatetime==0.8.7
 psycopg2==2.4.5
 pytz==2012f
 tzlocal==0.3
+virtualenv==1.8.2
