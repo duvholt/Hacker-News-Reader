@@ -74,6 +74,8 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
+INTERNAL_IPS = ('127.0.0.1',)
+
 # Importing SECRET_KEY from file or generating a new one if missing.
 try:
 	from secret_key import *
@@ -97,6 +99,9 @@ MIDDLEWARE_CLASSES = (
 	'django.contrib.messages.middleware.MessageMiddleware',
 	# Uncomment the next line for simple clickjacking protection:
 	# 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'django.middleware.gzip.GZipMiddleware',
+	'debug_toolbar.middleware.DebugToolbarMiddleware',
+	'middleware.ProfileMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -133,6 +138,7 @@ INSTALLED_APPS = (
 	'reader',
 	'south',
 	'mptt',
+	'debug_toolbar',
 )
 
 # LOGGING = {

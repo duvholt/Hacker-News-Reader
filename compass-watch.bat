@@ -1,0 +1,1 @@
+compass watch reader\static\

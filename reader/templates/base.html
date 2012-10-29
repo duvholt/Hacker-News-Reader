@@ -3,10 +3,8 @@
 <html lang="en">
 <head>
 	<title>{% block title %}Home{% endblock %} - Hacker News Reader</title>
-	<link href="{{ STATIC_URL }}css/bootswatchr.css" rel="stylesheet">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	
-	<link href="{{ STATIC_URL }}css/stylesheet.css" rel="stylesheet">
+	<link href="{{ STATIC_URL }}css/styles.css" rel="stylesheet">
 	<link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico" type="image/x-icon" />
 </head>
 <body>
@@ -22,14 +20,14 @@
 				<div class="nav-collapse collapse">
 					<ul class="nav">
 						<li class="{% active request "^/[0-9 /]*$" %}"><a href="/">Home</a></li>
-						<li class="{% active request "^/about" %}"><a href="/about">About</a></li>
-						<li class="{% active request "^/contact" %}"><a href="/contact">Contact</a></li>
+						<li class="{% active request "^/about" %}"><a href="#">About</a></li>
+						<li class="{% active request "^/contact" %}"><a href="#">Contact</a></li>
 					</ul>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="container">
+	<div class="container-fluid">
 	{% block container %}
 		<h1>Default Page</h1>
 		<p>Default template text</p>

@@ -1,36 +1,42 @@
 {% extends "base.html" %}
 {% load tags %}
 {% block container %}
-<div class="row">
-	<div class="span2">
-		<ul class="nav nav-list">
-			<li class="nav-header">Sorting
-				<ul class="nav nav-list">
-					<li class="{% active request '(^/$|^/page/|^/limit/|^/over/)' %}"><a href="/">Frontpage</a></li>
-					<li class="{% active request '^/ask' %}"><a href="/ask">Ask HN</a></li>			
-					<li class="{% active request '^/best' %}"><a href="/best">Best</a></li>	
-					<li class="{% active request '^/active' %}"><a href="/active">Active</a></li>	
-					<li class="{% active request '^/newest' %}"><a href="/newest">Newest</a></li>
-				</ul>
-			</li>
-			<li class="nav-header">Score over
-				<ul class="nav nav-list">
-					<li class="{% active_score request '0' %}"><a href="{% create_url request 0 'over' %}">Show All</a></li>
-					<li class="{% active_score request '50' %}"><a href="{% create_url request 50 'over' %}">50</a></li>
-					<li class="{% active_score request '75' %}"><a href="{% create_url request 75 'over' %}">75</a></li>
-					<li class="{% active_score request '100' %}"><a href="{% create_url request 100 'over' %}">100</a></li>
-				</ul>
-			</li>
-			<li class="nav-header">Show per page
-				<ul class="nav nav-list">
-					<li{% if limit == 20 %} class="active"{% endif %}><a href="{% create_url request 20 'limit' %}">20</a></li>
-					<li{% if limit == 50 %} class="active"{% endif %}><a href="{% create_url request 50 'limit' %}">50</a></li>
-					<li{% if limit == 100 %} class="active"{% endif %}><a href="{% create_url request 100 'limit' %}">100</a></li>
-				</ul>
-			</li>
-		</ul>
+<div class="row-fluid">
+	<div class="span3">
+		<div class="sidebar-container">
+			<a class="btn btn-sidebar" data-toggle="collapse" data-target=".sidebar-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</a>	
+			<ul class="nav nav-list sidebar sidebar-collapse">
+				<li class="nav-header">Sorting
+					<ul class="nav nav-list">
+						<li class="{% active request '(^/$|^/page/|^/limit/|^/over/)' %}"><a href="/">Frontpage</a></li>
+						<li class="{% active request '^/ask' %}"><a href="/ask">Ask HN</a></li>			
+						<li class="{% active request '^/best' %}"><a href="/best">Best</a></li>	
+						<li class="{% active request '^/newest' %}"><a href="/newest">Newest</a></li>
+					</ul>
+				</li>
+				<li class="nav-header">Score over
+					<ul class="nav nav-list">
+						<li class="{% active_score request '0' %}"><a href="{% create_url request 0 'over' %}">Show All</a></li>
+						<li class="{% active_score request '50' %}"><a href="{% create_url request 50 'over' %}">50</a></li>
+						<li class="{% active_score request '75' %}"><a href="{% create_url request 75 'over' %}">75</a></li>
+						<li class="{% active_score request '100' %}"><a href="{% create_url request 100 'over' %}">100</a></li>
+					</ul>
+				</li>
+				<li class="nav-header">Show per page
+					<ul class="nav nav-list">
+						<li{% if limit == 25 %} class="active"{% endif %}><a href="{% create_url request 25 'limit' %}">25</a></li>
+						<li{% if limit == 50 %} class="active"{% endif %}><a href="{% create_url request 50 'limit' %}">50</a></li>
+						<li{% if limit == 100 %} class="active"{% endif %}><a href="{% create_url request 100 'limit' %}">100</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
 	</div>
-	<div class="span10">
+	<div class="span9">
 		<table id="stories" class="table table-striped table-hover table-condensed">
 			<tbody>
 				<thead class="hidden-phone">

@@ -7,8 +7,17 @@ $(function () {
 	}).bind('mouseout', function() {
 		$(this).closest('td').siblings('td').find('a.comments, a.score').removeClass('onhover');
 	});
-	$(window).resize($.debounce(300, time_format));
+	$(window).resize($.debounce(300, resized));
 	time_format();
+	function resized() {
+		time_format();
+		if(width > 767) {
+			if($('.sidebar-collapse.collapse').length > 0) {
+				$('.sidebar-collapse').removeAttr('style');
+				$('.sidebar-collapse').removeClass('collapse in');
+			}
+		}
+	}
 	function time_format() {
 		width = $(window).width();
 		$('table#stories').find('tr').find('td:last').find('time').each(function() {

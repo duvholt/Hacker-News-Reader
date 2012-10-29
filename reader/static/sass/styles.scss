@@ -1,3 +1,7 @@
+@import "bootstrap-variables";
+@import "bootstrap";
+@import "bootstrap-responsive";
+
 body {
 	padding-bottom: 20px;
 }
@@ -18,6 +22,28 @@ table.table {
 .onhover {
 	text-decoration: underline;
 }
+
+.btn-sidebar .icon-bar {
+	display: block;
+	width: 18px;
+	height: 2px;
+	background-color: whiteSmoke;
+	@include border-radius(1px);
+	@include box-shadow(#{0 1px 0 rgba(0,0,0,.25)});
+}
+.btn-sidebar .icon-bar + .icon-bar {
+	margin-top: 3px;
+}
+.btn-sidebar {
+	display: none;
+	float: right;
+	padding: 7px 10px;
+	margin-left: 5px;
+	margin-right: 5px;
+	// @include buttonBackground(darken($navbarBackgroundHighlight, 5%), darken($navbarBackground, 5%));
+	// @include box-shadow(#{inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(255,255,255,.075)});
+}
+
 @media (max-width: 767px) {
 	body {
 		padding-right: 0px;
@@ -32,7 +58,24 @@ table.table {
 	div.comments ul {
 		margin: 0 0 10px 5px;
 	}
+	.sidebar-collapse, .sidebar-collapse.collapse {
+		overflow: hidden;
+		height: 0;
+	}
+	.sidebar-collapse .btn {
+		padding: 4px 10px 4px;
+		font-weight: normal;
+		@include border-radius(4px);
+	}
+	.btn-sidebar {
+		display: block;
+	}
 }
+@media (max-width: 979px) {
+	
+}
+
+
 div.story {
 	margin-left: 5px;
 	> p {
@@ -66,6 +109,9 @@ div.comments {
 			color: #5F5F5F;
 			a {
 				color: #5F5F5F;
+			}
+			a.op {
+				color: $linkColor;
 			}
 		}
 	}

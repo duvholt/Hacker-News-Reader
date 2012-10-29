@@ -39,6 +39,7 @@ def update_stories(cache_time=20, story_type=None, over_filter=0):
 		doc = urllib2.urlopen('http://news.ycombinator.com/' + url_type).read()
 		soup = BeautifulSoup(''.join(doc))
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
+		updated_cache = False
 		for story_soup in stories_soup:
 			story = story_info(story_soup)
 			if story:
@@ -47,12 +48,14 @@ def update_stories(cache_time=20, story_type=None, over_filter=0):
 								domain=story['domain'], username=story['username'], comments=story['comments'],
 								story_type=story_type, time=story['time'], cache=timezone.now())
 				story_object.save()
-				if not story_type == 'over':
-					story_cache = StoryCache.objects.get(name=story_type)
-				else:
-					story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over_filter)
-				story_cache.time = timezone.now()
-				story_cache.save()
+				if not updated_cache:
+					if not story_type == 'over':
+						story_cache = StoryCache.objects.get(name=story_type)
+					else:
+						story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over_filter)
+					story_cache.time = timezone.now()
+					story_cache.save()
+					updated_cache = True
 
 
 def update_comments(comment_id, cache_time=20, html_escape=False):
@@ -133,7 +136,7 @@ def story_info(story_soup):
 		# Unfortunalely HN doesn't show any form timestamp other than "x hours" meaning that
 		# the time scraped is only approximately correct.
 		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=tz)
-		# This might be incorrect, but it doesn't seem like parsedatetime supports DST
+		# parsedatetime doesn't have any built in support for DST
 		if time.localtime().tm_isdst:
 			story['time'] = story['time'] + datetime.timedelta(hours=-1)
 		story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
@@ -170,6 +173,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
 	comment['hiddencolor'] = hex_color
 	comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
+	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst == 1:
 		comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
 	if perma:
@@ -214,16 +218,34 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 
 def stories(page=1, limit=20, story_type=None, over_filter=0):
 	now = timezone.now()
+	stories = Stories.objects.all()  # .filter(time__year=now.year, time__month=now.month, time__day=now.day)
+	# Only show the last week
+	enddate = datetime.datetime.today()
+	startdate = enddate - datetime.timedelta(days=7)
+	stories = stories.filter(time__range=[startdate, enddate])
 	if story_type:
-		stories = Stories.objects.all().filter(story_type=story_type).filter(time__year=now.year, time__month=now.month, time__day=now.day)
-		if story_type == 'newest':
+		if story_type == 'best':
+			stories = stories.order_by('-score')
+		elif story_type == 'newest':
 			stories = stories.order_by('-time')
-	else:
-		stories = Stories.objects.all().filter(time__year=now.year, time__month=now.month, time__day=now.day)
+		else:
+			stories = stories.filter(story_type=story_type)
 	if over_filter > 0:
 		stories = stories.filter(score__gte=over_filter)
-	# Removing this for now
-	# stories = sorted(stories, key=operator.attrgetter('time'), reverse=True)
+	if not story_type in ['newest', 'best']:
+		# HN Sorting
+		sorted_stories = []
+		for story in stories:
+			time_hours = (now - story.time).total_seconds() / 3600
+			score = calculate_score(story.score, time_hours)
+			temp = {}
+			temp['story'] = story
+			temp['score'] = score
+			sorted_stories.append(temp)
+		sorted_stories = sorted(sorted_stories, key=lambda story: story['score'], reverse=True)
+		stories = []
+		for story in sorted_stories:
+			stories.append(story['story'])
 	paginator = Paginator(stories, limit)
 	try:
 		stories = paginator.page(page)
@@ -234,3 +256,9 @@ def stories(page=1, limit=20, story_type=None, over_filter=0):
 
 def comments(story_id):
 	return HNComments.objects.all().filter(story_id=story_id)
+
+
+def calculate_score(votes, item_hour_age, gravity=1.8):
+	# Hacker News Sorting
+	# Taken from http://amix.dk/blog/post/19574
+	return (votes - 1) / pow((item_hour_age + 2), gravity)
