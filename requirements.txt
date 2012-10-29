@@ -8,4 +8,3 @@ parsedatetime==0.8.7
 psycopg2==2.4.5
 pytz==2012f
 tzlocal==0.3
-virtualenv==1.8.2
