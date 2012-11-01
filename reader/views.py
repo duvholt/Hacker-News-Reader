@@ -13,7 +13,7 @@ def index(request, page=1, limit=None, story_type=None, over=None):
 		if limit_cookie:
 			limit = int(limit_cookie)
 		else:
-			limit = 20
+			limit = 25
 	else:
 		limit = int(limit, 10)
 	if over:
@@ -43,7 +43,7 @@ def index(request, page=1, limit=None, story_type=None, over=None):
 	return response
 
 
-def stories_json(request, page=1, limit=20):
+def stories_json(request, page=1, limit=25):
 	cache.update_stories()
 	stories = cache.stories(page, limit)
 	return HttpResponse(serializers.serialize("json", stories), mimetype='application/json')
@@ -70,9 +70,15 @@ def comments(request, commentid):
 	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)
 
 
-def migrate(request):
+def command(request, command):
 	# Secure this with some admin login
 	# Although there isn't really anything bad you can do with it
-	management.call_command('migrate', all_apps=True)
-	response = 'Migration done'
+	if command == 'migrate':
+		management.call_command('migrate', all_apps=True)
+		response = 'Command executed'
+	elif command == 'collectstatic':
+		management.call_command('collectstatic', interactive=False)
+		response = 'Command executed'
+	else:
+		response = 'Command not found'
 	return HttpResponse(response)

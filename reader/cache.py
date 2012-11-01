@@ -216,9 +216,9 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	return True
 
 
-def stories(page=1, limit=20, story_type=None, over_filter=0):
+def stories(page=1, limit=25, story_type=None, over_filter=0):
 	now = timezone.now()
-	stories = Stories.objects.all()  # .filter(time__year=now.year, time__month=now.month, time__day=now.day)
+	stories = Stories.objects.all()
 	# Only show the last week
 	enddate = datetime.datetime.today()
 	startdate = enddate - datetime.timedelta(days=7)

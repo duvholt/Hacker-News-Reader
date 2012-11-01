@@ -53,7 +53,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -80,8 +80,7 @@ INTERNAL_IPS = ('127.0.0.1',)
 try:
 	from secret_key import *
 except ImportError:
-	SETTINGS_DIR = os.path.abspath(os.path.dirname(__file__))
-	generate_secret_key(os.path.join(SETTINGS_DIR, 'secret_key.py'))
+	generate_secret_key(os.path.join(PROJECT_ROOT, 'secret_key.py'))
 	from secret_key import *
 
 # List of callables that know how to import templates from various sources.
@@ -132,7 +131,7 @@ INSTALLED_APPS = (
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
 	# Uncomment the next line to enable the admin:
-	'django.contrib.admin',
+	# 'django.contrib.admin',
 	# Uncomment the next line to enable admin documentation:
 	# 'django.contrib.admindocs',
 	'reader',
