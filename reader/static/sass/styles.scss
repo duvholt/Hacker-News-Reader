@@ -1,7 +1,11 @@
 @import "bootstrap-variables";
-@import "bootstrap";
-@import "bootstrap-responsive";
+@import "bootstrap/bootstrap";
+@import "bootstrap/responsive";
 
+// Local variables
+$gray: #5F5F5F;
+$commentEvenBackground: #EBEBEB;
+// Start styles
 body {
 	padding-bottom: 20px;
 }
@@ -80,7 +84,7 @@ div.story {
 	margin-left: 5px;
 	> p {
 	font-size: 12px;
-	color: #5F5F5F;
+	color: $gray;
 	}
 }
 div.comments {
@@ -99,20 +103,23 @@ div.comments {
 		list-style-type: none;
 		border: 1px solid #ECECEC;
 		&.even {
-			background-color: #EBEBEB;
+			background-color: $commentEvenBackground;
 			pre {
 				background-color: white;
 			}
 		}
 		> div:first-child {
 			font-size: 12px;
-			color: #5F5F5F;
+			color: $gray;
 			a {
-				color: #5F5F5F;
+				color: $gray;
 			}
 			a.op {
 				color: $linkColor;
 			}
+		}
+		> div:nth-child(2) {
+			max-width: 800px;
 		}
 	}
 	a {
