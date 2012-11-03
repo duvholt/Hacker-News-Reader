@@ -220,7 +220,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 	now = timezone.now()
 	stories = Stories.objects.all()
 	# Only show the last week
-	enddate = datetime.datetime.today()
+	enddate = datetime.datetime.today().replace(tzinfo=tz)
 	startdate = enddate - datetime.timedelta(days=7)
 	stories = stories.filter(time__range=[startdate, enddate])
 	if story_type:
