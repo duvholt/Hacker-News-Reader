@@ -1,1 +1,1 @@
-compass watch reader\static\
+compass watch --no-line-comments reader\static\
