@@ -5,8 +5,6 @@ venv
 local_settings.py
 .sublime-workspace
 .sublime-project
-activate.bat
-runserver.bat
 secret_key.py
 .sass-cache
 manifest.yml
