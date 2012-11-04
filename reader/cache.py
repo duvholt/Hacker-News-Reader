@@ -159,6 +159,8 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	comment['text'] = ''.join([unicode(x) for x in td_default.find('span', {'class': 'comment'}).font])
 	# Remove <a>
 	comment['text'] = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment['text'])
+	# Simple hack for fixing troubles with urlize inside code tags
+	comment['text'] = re.sub(r'(</code>)', r' \1', comment['text'])
 	# Remove <code>, it is not needed inside <pre>
 	# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # This was too buggy
 	# Not sure if I am going to use HTML Escaping for Android yet

@@ -22,6 +22,7 @@
 	{% recursetree comments %}
 		<li class="{% if node.level|add:comments.0.level|divisibleby:"2" %}even{% endif %}" id="{{ node.id }}">
 			<div>
+				<a href="#" class="hidetoggle">[-]</a>
 				<a{% if node.username == story.username %} class="op"{% endif %} href="http://news.ycombinator.com/user?id={{ node.username }}">{{ node.username }}</a> 
 				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span> 
 				<a href="/comments/{{ node.id }}">permalink</a> 
@@ -31,7 +32,7 @@
 				<a href="/comments/{{ node.story_id }}">parent</a>
 				{% endif %}
 			</div>
-			<div style="color: {{ node.hiddencolor }};">{{ node.text|safe|urlizetrunc:"63" }}</div>
+			<div class="content" style="color: {{ node.hiddencolor }};">{{ node.text|safe|urlizetrunc:"63" }}</div>
 			{% if not node.is_leaf_node %}
 			<ul class="children">
 				{{ children }}

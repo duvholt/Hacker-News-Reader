@@ -5,6 +5,8 @@
 // Local variables
 $gray: #5F5F5F;
 $commentEvenBackground: #EBEBEB;
+
+$smallFontSize: 0.85em;
 // Start styles
 body {
 	padding-bottom: 20px;
@@ -83,7 +85,7 @@ table.table {
 div.story {
 	margin-left: 5px;
 	> p {
-	font-size: 12px;
+	font-size: $smallFontSize;
 	color: $gray;
 	}
 }
@@ -109,7 +111,7 @@ div.comments {
 			}
 		}
 		> div:first-child {
-			font-size: 12px;
+			font-size: $smallFontSize;
 			color: $gray;
 			a {
 				color: $gray;
@@ -120,6 +122,9 @@ div.comments {
 		}
 		> div:nth-child(2) {
 			max-width: 800px;
+		}
+		.hidetoggle {
+			letter-spacing: 0.4em;
 		}
 	}
 	a {

@@ -7926,20 +7926,20 @@ a.label:hover, a.badge:hover {
     overflow: visible !important;
   }
 }
-/* line 9, ../sass/styles.scss */
+/* line 11, ../sass/styles.scss */
 body {
   padding-bottom: 20px;
 }
 
-/* line 13, ../sass/styles.scss */
+/* line 15, ../sass/styles.scss */
 table.table a:visited {
   color: #C7C7C7;
 }
-/* line 16, ../sass/styles.scss */
+/* line 18, ../sass/styles.scss */
 table.table a.comments, table.table a.score {
   color: #555;
 }
-/* line 19, ../sass/styles.scss */
+/* line 21, ../sass/styles.scss */
 table.table a.comments, table.table a.score {
   width: 100%;
   height: 100%;
@@ -7947,12 +7947,12 @@ table.table a.comments, table.table a.score {
 }
 
 /* Hacky way for hover effect */
-/* line 26, ../sass/styles.scss */
+/* line 28, ../sass/styles.scss */
 .onhover {
   text-decoration: underline;
 }
 
-/* line 30, ../sass/styles.scss */
+/* line 32, ../sass/styles.scss */
 .btn-sidebar .icon-bar {
   display: block;
   width: 18px;
@@ -7966,12 +7966,12 @@ table.table a.comments, table.table a.score {
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* line 38, ../sass/styles.scss */
+/* line 40, ../sass/styles.scss */
 .btn-sidebar .icon-bar + .icon-bar {
   margin-top: 3px;
 }
 
-/* line 41, ../sass/styles.scss */
+/* line 43, ../sass/styles.scss */
 .btn-sidebar {
   display: none;
   float: right;
@@ -7981,34 +7981,34 @@ table.table a.comments, table.table a.score {
 }
 
 @media (max-width: 767px) {
-  /* line 52, ../sass/styles.scss */
+  /* line 54, ../sass/styles.scss */
   body {
     padding-right: 0px;
     padding-left: 0px;
   }
 
-  /* line 56, ../sass/styles.scss */
+  /* line 58, ../sass/styles.scss */
   .pagination ul > li > a, .pagination ul > li > span {
     padding: 0 9px;
   }
 
-  /* line 59, ../sass/styles.scss */
+  /* line 61, ../sass/styles.scss */
   div.story {
     margin-left: 8px;
   }
 
-  /* line 62, ../sass/styles.scss */
+  /* line 64, ../sass/styles.scss */
   div.comments ul {
     margin: 0 0 10px 5px;
   }
 
-  /* line 65, ../sass/styles.scss */
+  /* line 67, ../sass/styles.scss */
   .sidebar-collapse, .sidebar-collapse.collapse {
     overflow: hidden;
     height: 0;
   }
 
-  /* line 69, ../sass/styles.scss */
+  /* line 71, ../sass/styles.scss */
   .sidebar-collapse .btn {
     padding: 4px 10px 4px;
     font-weight: normal;
@@ -8017,30 +8017,30 @@ table.table a.comments, table.table a.score {
     border-radius: 4px;
   }
 
-  /* line 74, ../sass/styles.scss */
+  /* line 76, ../sass/styles.scss */
   .btn-sidebar {
     display: block;
   }
 }
-/* line 83, ../sass/styles.scss */
+/* line 85, ../sass/styles.scss */
 div.story {
   margin-left: 5px;
 }
-/* line 85, ../sass/styles.scss */
+/* line 87, ../sass/styles.scss */
 div.story > p {
-  font-size: 12px;
+  font-size: 0.85em;
   color: #5f5f5f;
 }
 
-/* line 91, ../sass/styles.scss */
+/* line 93, ../sass/styles.scss */
 div.comments > ul {
   margin: 0 0 10px 0px;
 }
-/* line 93, ../sass/styles.scss */
+/* line 95, ../sass/styles.scss */
 div.comments > ul > li {
   margin-bottom: 10px;
 }
-/* line 97, ../sass/styles.scss */
+/* line 99, ../sass/styles.scss */
 div.comments li {
   line-height: 20px;
   background-color: white;
@@ -8050,48 +8050,52 @@ div.comments li {
   list-style-type: none;
   border: 1px solid #ECECEC;
 }
-/* line 105, ../sass/styles.scss */
+/* line 107, ../sass/styles.scss */
 div.comments li.even {
   background-color: #ebebeb;
 }
-/* line 107, ../sass/styles.scss */
+/* line 109, ../sass/styles.scss */
 div.comments li.even pre {
   background-color: white;
 }
-/* line 111, ../sass/styles.scss */
+/* line 113, ../sass/styles.scss */
 div.comments li > div:first-child {
-  font-size: 12px;
+  font-size: 0.85em;
   color: #5f5f5f;
 }
-/* line 114, ../sass/styles.scss */
+/* line 116, ../sass/styles.scss */
 div.comments li > div:first-child a {
   color: #5f5f5f;
 }
-/* line 117, ../sass/styles.scss */
+/* line 119, ../sass/styles.scss */
 div.comments li > div:first-child a.op {
   color: #bc5434;
 }
-/* line 121, ../sass/styles.scss */
+/* line 123, ../sass/styles.scss */
 div.comments li > div:nth-child(2) {
   max-width: 800px;
 }
-/* line 125, ../sass/styles.scss */
+/* line 126, ../sass/styles.scss */
+div.comments li .hidetoggle {
+  letter-spacing: 0.4em;
+}
+/* line 130, ../sass/styles.scss */
 div.comments a {
   word-wrap: break-word;
 }
 
 /* Bootstrap related */
-/* line 130, ../sass/styles.scss */
+/* line 135, ../sass/styles.scss */
 .btn-group-centered {
   text-align: center;
 }
 
-/* line 133, ../sass/styles.scss */
+/* line 138, ../sass/styles.scss */
 .btn-group {
   padding-bottom: 10px;
 }
 
-/* line 136, ../sass/styles.scss */
+/* line 141, ../sass/styles.scss */
 .navbar-inner {
   border-radius: 0px;
 }
