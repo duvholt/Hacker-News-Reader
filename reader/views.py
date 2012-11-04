@@ -7,7 +7,10 @@ from reader.models import Stories, HNComments
 from django.core import management
 
 
-def index(request, page=1, limit=None, story_type=None, over=None):
+def index(request, story_type=None):
+	limit = request.GET.get('limit', None)
+	page = request.GET.get('page', 1)
+	over = request.GET.get('over', None)
 	if not limit:
 		limit_cookie = request.COOKIES.get('stories_limit')
 		if limit_cookie:
@@ -15,13 +18,20 @@ def index(request, page=1, limit=None, story_type=None, over=None):
 		else:
 			limit = 25
 	else:
-		limit = int(limit, 10)
+		try:
+			limit = int(limit, 10)
+		except ValueError:
+			limit = 25
 	if over:
-		over = int(over, 10)
-		story_type = 'over'
-	if not page:
+		try:
+			over = int(over, 10)
+			story_type = 'over'
+		except ValueError:
+			over = None
+	try:
+		page = int(page)
+	except ValueError:
 		page = 1
-	page = int(page)
 	context_instance = RequestContext(request)
 	cache.update_stories(story_type=story_type, over_filter=over)
 	stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
@@ -64,7 +74,7 @@ def comments(request, commentid):
 		story = Stories.objects.get(pk=commentid)
 	except Stories.DoesNotExist:
 		try:
-			comments = HNComments.tree.get(id=commentid).get_descendants(True)
+			comments = HNComments.objects.get(id=commentid).get_descendants(True)
 		except HNComments.DoesNotExist:
 			raise Http404
 	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load tags %}
+{% load query %}
 {% block container %}
 <div class="row-fluid">
 	<div class="span3">
@@ -20,17 +21,17 @@
 				</li>
 				<li class="nav-header">Score over
 					<ul class="nav nav-list">
-						<li class="{% active_score request '0' %}"><a href="{% create_url request 0 'over' %}">Show All</a></li>
-						<li class="{% active_score request '50' %}"><a href="{% create_url request 50 'over' %}">50</a></li>
-						<li class="{% active_score request '75' %}"><a href="{% create_url request 75 'over' %}">75</a></li>
-						<li class="{% active_score request '100' %}"><a href="{% create_url request 100 'over' %}">100</a></li>
+						<li class="{% active_score request '0' %}"><a href="{% query_string "over=0" "" %}">Show All</a></li>
+						<li class="{% active_score request '50' %}"><a href="{% query_string "over=50" "" %}">50</a></li>
+						<li class="{% active_score request '75' %}"><a href="{% query_string "over=75" "" %}">75</a></li>
+						<li class="{% active_score request '100' %}"><a href="{% query_string "over=100" "" %}">100</a></li>
 					</ul>
 				</li>
 				<li class="nav-header">Show per page
 					<ul class="nav nav-list">
-						<li{% if limit == 25 %} class="active"{% endif %}><a href="{% create_url request 25 'limit' %}">25</a></li>
-						<li{% if limit == 50 %} class="active"{% endif %}><a href="{% create_url request 50 'limit' %}">50</a></li>
-						<li{% if limit == 100 %} class="active"{% endif %}><a href="{% create_url request 100 'limit' %}">100</a></li>
+						<li{% if limit == 25 %} class="active"{% endif %}><a href="{% query_string "limit=25" "" %}">25</a></li>
+						<li{% if limit == 50 %} class="active"{% endif %}><a href="{% query_string "limit=50" "" %}">50</a></li>
+						<li{% if limit == 100 %} class="active"{% endif %}><a href="{% query_string "limit=100" "" %}">100</a></li>
 					</ul>
 				</li>
 			</ul>
@@ -65,29 +66,29 @@
 		<div class="pagination pagination-centered">
 			<ul>
 				{% if stories.number != 1 %}
-				<li><a href="{% create_url request 1 %}">&laquo;</a></li>
+				<li><a href="{% query_string "page=1" "" %}">&laquo;</a></li>
 				{% else %}
 				<li class="disabled"><span>&laquo;</span></li>
 				{% endif %}
 				
 				{% if stories.has_previous %}
-				<li><a href="{% create_url request stories.previous_page_number %}">&lsaquo;</a></li>
+				<li><a href="{% query_string "page=stories.previous_page_number" "" %}">&lsaquo;</a></li>
 				{% else %}
 				<li class="disabled"><span>&lsaquo;</span></li>
 				{% endif %}
 				
 				{% for page in pages %}
-				<li{% if page == stories.number %} class="active" {% endif %}><a href="{% create_url request page %}">{{ page }}</a></li>
+				<li{% if page == stories.number %} class="active" {% endif %}><a href="{% query_string "page=page" "" %}">{{ page }}</a></li>
 				{% endfor %}
 				
 				{% if stories.has_next %}
-				<li><a href="{% create_url request stories.next_page_number %}">&rsaquo;</a></li>
+				<li><a href="{% query_string "page=stories.next_page_number" "" %}">&rsaquo;</a></li>
 				{% else %}
 				<li class="disabled"><span>&rsaquo;</span></li>
 				{% endif %}
 					
 				{% if stories.number != stories.paginator.num_pages %}
-				<li><a href="{% create_url request stories.paginator.num_pages %}">&raquo;</a></li>
+				<li><a href="{% query_string "page=stories.paginator.num_pages" "" %}">&raquo;</a></li>
 				{% else %}
 				<li class="disabled"><span>&raquo;</span></li>
 				{% endif %}

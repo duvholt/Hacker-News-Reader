@@ -1,7 +1,6 @@
 from django import template
 from django.template.defaultfilters import stringfilter
 import re
-from django.core.urlresolvers import reverse
 register = template.Library()
 
 
@@ -39,8 +38,8 @@ def active_limit(request, number):
 
 @register.simple_tag
 def active_score(request, number):
-	if re.search(r'over', request.path) and re.search(r'over/(\d+)', request.path).group(1) == number:
+	if request.GET.get('over') == number:
 		return 'active'
-	elif number == '0' and not re.search(r'over', request.path):
+	elif number == '0' and not request.GET.get('over'):
 		return 'active'
 	return ''
