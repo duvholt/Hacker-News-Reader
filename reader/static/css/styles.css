@@ -6772,7 +6772,7 @@ table.table a.comments, table.table a.score {
   display: block;
   width: 18px;
   height: 2px;
-  background-color: whiteSmoke;
+  background-color: #565656;
   -webkit-border-radius: 1px;
   -moz-border-radius: 1px;
   border-radius: 1px;
@@ -6789,8 +6789,12 @@ table.table a.comments, table.table a.score {
   display: none;
   float: right;
   padding: 7px 10px;
-  margin-left: 5px;
-  margin-right: 5px;
+  margin: 0 25px 10px 5px;
+}
+
+.sidebar-collapse.collapse {
+  height: auto;
+  overflow: visible;
 }
 
 @media (max-width: 767px) {

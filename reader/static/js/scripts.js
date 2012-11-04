@@ -61,4 +61,7 @@ $(function () {
 		}
 		e.preventDefault();
 	});
+	$('.comments .content a[href*="item?id="]').each(function () {
+		$(this).attr('href', $(this).attr('href').replace(/https?:\/\/news.ycombinator.com\/item\?id=(\d+)/, '/comments/$1'));
+	});
 });

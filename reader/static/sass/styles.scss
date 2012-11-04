@@ -33,7 +33,7 @@ table.table {
 	display: block;
 	width: 18px;
 	height: 2px;
-	background-color: whiteSmoke;
+	background-color: #565656;
 	@include border-radius(1px);
 	@include box-shadow(#{0 1px 0 rgba(0,0,0,.25)});
 }
@@ -44,10 +44,11 @@ table.table {
 	display: none;
 	float: right;
 	padding: 7px 10px;
-	margin-left: 5px;
-	margin-right: 5px;
-	// @include buttonBackground(darken($navbarBackgroundHighlight, 5%), darken($navbarBackground, 5%));
-	// @include box-shadow(#{inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(255,255,255,.075)});
+	margin: 0 25px 10px 5px;
+}
+.sidebar-collapse.collapse {
+	height: auto;
+	overflow: visible;
 }
 
 @media (max-width: 767px) {
