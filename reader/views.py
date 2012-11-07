@@ -77,7 +77,8 @@ def comments(request, commentid):
 			comments = HNComments.objects.get(id=commentid).get_descendants(True)
 		except HNComments.DoesNotExist:
 			raise Http404
-	return render_to_response('templates/comments.html', {'comments': comments, 'story': story}, context_instance)
+	first_node = comments[0]
+	return render_to_response('templates/comments.html', {'nodes': comments, 'story': story, 'first_node': first_node}, context_instance)
 
 
 def command(request, command):
