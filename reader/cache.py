@@ -11,6 +11,7 @@ from django.utils import html
 from collections import OrderedDict
 import time
 from tzlocal import get_localzone
+import lxml
 
 
 c = pdc.Constants()
@@ -37,7 +38,7 @@ def update_stories(cache_time=20, story_type=None, over_filter=0):
 			url_type = 'news'
 			story_type = 'news'
 		doc = urllib2.urlopen('http://news.ycombinator.com/' + url_type).read()
-		soup = BeautifulSoup(''.join(doc))
+		soup = BeautifulSoup(''.join(doc), 'lxml')
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		updated_cache = False
 		for story_soup in stories_soup:
@@ -65,7 +66,7 @@ def update_comments(comment_id, cache_time=20, html_escape=False):
 		cache = timezone.now() - datetime.timedelta(days=1)
 	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(comment_id))
-		soup = BeautifulSoup(''.join(doc))
+		soup = BeautifulSoup(''.join(doc), 'lxml')
 		try:
 			story_soup = soup.html.body.table.findAll('table')[1].find('tr')
 		except AttributeError:
@@ -79,7 +80,7 @@ def update_comments(comment_id, cache_time=20, html_escape=False):
 			try:
 				parent_object = HNComments.objects.get(id=comment_id)
 				if(parent_object.cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
-					traverse_comment(story_soup.parent, parent_object.parent, parent_object.comment_id, perma=True)
+					traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
 					parent_object = HNComments.objects.get(id=comment_id)
 			except HNComments.DoesNotExist:
 				traverse_comment(story_soup.parent, None, comment_id, perma=True)
@@ -89,7 +90,7 @@ def update_comments(comment_id, cache_time=20, html_escape=False):
 			story = False
 		if story:
 			if len(story_soup.parent.findAll('tr')) == 6:
-				story['selfpost_text'] = ''.join([unicode(x) for x in story_soup.parent.findAll('tr')[3].findAll('td')[1]])
+				story['selfpost_text'] = story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents()
 			else:
 				story['selfpost_text'] = ''
 			story_object = Stories(id=story['id'], title=story['title'],
@@ -156,7 +157,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 		return False
 	comment['username'] = ''.join(td_default.find('a').findAll(text=True))
 	# Get html contents of the comment excluding <span> and <font>
-	comment['text'] = ''.join([unicode(x) for x in td_default.find('span', {'class': 'comment'}).font])
+	comment['text'] = td_default.find('span', {'class': 'comment'}).font.decode_contents()
 	# Remove <a>
 	comment['text'] = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment['text'])
 	# Simple hack for fixing troubles with urlize inside code tags

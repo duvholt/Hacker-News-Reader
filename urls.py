@@ -7,10 +7,6 @@ import settings
 # from django.contrib import admin
 # admin.autodiscover()
 
-story_types = '(?P<story_type>news|newest|best|active|ask)'
-limit = '(/limit/(?P<limit>\d+))?'
-page = '(/page/(?P<page>\d+))?'
-
 
 urlpatterns = patterns('',
 	url(r'^about', 'reader.views.index'),
