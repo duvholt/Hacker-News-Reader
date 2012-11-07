@@ -7,7 +7,7 @@ from reader.models import Stories, HNComments
 from django.core import management
 
 
-def index(request, story_type=None):
+def index(request, story_type='news'):
 	limit = request.GET.get('limit', None)
 	page = request.GET.get('page', 1)
 	over = request.GET.get('over', None)

@@ -19,26 +19,28 @@ p = pdt.Calendar(c)
 tz = get_localzone()
 
 
-def update_stories(cache_time=20, story_type=None, over_filter=0):
-	if not story_type:
-		story_type = 'news'
+def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 	try:
-		if not story_type == 'over':
-			cache = StoryCache.objects.get(name=story_type).time
+		if story_type == 'over':
+			# Over points can have different values meaning that it can't be cached normal
+			cachetime = StoryCache.objects.get(name=story_type, over=over_filter).time
 		else:
-			cache = StoryCache.objects.get(name=story_type, over=over_filter).time
+			cachetime = StoryCache.objects.get(name=story_type).time
 	except StoryCache.DoesNotExist:
-		cache = timezone.now() - datetime.timedelta(days=1)  # Force updating cache
-	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
+		# Force updating cache
+		cachetime = timezone.now() - datetime.timedelta(days=1)
+	# More than cache_minutes since cache was updated
+	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
 		if story_type in ['news', 'best', 'active', 'newest', 'ask']:
-			url_type = story_type
+			url = story_type
 		elif story_type == 'over' and isinstance(over_filter, int):
-			url_type = 'over?points=' + str(over_filter)
+			url = 'over?points=' + str(over_filter)
 		else:
-			url_type = 'news'
+			url = 'news'
 			story_type = 'news'
-		doc = urllib2.urlopen('http://news.ycombinator.com/' + url_type).read()
-		soup = BeautifulSoup(''.join(doc), 'lxml')
+		doc = urllib2.urlopen('http://news.ycombinator.com/' + url).read()
+		soup = BeautifulSoup(doc, 'lxml')
+		# HN markup is horrible. Basically every story uses 3 rows
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		updated_cache = False
 		for story_soup in stories_soup:
@@ -49,6 +51,7 @@ def update_stories(cache_time=20, story_type=None, over_filter=0):
 								domain=story['domain'], username=story['username'], comments=story['comments'],
 								story_type=story_type, time=story['time'], cache=timezone.now())
 				story_object.save()
+				# Only update cache once
 				if not updated_cache:
 					if not story_type == 'over':
 						story_cache = StoryCache.objects.get(name=story_type)
@@ -59,36 +62,45 @@ def update_stories(cache_time=20, story_type=None, over_filter=0):
 					updated_cache = True
 
 
-def update_comments(comment_id, cache_time=20, html_escape=False):
+def update_comments(comment_id, cache_minutes=20, html_escape=False):
 	try:
-		cache = HNCommentsCache.objects.get(pk=comment_id).time
+		cachetime = HNCommentsCache.objects.get(pk=comment_id).time
 	except HNCommentsCache.DoesNotExist:
-		cache = timezone.now() - datetime.timedelta(days=1)
-	if(cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
+		# Force updating cache
+		cachetime = timezone.now() - datetime.timedelta(days=1)
+	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
 		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(comment_id))
-		soup = BeautifulSoup(''.join(doc), 'lxml')
+		soup = BeautifulSoup(doc, 'lxml')
 		try:
 			story_soup = soup.html.body.table.findAll('table')[1].find('tr')
 		except AttributeError:
+			# Story does not exist
 			return False
 		if story_soup.findNext('tr').find('td', {'class': 'subtext'}):
+			# Updating story info
 			story = story_info(story_soup)
 			parent_object = None
 			permalink = False
 			story_id = comment_id
 		else:
+			# For permalinked comments
 			try:
+				# If comment already is in db get the info
 				parent_object = HNComments.objects.get(id=comment_id)
-				if(parent_object.cache + datetime.timedelta(minutes=cache_time) < timezone.now()):
+				if(parent_object.cache + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
 					traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
 					parent_object = HNComments.objects.get(id=comment_id)
 			except HNComments.DoesNotExist:
+				# Since the comment doesn't exist we have to improvise with the data a bit
+				# Story is is not provided for permalinked comments, but parent id is
+				# Story id will therefore temporarely we set to the comment id
 				traverse_comment(story_soup.parent, None, comment_id, perma=True)
 				parent_object = HNComments.objects.get(id=comment_id)
 			story_id = parent_object.story_id
 			permalink = True
 			story = False
 		if story:
+			# Check for self post text
 			if len(story_soup.parent.findAll('tr')) == 6:
 				story['selfpost_text'] = story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents()
 			else:
@@ -99,12 +111,15 @@ def update_comments(comment_id, cache_time=20, html_escape=False):
 							comments=story['comments'], time=story['time'], cache=timezone.now())
 			story_object.save()
 		if story or permalink:
+			# Updating cache
 			comments_cache, created = HNCommentsCache.objects.get_or_create(pk=comment_id, defaults={'time': timezone.now})
 			comments_cache.time = timezone.now()
 			comments_cache.save()
 			comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
+			# Traversing all top comments
 			for comment_soup in comments_soup:
 				td_default = comment_soup.tr.find('td', {'class': 'default'})
+				# Converting indent to a more readable format (0, 1, 2...)
 				indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
 				if indenting == 0:
 					traverse_comment(comment_soup, parent_object, story_id, html_escape)
@@ -114,13 +129,16 @@ def story_info(story_soup):
 	if not story_soup.find('td'):
 		return False
 	title = story_soup.find('td', {'class': 'title'})
+	# In some special cases there are more than one title class
+	# Should probably make the initial query a bit more strict
 	if story_soup.findAll('td')[0] == title:
 		title = story_soup.findAll('td', {'class': 'title'})[1]
 	subtext = story_soup.findNext('tr').find('td', {'class': 'subtext'})
 	if subtext.findAll("a"):
+		# Turns out normal dicts aren't ordered
 		story = OrderedDict()
 		story['url'] = urllib2.unquote(title.find('a')['href'])
-		story['title'] = ''.join(title.find('a'))
+		story['title'] = title.find('a').decode_contents()
 		try:
 			story['selfpost'] = False
 			story['domain'] = ''.join(title.find('span', {'class': 'comhead'}))
@@ -131,11 +149,12 @@ def story_info(story_soup):
 			story['url'] = ''
 		story['score'] = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
 		story['username'] = ''.join(subtext.findAll("a")[0])
+		# Don't ask me about the "discu" thing. It just works
 		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
 		if(story['comments'] == ""):
 			story['comments'] = 0
-		# Unfortunalely HN doesn't show any form timestamp other than "x hours" meaning that
-		# the time scraped is only approximately correct.
+		# Unfortunalely HN doesn't show any form timestamp other than "x hours"
+		# meaning that the time scraped is only approximately correct.
 		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=tz)
 		# parsedatetime doesn't have any built in support for DST
 		if time.localtime().tm_isdst:
@@ -164,7 +183,8 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	comment['text'] = re.sub(r'(</code>)', r' \1', comment['text'])
 	# Remove <code>, it is not needed inside <pre>
 	# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # This was too buggy
-	# Not sure if I am going to use HTML Escaping for Android yet
+	# Not sure if I am going to use HTML Escaping
+	# This is really incomplete
 	if html_escape:
 		# Convert <i> to *
 		comment['text'] = re.sub(r'\s*<i>\s*(.+)\s*</i>\s*', r' *\1* ', comment['text'])
@@ -179,21 +199,27 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst == 1:
 		comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
+	# Some extra trickery for permalinked comments
 	if perma:
 		parent_id = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[2]['href']).group(1), 10)
 		try:
+			# Checking if the parent object is in the db
 			parent_object = HNComments.objects.get(pk=parent_id)
 			story_id = parent_object.story_id
 		except HNComments.DoesNotExist:
 			parent_object = None
+			# story_id is at this moment actually comment id of the parent object.
+			# Trying to correct this by checking for actualy story_id in the db
 			try:
 				story_id = HNComments.objects.get(pk=story_id).story_id
 			except HNComments.DoesNotExist:
-				story_id = story_id  # Please ignore
+				# Oops, looks like we'll just store a fake one for now
+				pass
 	comment_object = HNComments(id=comment['id'], story_id=story_id, username=comment['username'],
 								text=comment['text'], hiddenpercent=comment['hiddenpercent'],
 								hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object)
 	if perma and not parent_object and parent_id:
+		# Forcing comment to be updated next time, since it doesn't have proper values
 		cache = timezone.now() - datetime.timedelta(days=1)
 		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
 		parent_object.save()
@@ -241,14 +267,10 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 		for story in stories:
 			time_hours = (now - story.time).total_seconds() / 3600
 			score = calculate_score(story.score, time_hours)
-			temp = {}
-			temp['story'] = story
-			temp['score'] = score
+			temp = {'story': story, 'score': score}
 			sorted_stories.append(temp)
 		sorted_stories = sorted(sorted_stories, key=lambda story: story['score'], reverse=True)
-		stories = []
-		for story in sorted_stories:
-			stories.append(story['story'])
+		stories = [story['story'] for story in sorted_stories]
 	paginator = Paginator(stories, limit)
 	try:
 		stories = paginator.page(page)
