@@ -11,12 +11,12 @@
 	<div class="navbar">
 		<div class="navbar-inner">
 			<div class="container">
-				<a class="brand" href="/">HN Reader</a>
+				<a class="brand hidden-phone" href="/">HN Reader</a>
 				<ul class="nav">
 					<li class="{% active request "^/[0-9 /]*$" %}"><a href="/">Home</a></li>
-					<li class="{% active request "^/about" %}"><a href="#">About</a></li>
-					<li class="{% active request "^/contact" %}"><a href="#">Contact</a></li>
+					<li class="{% active request "^/about" %}"><a href="/about">About</a></li>
 				</ul>
+				{% block navbar_button %}{% endblock %}
 			</div>
 		</div>
 	</div>

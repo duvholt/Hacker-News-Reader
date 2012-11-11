@@ -28,61 +28,6 @@ table.table {
 .onhover {
 	text-decoration: underline;
 }
-
-.btn-sidebar .icon-bar {
-	display: block;
-	width: 18px;
-	height: 2px;
-	background-color: #565656;
-	@include border-radius(1px);
-	@include box-shadow(#{0 1px 0 rgba(0,0,0,.25)});
-}
-.btn-sidebar .icon-bar + .icon-bar {
-	margin-top: 3px;
-}
-.btn-sidebar {
-	display: none;
-	float: right;
-	padding: 7px 10px;
-	margin: 0 25px 10px 5px;
-}
-.sidebar-collapse.collapse {
-	height: auto;
-	overflow: visible;
-}
-
-@media (max-width: 767px) {
-	body {
-		padding-right: 0px;
-		padding-left: 0px;
-	}
-	.pagination ul > li > a, .pagination ul > li > span {
-		padding: 0 9px;	
-	}
-	div.story {
-		margin-left: 8px;
-	}
-	div.comments ul {
-		margin: 0 0 10px 5px;
-	}
-	.sidebar-collapse, .sidebar-collapse.collapse {
-		overflow: hidden;
-		height: 0;
-	}
-	.sidebar-collapse .btn {
-		padding: 4px 10px 4px;
-		font-weight: normal;
-		@include border-radius(4px);
-	}
-	.btn-sidebar {
-		display: block;
-	}
-}
-@media (max-width: 979px) {
-	
-}
-
-
 div.story {
 	margin-left: 5px;
 	> p {
@@ -100,11 +45,11 @@ div.comments {
 	li {
 		line-height: 20px;
 		background-color: white;
-		border-radius: 5px;
+		@include border-radius(5px);
 		padding: 7px 2px 2px 7px;
 		margin: 4px;
 		list-style-type: none;
-		border: 1px solid #ECECEC;
+		border: 1px solid #DBDBDB;
 		&.even {
 			background-color: $commentEvenBackground;
 			pre {
@@ -127,6 +72,24 @@ div.comments {
 		.hidetoggle {
 			letter-spacing: 0.4em;
 		}
+		pre {
+			position: relative;
+			padding: 25px 10px 5px;
+			*padding-top: 19px;
+		}
+		pre:after {
+			content: "Quote";
+			position: absolute;
+			top: -1px;
+			left: -1px;
+			padding: 3px 7px;
+			font-size: 12px;
+			font-weight: bold;
+			background-color: #f5f5f5;
+			border: 1px solid #ddd;
+			color: #9da0a4;
+			@include border-radius(4px 0 4px 0);
+		}
 	}
 	a {
 		word-wrap:break-word;
@@ -140,5 +103,43 @@ div.comments {
 	padding-bottom: 10px;
 }
 .navbar-inner {
-	border-radius: 0px;
+	@include border-radius(1px);
+}
+@media (max-width: 979px) {
+	.btn-navbar {
+		display: none !important;
+	}
+}
+@media (max-width: 767px) {
+	body {
+		padding-right: 0px;
+		padding-left: 0px;
+	}
+	.pagination ul > li > a, .pagination ul > li > span {
+		padding: 0 9px;	
+	}
+	div.story {
+		margin-left: 8px;
+	}
+	div.comments {
+		ul {
+			margin: 0 0 4px 0px;
+		}
+		li {
+			padding: 0px 1px 0px 5px;
+			margin: 4px 2px 4px 4px;
+		}
+	}
+	.sidebar-collapse, .sidebar-collapse.collapse {
+		overflow: hidden;
+		height: 0;
+	}
+	.sidebar-collapse .btn {
+		padding: 4px 10px 4px;
+		font-weight: normal;
+		@include border-radius(4px);
+	}
+	.btn-navbar {
+		display: block !important;
+	}
 }

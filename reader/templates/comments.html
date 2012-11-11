@@ -13,7 +13,8 @@
 	<p>
 		{{ story.score|default:"0" }} points  by <a href="http://news.ycombinator.com/user?id={{ story.username }}">{{ story.username }}</a>
 		<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince }} ago</time> | 
-		{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }}</a>
+		{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }} |
+		<a href="http://news.ycombinator.com/item?id={{ story.id }}">news.ycombinator link</a>
 	</p>
 </div>
 {% endif %}

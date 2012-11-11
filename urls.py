@@ -9,8 +9,8 @@ import settings
 
 
 urlpatterns = patterns('',
-	url(r'^about', 'reader.views.index'),
-	url(r'^contact', 'reader.views.index'),
+	# url(r'^about', 'reader.views.index'),
+	# url(r'^contact', 'reader.views.index'),
 	url(r'^command/(?P<command>\w+)/$', 'reader.views.command'),
 	# Main page submssions
 	# I hope there is a better way to do this
@@ -23,6 +23,9 @@ urlpatterns = patterns('',
 	# url(r'^admin/', include(admin.site.urls)),
 	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/img/favicon.ico'}),
+)
+urlpatterns += patterns('django.views.generic.simple',
+	(r'about$', 'direct_to_template', {'template': 'about.html'}),
 )
 # Couldn't find a decent way to serve staticfiles with AppFog
 if settings.DEBUG:

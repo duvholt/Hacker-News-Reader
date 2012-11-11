@@ -25,7 +25,7 @@ def index(request, story_type='news'):
 	if over:
 		try:
 			over = int(over, 10)
-			story_type = 'over'
+			# story_type = 'over'
 		except ValueError:
 			over = None
 	try:

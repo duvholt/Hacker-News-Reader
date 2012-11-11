@@ -6768,70 +6768,6 @@ table.table a.comments, table.table a.score {
   text-decoration: underline;
 }
 
-.btn-sidebar .icon-bar {
-  display: block;
-  width: 18px;
-  height: 2px;
-  background-color: #565656;
-  -webkit-border-radius: 1px;
-  -moz-border-radius: 1px;
-  border-radius: 1px;
-  -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-  -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-}
-
-.btn-sidebar .icon-bar + .icon-bar {
-  margin-top: 3px;
-}
-
-.btn-sidebar {
-  display: none;
-  float: right;
-  padding: 7px 10px;
-  margin: 0 25px 10px 5px;
-}
-
-.sidebar-collapse.collapse {
-  height: auto;
-  overflow: visible;
-}
-
-@media (max-width: 767px) {
-  body {
-    padding-right: 0px;
-    padding-left: 0px;
-  }
-
-  .pagination ul > li > a, .pagination ul > li > span {
-    padding: 0 9px;
-  }
-
-  div.story {
-    margin-left: 8px;
-  }
-
-  div.comments ul {
-    margin: 0 0 10px 5px;
-  }
-
-  .sidebar-collapse, .sidebar-collapse.collapse {
-    overflow: hidden;
-    height: 0;
-  }
-
-  .sidebar-collapse .btn {
-    padding: 4px 10px 4px;
-    font-weight: normal;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-  }
-
-  .btn-sidebar {
-    display: block;
-  }
-}
 div.story {
   margin-left: 5px;
 }
@@ -6849,11 +6785,13 @@ div.comments > ul > li {
 div.comments li {
   line-height: 20px;
   background-color: white;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
   border-radius: 5px;
   padding: 7px 2px 2px 7px;
   margin: 4px;
   list-style-type: none;
-  border: 1px solid #ECECEC;
+  border: 1px solid #DBDBDB;
 }
 div.comments li.even {
   background-color: #ebebeb;
@@ -6877,6 +6815,26 @@ div.comments li > div:nth-child(2) {
 div.comments li .hidetoggle {
   letter-spacing: 0.4em;
 }
+div.comments li pre {
+  position: relative;
+  padding: 25px 10px 5px;
+  *padding-top: 19px;
+}
+div.comments li pre:after {
+  content: "Quote";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #9da0a4;
+  -webkit-border-radius: 4px 0 4px 0;
+  -moz-border-radius: 4px 0 4px 0;
+  border-radius: 4px 0 4px 0;
+}
 div.comments a {
   word-wrap: break-word;
 }
@@ -6891,5 +6849,52 @@ div.comments a {
 }
 
 .navbar-inner {
-  border-radius: 0px;
+  -webkit-border-radius: 1px;
+  -moz-border-radius: 1px;
+  border-radius: 1px;
+}
+
+@media (max-width: 979px) {
+  .btn-navbar {
+    display: none !important;
+  }
+}
+@media (max-width: 767px) {
+  body {
+    padding-right: 0px;
+    padding-left: 0px;
+  }
+
+  .pagination ul > li > a, .pagination ul > li > span {
+    padding: 0 9px;
+  }
+
+  div.story {
+    margin-left: 8px;
+  }
+
+  div.comments ul {
+    margin: 0 0 4px 0px;
+  }
+  div.comments li {
+    padding: 0px 1px 0px 5px;
+    margin: 4px 2px 4px 4px;
+  }
+
+  .sidebar-collapse, .sidebar-collapse.collapse {
+    overflow: hidden;
+    height: 0;
+  }
+
+  .sidebar-collapse .btn {
+    padding: 4px 10px 4px;
+    font-weight: normal;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+  }
+
+  .btn-navbar {
+    display: block !important;
+  }
 }

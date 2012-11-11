@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% load tags %}
 {% load query %}
+{% block navbar_button %}
+<a class="btn btn-navbar" data-toggle="collapse" data-target=".sidebar-collapse">
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+</a>
+{% endblock %}
 {% block container %}
 <div class="row-fluid">
 	<div class="span3">
 		<div class="sidebar-container">
-			<a class="btn btn-sidebar" data-toggle="collapse" data-target=".sidebar-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</a>	
 			<ul class="nav nav-list sidebar sidebar-collapse">
 				<li class="nav-header">Sorting
 					<ul class="nav nav-list">
