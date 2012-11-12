@@ -43,3 +43,10 @@ def active_score(request, number):
 	elif number == '0' and not request.GET.get('over'):
 		return 'active'
 	return ''
+
+
+@register.simple_tag
+def percentage(number, total, rounding=2):
+	rounding = int(rounding)
+	return round((float(number) / float(total)) * 100, rounding)
+	# return '{percent:.2%}'.format(percent=float(number) / float(total))

@@ -7,6 +7,8 @@ $gray: #5F5F5F;
 $commentEvenBackground: #EBEBEB;
 
 $smallFontSize: 0.85em;
+
+$maxwidth: 800px;
 // Start styles
 body {
 	padding-bottom: 20px;
@@ -27,6 +29,9 @@ table.table {
 /* Hacky way for hover effect */
 .onhover {
 	text-decoration: underline;
+}
+.poll {
+	max-width: $maxwidth;
 }
 div.story {
 	margin-left: 5px;
@@ -67,7 +72,7 @@ div.comments {
 			}
 		}
 		> div:nth-child(2) {
-			max-width: 800px;
+			max-width: $maxwidth;
 		}
 		.hidetoggle {
 			letter-spacing: 0.4em;
@@ -105,6 +110,10 @@ div.comments {
 .navbar-inner {
 	@include border-radius(1px);
 }
+.progress-hn .bar, .progress .bar-hn {
+  @include gradient-vertical($linkColor, darken($linkColor, 15%));
+}
+// Media styling
 @media (max-width: 979px) {
 	.btn-navbar {
 		display: none !important;

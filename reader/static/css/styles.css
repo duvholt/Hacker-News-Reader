@@ -6768,6 +6768,10 @@ table.table a.comments, table.table a.score {
   text-decoration: underline;
 }
 
+.poll {
+  max-width: 800px;
+}
+
 div.story {
   margin-left: 5px;
 }
@@ -6852,6 +6856,17 @@ div.comments a {
   -webkit-border-radius: 1px;
   -moz-border-radius: 1px;
   border-radius: 1px;
+}
+
+.progress-hn .bar, .progress .bar-hn {
+  background-color: #a5492d;
+  background-image: -moz-linear-gradient(top, #bc5434, #803923);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#bc5434), to(#803923));
+  background-image: -webkit-linear-gradient(top, #bc5434, #803923);
+  background-image: -o-linear-gradient(top, #bc5434, #803923);
+  background-image: linear-gradient(to bottom, #bc5434, #803923);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFBC5434', endColorstr='#FF803923', GradientType=0);
 }
 
 @media (max-width: 979px) {

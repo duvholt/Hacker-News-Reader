@@ -5,7 +5,7 @@ import parsedatetime.parsedatetime as pdt
 import parsedatetime.parsedatetime_consts as pdc
 import datetime
 import re
-from reader.models import Stories, HNComments, StoryCache, HNCommentsCache
+from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.utils import html
 from collections import OrderedDict
@@ -40,7 +40,7 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 			story_type = 'news'
 		doc = urllib2.urlopen('http://news.ycombinator.com/' + url).read()
 		soup = BeautifulSoup(doc, 'lxml')
-		# HN markup is horrible. Basically every story uses 3 rows
+		# HN markup is odd. Basically every story use three rows each
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 		updated_cache = False
 		for story_soup in stories_soup:
@@ -100,22 +100,38 @@ def update_comments(comment_id, cache_minutes=20, html_escape=False):
 			permalink = True
 			story = False
 		if story:
+			story['poll'] = False
+			# Poll
+			if len(story_soup.parent.findAll('tr')) > 6:
+				story['poll'] = True
+				# I don't like using try here. Needs to be cleaned up
+				try:
+					poll_update(story['id'], story_soup.parent.findAll('tr')[5].findAll('td')[1])
+					story['selfpost_text'] = story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents()
+				except AttributeError:
+					# No comment before poll
+					poll_update(story['id'], story_soup.parent.findAll('tr')[3].findAll('td')[1])
+					story['selfpost_text'] = ''
 			# Check for self post text
-			if len(story_soup.parent.findAll('tr')) == 6:
+			elif len(story_soup.parent.findAll('tr')) == 6:
 				story['selfpost_text'] = story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents()
 			else:
 				story['selfpost_text'] = ''
 			story_object = Stories(id=story['id'], title=story['title'],
 							url=story['url'], score=story['score'], selfpost=story['selfpost'],
-							selfpost_text=story['selfpost_text'], domain=story['domain'], username=story['username'],
-							comments=story['comments'], time=story['time'], cache=timezone.now())
+							selfpost_text=story['selfpost_text'], poll=story['poll'], domain=story['domain'],
+							username=story['username'],	comments=story['comments'], time=story['time'], cache=timezone.now())
 			story_object.save()
 		if story or permalink:
 			# Updating cache
 			comments_cache, created = HNCommentsCache.objects.get_or_create(pk=comment_id, defaults={'time': timezone.now})
 			comments_cache.time = timezone.now()
 			comments_cache.save()
-			comments_soup = soup.html.body.table.findAll('table')[2].findAll('table')
+			if story['poll']:
+				i = 3
+			else:
+				i = 2
+			comments_soup = soup.html.body.table.findAll('table')[i].findAll('table')
 			# Traversing all top comments
 			for comment_soup in comments_soup:
 				td_default = comment_soup.tr.find('td', {'class': 'default'})
@@ -244,6 +260,14 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 					break
 	return True
 
+
+def poll_update(story_id, poll_soup):
+	for poll_element in poll_soup.table.findAll('tr')[::3]:
+		poll = {'name': poll_element.findAll('td')[1].div.font.decode_contents(),
+				'score': int(re.search(r'(\d+) points?', poll_element.findNext('tr').findAll('td')[1].span.span.decode_contents()).group(1)),
+				'id': poll_element.findNext('tr').findAll('td')[1].span.span['id'].lstrip('score_')
+		}
+		Poll(id=poll['id'], name=poll['name'], score=poll['score'], story_id=story_id).save()
 
 def stories(page=1, limit=25, story_type=None, over_filter=0):
 	now = timezone.now()

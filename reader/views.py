@@ -3,7 +3,7 @@ from django.http import HttpResponse, Http404
 from django.template import RequestContext
 from django.core import serializers
 import reader.cache as cache
-from reader.models import Stories, HNComments
+from reader.models import Stories, HNComments, Poll
 from django.core import management
 
 
@@ -70,15 +70,21 @@ def comments(request, commentid):
 	cache.update_comments(commentid)
 	comments = cache.comments(commentid)
 	story = None
+	polls = None
+	total_votes = 0
 	try:
 		story = Stories.objects.get(pk=commentid)
+		if story.poll:
+			polls = Poll.objects.filter(story_id=commentid)
+			for poll in polls:
+				total_votes += poll.score
 	except Stories.DoesNotExist:
 		try:
 			comments = HNComments.objects.get(id=commentid).get_descendants(True)
 		except HNComments.DoesNotExist:
 			raise Http404
 	first_node = comments[0]
-	return render_to_response('templates/comments.html', {'nodes': comments, 'story': story, 'first_node': first_node}, context_instance)
+	return render_to_response('templates/comments.html', {'nodes': comments, 'story': story, 'first_node': first_node, 'polls': polls, 'total_votes': total_votes}, context_instance)
 
 
 def command(request, command):

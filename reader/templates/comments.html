@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load mptt_tags %}
+{% load tags %}
 
 {% block title %}{{ story.title }}{% endblock %}
 
@@ -9,6 +10,14 @@
 	<h4><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</h4>
 	{% if story.selfpost %}
 	<div>{{ story.selfpost_text|safe|urlizetrunc:"63" }}</div>
+	{% endif %}
+	{% if story.poll %}
+	{% for poll in polls %}
+	<p>{{ poll.name }}: {% percentage poll.score total_votes 2 %}%</p>
+	<div class="progress progress-hn poll">
+		<div class="bar" style="width:  {% percentage poll.score total_votes 0 %}%"></div>
+	</div>
+	{% endfor %}
 	{% endif %}
 	<p>
 		{{ story.score|default:"0" }} points  by <a href="http://news.ycombinator.com/user?id={{ story.username }}">{{ story.username }}</a>

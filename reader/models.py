@@ -8,6 +8,7 @@ class Stories(models.Model):
 	url = models.CharField(max_length=2083)
 	selfpost = models.BooleanField(default=False)
 	selfpost_text = models.TextField(default="", null=True)
+	poll = models.BooleanField(default=False)
 	domain = models.CharField(max_length=200, null=True)
 	username = models.CharField(max_length=150, null=True)
 	score = models.PositiveIntegerField(max_length=5)
@@ -29,7 +30,7 @@ class HNComments(MPTTModel):
 	parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
 
 	class MPTTMeta:
-		order_insertion_by = ['cache']  # lft gives None error
+		order_insertion_by = ['cache']
 
 
 class StoryCache(models.Model):
@@ -41,3 +42,10 @@ class StoryCache(models.Model):
 class HNCommentsCache(models.Model):
 	id = models.PositiveIntegerField(primary_key=True)
 	time = models.DateTimeField(null=True, auto_now=True)
+
+
+class Poll(models.Model):
+	id = models.PositiveIntegerField(primary_key=True)
+	name = models.CharField(max_length=100)
+	score = models.PositiveIntegerField(max_length=5)
+	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
