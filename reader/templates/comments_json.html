@@ -23,9 +23,9 @@
 			"name": "{{ poll.name|escapejs }}",
 			"votes": {{ poll.score }},
 			"percentage": "{% percentage poll.score total_votes 2 %}"
-		},
+		}{% if poll != lastpoll %},{% endif %}
 		{% endfor %}
-	]
+	],
 	{% endif %}
 	"comments": [
 	{% recursetree nodes %}
@@ -45,7 +45,9 @@
 					{{ children }}
 				]
 			{% endif %}
-		}{% if node.get_next_sibling %},{% endif %}
+		}{% if node.get_next_sibling %}
+		 	{% if first_node != node or story %},{% endif %}
+		 {% endif %}
 	{% endrecursetree %}
 	]
 }

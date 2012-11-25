@@ -71,13 +71,15 @@ def comments(request, commentid, json=False):
 	comments = cache.comments(commentid)
 	story = None
 	polls = None
+	lastpoll = None
 	total_votes = 0
 	try:
 		story = Stories.objects.get(pk=commentid)
 		if story.poll:
-			polls = Poll.objects.filter(story_id=commentid)
+			polls = Poll.objects.filter(story_id=commentid).order_by('id')
 			for poll in polls:
 				total_votes += poll.score
+			lastpoll = polls.reverse()[0]
 	except Stories.DoesNotExist:
 		try:
 			comments = HNComments.objects.get(id=commentid).get_descendants(True)
@@ -88,7 +90,7 @@ def comments(request, commentid, json=False):
 		template = 'templates/comments_json.html'
 	else:
 		template = 'templates/comments.html'
-	return render_to_response(template, {'nodes': comments, 'story': story, 'first_node': first_node, 'polls': polls, 'total_votes': total_votes}, context_instance)
+	return render_to_response(template, {'nodes': comments, 'story': story, 'first_node': first_node, 'lastpoll': lastpoll, 'polls': polls, 'total_votes': total_votes}, context_instance)
 
 
 def command(request, command):
