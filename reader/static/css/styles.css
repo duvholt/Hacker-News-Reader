@@ -6751,19 +6751,20 @@ body {
   padding-bottom: 20px;
 }
 
-table.table a:visited {
-  color: #C7C7C7;
-}
 table.table a.comments, table.table a.score {
   color: #555;
-}
-table.table a.comments, table.table a.score {
   width: 100%;
   height: 100%;
   display: block;
 }
+table.table a:visited {
+  color: #666;
+}
+table.table a.comments:visited, table.table a.score:visited {
+  color: #bbb;
+}
 
-/* Hacky way for hover effect */
+/* Hacky way for hover effect on both score and comments */
 .onhover {
   text-decoration: underline;
 }
