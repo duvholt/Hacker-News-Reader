@@ -18,7 +18,7 @@ urlpatterns = patterns('',
 	url(r'^(?P<story_type>news|newest|best|active|ask)$', 'reader.views.index'),
 	# Comments
 	url(r'^comments/(?P<commentid>\d*)/$', 'reader.views.comments'),
-	url(r'^comments/(?P<commentid>\d*).json', 'reader.views.comments_json'),
+	url(r'^comments/(?P<commentid>\d*).json', 'reader.views.comments', {'json': True}),
 	# Uncomment the next line to enable the admin:
 	# url(r'^admin/', include(admin.site.urls)),
 	# Just a simple redirect for the favicon

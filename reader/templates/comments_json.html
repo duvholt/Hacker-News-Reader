@@ -1,0 +1,51 @@
+{% load mptt_tags %}
+{% load tags %}
+{
+	{% if story %}
+	"story": {
+		"id": {{ story.id }},
+		"title": "{{ story.title|escapejs }}",
+		"url": "{{ story.url|escapejs }}",
+		"domain": "{{ story.domain|escapejs }}",
+		{% if story.selfpost %}
+		"selfpost_text": "{{ story.selfpost_text }}",
+		{% endif %}
+		"score": {{ story.score|default:"0" }},
+		"username": "{{ story.username|escapejs }}",
+		"time": "{{ story.time}}",
+		"comments": "{{ story.comments|default:"0" }}"
+	},
+	{% endif %}
+	{% if story.poll %}
+	"poll": [
+		{% for poll in polls %}
+		{
+			"name": "{{ poll.name|escapejs }}",
+			"votes": {{ poll.score }},
+			"percentage": "{% percentage poll.score total_votes 2 %}"
+		},
+		{% endfor %}
+	]
+	{% endif %}
+	"comments": [
+	{% recursetree nodes %}
+		{
+			"id": {{ node.id }},
+			"username":	"{{ node.username|escapejs }}",
+			"time": "{{ node.time}}",
+			{% if not story and first_node == node and node.parent_id %}
+			"parent": {{ node.parent_id }},
+			{% elif not story and first_node == node %}
+			"parent": {{ node.story_id }},
+			{% endif %}
+			"hiddencolor": "{{ node.hiddencolor }}",
+			"text": "{{ node.text|escapejs }}"
+			{% if not node.is_leaf_node %}
+				, "children": [
+					{{ children }}
+				]
+			{% endif %}
+		}{% if node.get_next_sibling %},{% endif %}
+	{% endrecursetree %}
+	]
+}

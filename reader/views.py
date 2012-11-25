@@ -65,7 +65,7 @@ def comments_json(request, commentid):
 	return HttpResponse(serializers.serialize("json", comments), mimetype='application/json')
 
 
-def comments(request, commentid):
+def comments(request, commentid, json=False):
 	context_instance = RequestContext(request)
 	cache.update_comments(commentid)
 	comments = cache.comments(commentid)
@@ -84,7 +84,11 @@ def comments(request, commentid):
 		except HNComments.DoesNotExist:
 			raise Http404
 	first_node = comments[0]
-	return render_to_response('templates/comments.html', {'nodes': comments, 'story': story, 'first_node': first_node, 'polls': polls, 'total_votes': total_votes}, context_instance)
+	if json:
+		template = 'templates/comments_json.html'
+	else:
+		template = 'templates/comments.html'
+	return render_to_response(template, {'nodes': comments, 'story': story, 'first_node': first_node, 'polls': polls, 'total_votes': total_votes}, context_instance)
 
 
 def command(request, command):
