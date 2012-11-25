@@ -186,11 +186,11 @@ if 'VCAP_SERVICES' in os.environ:
 	import json
 	vcap_services = json.loads(os.environ['VCAP_SERVICES'])
 	# XXX: avoid hardcoding here
-	psql_srv = vcap_services['postgresql-9.1'][0]
+	psql_srv = vcap_services['mysql-5.1'][0]
 	cred = psql_srv['credentials']
 	DATABASES = {
 		'default': {
-			'ENGINE': 'django.db.backends.postgresql_psycopg2',
+			'ENGINE': 'django.db.backends.mysql',
 			'NAME': cred['name'],
 			'USER': cred['user'],
 			'PASSWORD': cred['password'],

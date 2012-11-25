@@ -99,11 +99,11 @@ def update_comments(comment_id, cache_minutes=20, html_escape=False):
 			story_id = parent_object.story_id
 			permalink = True
 			story = False
+		poll = False
 		if story:
-			story['poll'] = False
 			# Poll
 			if len(story_soup.parent.findAll('tr')) > 6:
-				story['poll'] = True
+				poll = True
 				# I don't like using try here. Needs to be cleaned up
 				try:
 					poll_update(story['id'], story_soup.parent.findAll('tr')[5].findAll('td')[1])
@@ -119,7 +119,7 @@ def update_comments(comment_id, cache_minutes=20, html_escape=False):
 				story['selfpost_text'] = ''
 			story_object = Stories(id=story['id'], title=story['title'],
 							url=story['url'], score=story['score'], selfpost=story['selfpost'],
-							selfpost_text=story['selfpost_text'], poll=story['poll'], domain=story['domain'],
+							selfpost_text=story['selfpost_text'], poll=poll, domain=story['domain'],
 							username=story['username'],	comments=story['comments'], time=story['time'], cache=timezone.now())
 			story_object.save()
 		if story or permalink:
@@ -127,7 +127,8 @@ def update_comments(comment_id, cache_minutes=20, html_escape=False):
 			comments_cache, created = HNCommentsCache.objects.get_or_create(pk=comment_id, defaults={'time': timezone.now})
 			comments_cache.time = timezone.now()
 			comments_cache.save()
-			if story['poll']:
+			# If there is a poll there will be an extra table before comments
+			if poll:
 				i = 3
 			else:
 				i = 2
