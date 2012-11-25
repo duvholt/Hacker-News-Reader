@@ -12,8 +12,8 @@
 		{% endif %}
 		"score": {{ story.score|default:"0" }},
 		"username": "{{ story.username|escapejs }}",
-		"time": "{{ story.time}}",
-		"comments": "{{ story.comments|default:"0" }}"
+		"time": "{{ story.time|date:'r' }}",
+		"comments": {{ story.comments|default:"0" }}
 	},
 	{% endif %}
 	{% if story.poll %}
@@ -32,13 +32,13 @@
 		{
 			"id": {{ node.id }},
 			"username":	"{{ node.username|escapejs }}",
-			"time": "{{ node.time}}",
+			"time": "{{ node.time|date:'r' }}",
 			{% if not story and first_node == node and node.parent_id %}
 			"parent": {{ node.parent_id }},
 			{% elif not story and first_node == node %}
 			"parent": {{ node.story_id }},
 			{% endif %}
-			"hiddencolor": "{{ node.hiddencolor }}",
+			"hiddenpercent": {{ node.hiddenpercent }},
 			"text": "{{ node.text|escapejs }}"
 			{% if not node.is_leaf_node %}
 				, "children": [
