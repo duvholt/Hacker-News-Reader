@@ -1,15 +1,22 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, Http404
 from django.template import RequestContext
-from django.core import serializers
 import reader.cache as cache
 from reader.models import Stories, HNComments, Poll
 from django.core import management
+import reader.utils as utils
+from django.core.urlresolvers import reverse
+
+
+# This is not a real view, but is used from other views
+def custom_message_view(request, message, context_instance):
+	response = render_to_response("templates/message.html", {'message': message}, context_instance)
+	return response
 
 
 def index(request, story_type='news'):
 	limit = request.GET.get('limit', None)
-	page = request.GET.get('page', 1)
+	page = int(request.GET.get('page', 1))
 	over = request.GET.get('over', None)
 	if not limit:
 		limit_cookie = request.COOKIES.get('stories_limit')
@@ -28,13 +35,15 @@ def index(request, story_type='news'):
 			# story_type = 'over'
 		except ValueError:
 			over = None
-	try:
-		page = int(page)
-	except ValueError:
-		page = 1
 	context_instance = RequestContext(request)
-	cache.update_stories(story_type=story_type, over_filter=over)
-	stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
+	stories = None
+	try:
+		cache.update_stories(story_type=story_type, over_filter=over)
+		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
+	except utils.CustomError, e:
+		message = utils.UserMessage(e.value)
+		message.url = reverse('index')
+		return custom_message_view(request, message, context_instance)
 	pages = stories.paginator.page_range
 	visible_pages = 6
 	if stories.paginator.num_pages > visible_pages:
@@ -53,25 +62,14 @@ def index(request, story_type='news'):
 	return response
 
 
-def stories_json(request, page=1, limit=25):
-	cache.update_stories()
-	stories = cache.stories(page, limit)
-	return HttpResponse(serializers.serialize("json", stories), mimetype='application/json')
-
-
-def comments_json(request, commentid):
-	cache.update_comments(commentid)
-	comments = cache.comments(commentid)
-	return HttpResponse(serializers.serialize("json", comments), mimetype='application/json')
-
-
 def comments(request, commentid, json=False):
 	context_instance = RequestContext(request)
-	cache.update_comments(commentid)
+	cache.update_comments(comment_id=commentid)
 	comments = cache.comments(commentid)
-	story = None
-	polls = None
-	lastpoll = None
+	# story = None
+	# polls = None
+	# lastpoll = None
+	story, polls, lastpoll = None, None, None
 	total_votes = 0
 	try:
 		story = Stories.objects.get(pk=commentid)
@@ -85,7 +83,10 @@ def comments(request, commentid, json=False):
 			comments = HNComments.objects.get(id=commentid).get_descendants(True)
 		except HNComments.DoesNotExist:
 			raise Http404
-	first_node = comments[0]
+	try:
+		first_node = comments[0]
+	except IndexError:
+		first_node = None
 	if json:
 		template = 'templates/comments_json.html'
 	else:

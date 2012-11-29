@@ -1,3 +1,4 @@
+@import url(http://fonts.googleapis.com/css?family=Cabin+Condensed);
 /*
  * Bootstrap v2.2.1
  *
@@ -6764,12 +6765,11 @@ table.table a.comments:visited, table.table a.score:visited {
   color: #bbb;
 }
 
-/* Hacky way for hover effect on both score and comments */
 .onhover {
   text-decoration: underline;
 }
 
-.poll {
+.story {
   max-width: 800px;
 }
 
@@ -6844,7 +6844,10 @@ div.comments a {
   word-wrap: break-word;
 }
 
-/* Bootstrap related */
+.navbar .brand {
+  font-family: 'Cabin Condensed', sans-serif;
+}
+
 .btn-group-centered {
   text-align: center;
 }
@@ -6873,6 +6876,11 @@ div.comments a {
 @media (max-width: 979px) {
   .btn-navbar {
     display: none !important;
+  }
+
+  .navbar .brand {
+    padding: 10px 20px 10px;
+    margin: 0 0 0 -20px;
   }
 }
 @media (max-width: 767px) {

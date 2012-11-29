@@ -8,7 +8,7 @@
 		"url": "{{ story.url|escapejs }}",
 		"domain": "{{ story.domain|escapejs }}",
 		{% if story.selfpost %}
-		"selfpost_text": "{{ story.selfpost_text }}",
+		"selfpost_text": "{{ story.selfpost_text|escapejs }}",
 		{% endif %}
 		"score": {{ story.score|default:"0" }},
 		"username": "{{ story.username|escapejs }}",

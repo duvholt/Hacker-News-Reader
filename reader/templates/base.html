@@ -5,13 +5,14 @@
 	<title>{% block title %}Home{% endblock %} - Hacker News Reader</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="{{ STATIC_URL }}css/styles.css" rel="stylesheet">
+	<link href='http://fonts.googleapis.com/css?family=Nunito' rel='stylesheet' type='text/css'>
 	<link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico" type="image/x-icon" />
 </head>
 <body>
 	<div class="navbar">
 		<div class="navbar-inner">
 			<div class="container">
-				<a class="brand hidden-phone" href="/">HN Reader</a>
+				<a class="brand hidden-phone" href="/">Hacker News Reader</a>
 				<ul class="nav">
 					<li class="{% active request "^/[0-9 /]*$" %}"><a href="/">Home</a></li>
 					<li class="{% active request "^/about" %}"><a href="/about">About</a></li>
@@ -27,9 +28,9 @@
 	{% endblock %}
 	</div>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>
+	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
 	<script src="{{ STATIC_URL }}js/jquery.ba-throttle-debounce.js"></script>
-	
+
 	<script src="{{ STATIC_URL }}js/scripts.js"></script>
-</body> 
+</body>
 </html>

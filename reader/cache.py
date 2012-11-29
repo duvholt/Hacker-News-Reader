@@ -12,6 +12,7 @@ from collections import OrderedDict
 import time
 from tzlocal import get_localzone
 import lxml
+import reader.utils as utils
 
 
 c = pdc.Constants()
@@ -31,14 +32,17 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	# More than cache_minutes since cache was updated
 	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
-		if story_type in ['news', 'best', 'active', 'newest', 'ask']:
+		if story_type in ['best', 'active', 'newest', 'ask']:
 			url = story_type
-		elif story_type == 'over' and isinstance(over_filter, int):
+		elif story_type == 'news' and isinstance(over_filter, int):
 			url = 'over?points=' + str(over_filter)
 		else:
 			url = 'news'
 			story_type = 'news'
-		doc = urllib2.urlopen('http://news.ycombinator.com/' + url).read()
+		try:
+			doc = urllib2.urlopen('http://news.ycombinator.com/' + url).read()
+		except urllib2.URLError:
+			raise utils.CustomError('Could not connect to news.ycombinator.com, try again later')
 		soup = BeautifulSoup(doc, 'lxml')
 		# HN markup is odd. Basically every story use three rows each
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
@@ -62,14 +66,14 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 					updated_cache = True
 
 
-def update_comments(comment_id, cache_minutes=20, html_escape=False):
+def update_comments(comment_id, cache_minutes=20):
 	try:
 		cachetime = HNCommentsCache.objects.get(pk=comment_id).time
 	except HNCommentsCache.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
-		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + str(comment_id))
+		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + unicode(comment_id))
 		soup = BeautifulSoup(doc, 'lxml')
 		try:
 			story_soup = soup.html.body.table.findAll('table')[1].find('tr')
@@ -114,7 +118,7 @@ def update_comments(comment_id, cache_minutes=20, html_escape=False):
 					story['selfpost_text'] = ''
 			# Check for self post text
 			elif len(story_soup.parent.findAll('tr')) == 6:
-				story['selfpost_text'] = story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents()
+				story['selfpost_text'] = html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
 			else:
 				story['selfpost_text'] = ''
 			story_object = Stories(id=story['id'], title=story['title'],
@@ -139,7 +143,7 @@ def update_comments(comment_id, cache_minutes=20, html_escape=False):
 				# Converting indent to a more readable format (0, 1, 2...)
 				indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
 				if indenting == 0:
-					traverse_comment(comment_soup, parent_object, story_id, html_escape)
+					traverse_comment(comment_soup, parent_object, story_id)
 
 
 def story_info(story_soup):
@@ -182,7 +186,7 @@ def story_info(story_soup):
 		return False
 
 
-def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_escape=False):
+def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	comment = OrderedDict()
 	# Comment <td> container shortcut
 	td_default = comment_soup.tr.find('td', {'class': 'default'})
@@ -194,19 +198,10 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 	comment['username'] = ''.join(td_default.find('a').findAll(text=True))
 	# Get html contents of the comment excluding <span> and <font>
 	comment['text'] = td_default.find('span', {'class': 'comment'}).font.decode_contents()
-	# Remove <a>
-	comment['text'] = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment['text'])
 	# Simple hack for fixing troubles with urlize inside code tags
-	comment['text'] = re.sub(r'(</code>)', r' \1', comment['text'])
-	# Remove <code>, it is not needed inside <pre>
-	# comment['text'] = re.sub(r'\s*<code>\s*(.*)\s*[</code>]?\s*', r'  \1', comment['text'], flags=re.DOTALL)  # This was too buggy
-	# Not sure if I am going to use HTML Escaping
-	# This is really incomplete
-	if html_escape:
-		# Convert <i> to *
-		comment['text'] = re.sub(r'\s*<i>\s*(.+)\s*</i>\s*', r' *\1* ', comment['text'])
-		# HTML Escape
-		comment['text'] = html.escape(comment['text'])
+	# comment['text'] = re.sub(r'(</code>)', r' \1', comment['text'])
+
+	comment['text'] = html2markup(comment['text'])
 	hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
 	# Get percent by grabbing the red part of the color (#XY)
@@ -256,10 +251,26 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False, html_es
 				sibling_td_default = sibling_soup.tr.find('td', {'class': 'default'})
 				sibling_indenting = int(sibling_td_default.previousSibling.previousSibling.img['width'], 10) / 40
 				if sibling_indenting == indenting + 1:
-					traverse_comment(sibling_soup, comment_object, story_id, html_escape)
+					traverse_comment(sibling_soup, comment_object, story_id)
 				if sibling_indenting == indenting:
 					break
 	return True
+
+
+def html2markup(comment):
+	# Remove <a>
+	comment = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment)
+	# comment = re.sub(r'\s*<i>\s*(.+)\s*</i>\s*', r' *\1* ', comment)
+	comment = re.sub(r'</?i>', r'*', comment)
+	# Change <p> to \n
+	comment = re.sub(r'<p>', r'\n', comment)
+	comment = re.sub(r'</p>', r'', comment)
+	# Code blocks to just two spaces on a new line
+	comment = re.sub(r'<pre><code>\s*', r'  ', comment)
+	comment = re.sub(r'</code></pre>', r'', comment)
+	# HTML Escape
+	# comment = html.escape(comment)
+	return comment
 
 
 def poll_update(story_id, poll_soup):
@@ -269,6 +280,7 @@ def poll_update(story_id, poll_soup):
 				'id': poll_element.findNext('tr').findAll('td')[1].span.span['id'].lstrip('score_')
 		}
 		Poll(id=poll['id'], name=poll['name'], score=poll['score'], story_id=story_id).save()
+
 
 def stories(page=1, limit=25, story_type=None, over_filter=0):
 	now = timezone.now()

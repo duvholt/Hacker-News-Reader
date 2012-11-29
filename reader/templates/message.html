@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ message.title }}{% endblock %}
+
+{% block container %}
+<div>
+  <div>{{ message.title }}</div>
+  {% for text in message.text %}
+  <div>{{ text }}</div>
+  {% endfor %}
+  <div><a href="{{ message.url }}">Back</a></div>
+</div>
+{% endblock %}

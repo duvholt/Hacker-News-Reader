@@ -1,6 +1,7 @@
 from django import template
 from django.template.defaultfilters import stringfilter
 import re
+from django.utils import html
 register = template.Library()
 
 
@@ -50,3 +51,53 @@ def percentage(number, total, rounding=2):
 	rounding = int(rounding)
 	return round((float(number) / float(total)) * 100, rounding)
 	# return '{percent:.2%}'.format(percent=float(number) / float(total))
+
+
+@register.filter
+@stringfilter
+def markup2html(comment):
+	line_number = 0
+	new_comment = ''
+	code = False
+	for line in comment.split('\n'):
+		# Code tags
+		if re.search(r'^  .*$', line):
+			if not code:
+				line = '<p><pre><code>' + line
+				code = True
+		else:
+			if code:
+				line = '</code></pre></p>'
+				code = False
+			# Ensuring that there are more than two *
+			if len(re.findall(r'\*', line)) > 1:
+				# Replacing * with <i> or </i>
+				# TODO: r'\**\*' replace first
+				start = True
+				# Index offset
+				j = 0
+				for x in re.finditer(r'\*', line):
+					i = x.start(0)
+					if line[i + 1] == " ":
+						continue
+					if start:
+						start = False
+						italic = '<i>'
+					else:
+						start = True
+						italic = '</i>'
+					line = line[0: i + j] + italic + line[i + j + 1:]
+					# Adding offset (string has more letters after adding <i>)
+					j += len(italic) - 1
+		# urlize
+		line = html.urlize(line, 63, True)
+		# Adding <p>
+		if line_number > 0:
+			if not code:
+				line = '<p>' + line + '</p>'
+			else:
+				line = line + '\n'
+		new_comment += line
+		line_number += 1
+	return new_comment
+markup2html.is_safe = True

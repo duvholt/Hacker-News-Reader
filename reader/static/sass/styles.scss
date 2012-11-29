@@ -1,6 +1,7 @@
 @import "bootstrap-variables";
 @import "bootstrap/bootstrap";
 @import "bootstrap/responsive";
+@import url(http://fonts.googleapis.com/css?family=Cabin+Condensed);
 
 // Local variables
 $gray: #5F5F5F;
@@ -8,7 +9,7 @@ $commentEvenBackground: #EBEBEB;
 
 $smallFontSize: 0.85em;
 
-$maxwidth: 800px;
+$maxWidth: 800px;
 // Start styles
 body {
 	padding-bottom: 20px;
@@ -27,12 +28,12 @@ table.table {
 		color: #bbb;
 	}
 }
-/* Hacky way for hover effect on both score and comments */
+// Hacky way for hover effect on both score and comments
 .onhover {
 	text-decoration: underline;
 }
-.poll {
-	max-width: $maxwidth;
+.story {
+	max-width: $maxWidth;
 }
 div.story {
 	margin-left: 5px;
@@ -73,7 +74,7 @@ div.comments {
 			}
 		}
 		> div:nth-child(2) {
-			max-width: $maxwidth;
+			max-width: $maxWidth;
 		}
 		.hidetoggle {
 			letter-spacing: 0.4em;
@@ -101,7 +102,10 @@ div.comments {
 		word-wrap:break-word;
 	}
 }
-/* Bootstrap related */
+// Bootstrap related
+.navbar .brand {
+	font-family: 'Cabin Condensed', sans-serif;
+}
 .btn-group-centered {
   text-align: center;
 }
@@ -118,6 +122,10 @@ div.comments {
 @media (max-width: 979px) {
 	.btn-navbar {
 		display: none !important;
+	}
+	.navbar .brand {
+		padding: 10px 20px 10px;
+		margin: 0 0 0 -20px;
 	}
 }
 @media (max-width: 767px) {
