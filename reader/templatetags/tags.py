@@ -58,9 +58,11 @@ def percentage(number, total, rounding=2):
 def markup2html(comment):
 	line_number = 0
 	new_comment = ''
+	# For code blocks
 	code = False
-	for line in comment.split('\n'):
-		# Code tags
+	lines = comment.split('\n')
+	for line in lines:
+		# Code block tags
 		if re.search(r'^  .*$', line):
 			if not code:
 				line = '<p><pre><code>' + line
@@ -78,18 +80,20 @@ def markup2html(comment):
 				j = 0
 				for x in re.finditer(r'\*', line):
 					i = x.start(0)
-					if line[i + 1] == " ":
-						continue
 					if start:
-						start = False
+						if line[i + j + 1] == " ":
+							continue
 						italic = '<i>'
 					else:
-						start = True
 						italic = '</i>'
+					start = not start
 					line = line[0: i + j] + italic + line[i + j + 1:]
 					# Adding offset (string has more letters after adding <i>)
 					j += len(italic) - 1
-		# urlize
+		# Appnd proper closing tags if line is last and in a code block
+		if code and line == lines[-1]:
+			line += '</code></pre></p>'
+		# Create urls
 		line = html.urlize(line, 63, True)
 		# Adding <p>
 		if line_number > 0:
@@ -100,4 +104,3 @@ def markup2html(comment):
 		new_comment += line
 		line_number += 1
 	return new_comment
-markup2html.is_safe = True
