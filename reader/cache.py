@@ -111,7 +111,7 @@ def update_comments(comment_id, cache_minutes=20):
 				# I don't like using try here. Needs to be cleaned up
 				try:
 					poll_update(story['id'], story_soup.parent.findAll('tr')[5].findAll('td')[1])
-					story['selfpost_text'] = story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents()
+					story['selfpost_text'] = html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
 				except AttributeError:
 					# No comment before poll
 					poll_update(story['id'], story_soup.parent.findAll('tr')[3].findAll('td')[1])
