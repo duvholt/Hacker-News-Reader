@@ -19,12 +19,19 @@
 	<div>{{ story.selfpost_text|markup2html|safe }}</div>
 	{% endif %}
 	{% if story.poll %}
-	{% for poll in polls %}
-	<p>{{ poll.name }}: {% percentage poll.score total_votes 2 %}% ({{ poll.score }} vote{{ poll.score|pluralize }})</p>
-	<div class="progress progress-hn poll">
-		<div class="bar" style="width:  {% percentage poll.score total_votes 0 %}%"></div>
+	<a class="btn btn-poll" data-toggle="collapse" data-target=".poll-collapse">
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+	</a>
+	<div class="poll-collapse">
+		{% for poll in polls %}
+		<p>{{ poll.name }}: {% percentage poll.score total_votes 2 %}% ({{ poll.score }} vote{{ poll.score|pluralize }})</p>
+		<div class="progress progress-hn poll">
+			<div class="bar" style="width:  {% percentage poll.score total_votes 0 %}%"></div>
+		</div>
+		{% endfor %}
 	</div>
-	{% endfor %}
 	{% endif %}
 	<p>
 		{{ story.score|default:"0" }} points  by <a href="http://news.ycombinator.com/user?id={{ story.username }}">{{ story.username }}</a>

@@ -6862,6 +6862,10 @@ div.comments a {
   border-radius: 1px;
 }
 
+.progress {
+  margin-bottom: 0;
+}
+
 .progress-hn .bar, .progress .bar-hn {
   background-color: #a5492d;
   background-image: -moz-linear-gradient(top, #bc5434, #803923);
@@ -6871,6 +6875,35 @@ div.comments a {
   background-image: linear-gradient(to bottom, #bc5434, #803923);
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFBC5434', endColorstr='#FF803923', GradientType=0);
+}
+
+.btn-poll .icon-bar {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background-color: #565656;
+  -webkit-border-radius: 1px;
+  -moz-border-radius: 1px;
+  border-radius: 1px;
+  -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.btn-poll .icon-bar + .icon-bar {
+  margin-top: 3px;
+}
+
+.btn-poll {
+  display: none;
+  float: right;
+  padding: 7px 10px;
+  margin: 0 25px 10px 5px;
+}
+
+.sidebar-collapse.collapse, .poll-collapse.collapse {
+  height: auto;
+  overflow: visible;
 }
 
 @media (max-width: 979px) {
@@ -6905,11 +6938,13 @@ div.comments a {
     margin: 4px 2px 4px 4px;
   }
 
+  .poll-collapse, .poll-collapse.collapse,
   .sidebar-collapse, .sidebar-collapse.collapse {
     overflow: hidden;
     height: 0;
   }
 
+  .poll-collapse .btn,
   .sidebar-collapse .btn {
     padding: 4px 10px 4px;
     font-weight: normal;
@@ -6918,6 +6953,7 @@ div.comments a {
     border-radius: 4px;
   }
 
+  .btn-poll,
   .btn-navbar {
     display: block !important;
   }

@@ -21,6 +21,10 @@ $(function () {
 				$('.sidebar-collapse').removeAttr('style');
 				$('.sidebar-collapse').removeClass('collapse in');
 			}
+			if($('.poll-collapse.collapse').length > 0) {
+				$('.poll-collapse').removeAttr('style');
+				$('.poll-collapse').removeClass('collapse in');
+			}
 		}
 	}
 	function time_format() {

@@ -61,7 +61,7 @@ def markup2html(comment):
 	# For code blocks
 	code = False
 	lines = comment.split('\n')
-	for line in lines:
+	for index, line in enumerate(lines):
 		# Code block tags
 		if re.search(r'^  .*$', line):
 			if not code:
@@ -91,7 +91,7 @@ def markup2html(comment):
 					# Adding offset (string has more letters after adding <i>)
 					j += len(italic) - 1
 		# Appnd proper closing tags if line is last and in a code block
-		if code and line == lines[-1]:
+		if code and index == (len(lines) - 1):
 			line += '</code></pre></p>'
 		# Create urls
 		line = html.urlize(line, 63, True)

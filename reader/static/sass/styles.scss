@@ -115,10 +115,36 @@ div.comments {
 .navbar-inner {
 	@include border-radius(1px);
 }
+.progress {
+	margin-bottom: 0;
+}
 .progress-hn .bar, .progress .bar-hn {
   @include gradient-vertical($linkColor, darken($linkColor, 15%));
 }
+
+.btn-poll .icon-bar {
+	display: block;
+	width: 18px;
+	height: 2px;
+	background-color: #565656;
+	@include border-radius(1px);
+	@include box-shadow(#{0 1px 0 rgba(0,0,0,.25)});
+}
+.btn-poll .icon-bar + .icon-bar {
+	margin-top: 3px;
+}
+.btn-poll {
+	display: none;
+	float: right;
+	padding: 7px 10px;
+	margin: 0 25px 10px 5px;
+}
+.sidebar-collapse.collapse, .poll-collapse.collapse {
+	height: auto;
+	overflow: visible;
+}
 // Media styling
+// Tablet/small laptop
 @media (max-width: 979px) {
 	.btn-navbar {
 		display: none !important;
@@ -128,6 +154,7 @@ div.comments {
 		margin: 0 0 0 -20px;
 	}
 }
+// Phone
 @media (max-width: 767px) {
 	body {
 		padding-right: 0px;
@@ -148,15 +175,18 @@ div.comments {
 			margin: 4px 2px 4px 4px;
 		}
 	}
+	.poll-collapse, .poll-collapse.collapse,
 	.sidebar-collapse, .sidebar-collapse.collapse {
 		overflow: hidden;
 		height: 0;
 	}
+	.poll-collapse .btn,
 	.sidebar-collapse .btn {
 		padding: 4px 10px 4px;
 		font-weight: normal;
 		@include border-radius(4px);
 	}
+	.btn-poll,
 	.btn-navbar {
 		display: block !important;
 	}
