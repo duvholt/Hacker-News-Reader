@@ -4,7 +4,7 @@
 
 {% block title %}
 {% if story %}
-{{ story.title }}
+{{ story.title|safe }}
 {% else %}
 {{ first_node.text|truncatechars:"80" }}
 {% endif %}
@@ -14,7 +14,7 @@
 {% block container %}
 {% if story %}
 <div class="story">
-	<h4><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</h4>
+	<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {{ story.domain }}</h4>
 	{% if story.selfpost %}
 	<div>{{ story.selfpost_text|markup2html|safe }}</div>
 	{% endif %}

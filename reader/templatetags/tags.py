@@ -56,33 +56,38 @@ def percentage(number, total, rounding=2):
 @register.filter
 @stringfilter
 def markup2html(comment):
-	line_number = 0
 	new_comment = ''
 	# For code blocks
 	code = False
-	lines = comment.split('\n')
+	lines = comment.split('\n\n')
 	for index, line in enumerate(lines):
+		code_r = re.search(r'^  ', line)
 		# Code block tags
-		if re.search(r'^  .*$', line):
+		if code_r:
 			if not code:
 				line = '<p><pre><code>' + line
 				code = True
+			else:
+				line = '\n\n' + line
 		else:
-			if code:
-				line = '</code></pre></p>'
-				code = False
 			# Ensuring that there are more than two *
-			if len(re.findall(r'\*', line)) > 1:
-				# Replacing * with <i> or </i>
-				# TODO: r'\**\*' replace first
+			# TODO: There is a bug with ****. Low priority
+			asterisk_total = len(re.findall(r'[^\s]\*|\*[^\s]', line))
+			if asterisk_total > 1:
+				asterisk_count = 0
 				start = True
 				# Index offset
 				j = 0
-				for x in re.finditer(r'\*', line):
+				# Replacing * with <i> or </i>
+				for x in re.finditer(r'[^\s]\*|\*[^\s]', line):
+					asterisk_count += 1
+					# If there is an odd number of asterisks leave the last one
+					if asterisk_count == asterisk_total and asterisk_total % 2 is not 0:
+						continue
 					i = x.start(0)
+					if re.search(r'[^\s]\*', x.group(0)):
+						i += 1
 					if start:
-						if line[i + j + 1] == " ":
-							continue
 						italic = '<i>'
 					else:
 						italic = '</i>'
@@ -90,17 +95,17 @@ def markup2html(comment):
 					line = line[0: i + j] + italic + line[i + j + 1:]
 					# Adding offset (string has more letters after adding <i>)
 					j += len(italic) - 1
-		# Appnd proper closing tags if line is last and in a code block
-		if code and index == (len(lines) - 1):
-			line += '</code></pre></p>'
 		# Create urls
 		line = html.urlize(line, 63, True)
 		# Adding <p>
-		if line_number > 0:
-			if not code:
-				line = '<p>' + line + '</p>'
-			else:
-				line = line + '\n'
+		if not code_r:
+			line = '<p>' + line + '</p>'
+			# Ending code tag
+			if code:
+				line = '</code></pre></p>' + line
+				code = False
+		# Append proper closing tags if line is last and in a code block
+		if code and index == (len(lines) - 1):
+			line += '</code></pre></p>'
 		new_comment += line
-		line_number += 1
 	return new_comment

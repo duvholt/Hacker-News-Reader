@@ -67,6 +67,7 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 
 
 def update_comments(comment_id, cache_minutes=20):
+	cache_minutes = 1000
 	try:
 		cachetime = HNCommentsCache.objects.get(pk=comment_id).time
 	except HNCommentsCache.DoesNotExist:
@@ -263,7 +264,7 @@ def html2markup(comment):
 	# comment = re.sub(r'\s*<i>\s*(.+)\s*</i>\s*', r' *\1* ', comment)
 	comment = re.sub(r'</?i>', r'*', comment)
 	# Change <p> to \n
-	comment = re.sub(r'<p>', r'\n', comment)
+	comment = re.sub(r'<p>', r'\n\n', comment)
 	comment = re.sub(r'</p>', r'', comment)
 	# Code blocks to just two spaces on a new line
 	comment = re.sub(r'<pre><code>\s*', r'  ', comment)
