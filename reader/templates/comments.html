@@ -41,6 +41,17 @@
 	</p>
 </div>
 {% endif %}
+{% if perma %}
+	<div class="well well-small comment-well">
+		You are viewing a part of the comments on this submission<br>
+	{% if story %}
+		<a href="/comments/{{ story.id }}">Click here to view all the comments</a>
+	{% else %}
+		<a href="/comments/{{ first_node.parent_id }}">Click here to load parent comment</a><br>
+		Story id is not known, try clicking parent a few times
+	{% endif %}
+	</div>
+{% endif %}
 <div class="comments">
 	<ul>
 	{% recursetree nodes %}

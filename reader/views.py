@@ -64,34 +64,37 @@ def index(request, story_type='news'):
 
 def comments(request, commentid, json=False):
 	context_instance = RequestContext(request)
+	# Context
+	c = {'story': None, 'polls': None, 'lastpoll': None, 'total_votes': 0}
 	cache.update_comments(comment_id=commentid)
-	comments = cache.comments(commentid)
-	# story = None
-	# polls = None
-	# lastpoll = None
-	story, polls, lastpoll = None, None, None
-	total_votes = 0
+	c['nodes'] = cache.comments(commentid)
 	try:
-		story = Stories.objects.get(pk=commentid)
-		if story.poll:
-			polls = Poll.objects.filter(story_id=commentid).order_by('id')
-			for poll in polls:
-				total_votes += poll.score
-			lastpoll = polls.reverse()[0]
+		c['story'] = Stories.objects.get(pk=commentid)
+		if c['story'].poll:
+			c['polls'] = Poll.objects.filter(story_id=commentid).order_by('id')
+			for poll in c['polls']:
+				c['total_votes'] += poll.score
+			c['lastpoll'] = c['polls'].reverse()[0]
 	except Stories.DoesNotExist:
 		try:
-			comments = HNComments.objects.get(id=commentid).get_descendants(True)
+			c['nodes'] = HNComments.objects.get(id=commentid).get_descendants(True)
+			if c['nodes'][0]:
+				try:
+					c['story'] = Stories.objects.get(pk=c['nodes'][0].story_id)
+				except Stories.DoesNotExist:
+					c['story'] = None
+			c['perma'] = True
 		except HNComments.DoesNotExist:
 			raise Http404
 	try:
-		first_node = comments[0]
+		c['first_node'] = c['nodes'][0]
 	except IndexError:
-		first_node = None
+		c['first_node'] = None
 	if json:
 		template = 'templates/comments_json.html'
 	else:
 		template = 'templates/comments.html'
-	return render_to_response(template, {'nodes': comments, 'story': story, 'first_node': first_node, 'lastpoll': lastpoll, 'polls': polls, 'total_votes': total_votes}, context_instance)
+	return render_to_response(template, c, context_instance)
 
 
 def command(request, command):

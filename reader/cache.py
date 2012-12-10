@@ -7,7 +7,6 @@ import datetime
 import re
 from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-from django.utils import html
 from collections import OrderedDict
 import time
 from tzlocal import get_localzone

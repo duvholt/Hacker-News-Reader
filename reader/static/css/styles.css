@@ -6765,6 +6765,10 @@ table.table a.comments:visited, table.table a.score:visited {
   color: #bbb;
 }
 
+.comment-well {
+  max-width: 400px;
+}
+
 .onhover {
   text-decoration: underline;
 }
