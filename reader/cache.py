@@ -67,7 +67,6 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 
 
 def update_comments(comment_id, cache_minutes=20):
-	cache_minutes = 1000
 	try:
 		cachetime = HNCommentsCache.objects.get(pk=comment_id).time
 	except HNCommentsCache.DoesNotExist:
