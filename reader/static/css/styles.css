@@ -6766,7 +6766,16 @@ table.table a.comments:visited, table.table a.score:visited {
 }
 
 .comment-well {
-  max-width: 400px;
+  max-width: 100%;
+  margin: 4px;
+  background-color: gainsboro;
+  border: 1px solid #cacaca;
+}
+
+.about {
+  max-width: 800px;
+  padding-right: 20px;
+  padding-left: 20px;
 }
 
 .onhover {
@@ -6939,7 +6948,7 @@ div.comments a {
   }
   div.comments li {
     padding: 0px 1px 0px 5px;
-    margin: 4px 2px 4px 4px;
+    margin: 4px 1px 4px 1px;
   }
 
   .poll-collapse, .poll-collapse.collapse,
