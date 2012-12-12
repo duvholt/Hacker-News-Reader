@@ -14,7 +14,7 @@ def custom_message_view(request, message, context_instance):
 	return response
 
 
-def index(request, story_type='news'):
+def index(request, story_type='news', json=False):
 	limit = request.GET.get('limit', None)
 	page = int(request.GET.get('page', 1))
 	over = request.GET.get('over', None)
@@ -57,7 +57,11 @@ def index(request, story_type='news'):
 			left = 0
 			right = visible_pages
 		pages = pages[left:right]
-	response = render_to_response("templates/index.html", {"stories": stories, "pages": pages, 'limit': limit}, context_instance)
+	if json:
+		template = 'templates/index_json.html'
+	else:
+		template = 'templates/index.html'
+	response = render_to_response(template, {"stories": stories, "pages": pages, 'limit': limit}, context_instance)
 	response.set_cookie('stories_limit', limit)
 	return response
 
@@ -74,7 +78,6 @@ def comments(request, commentid, json=False):
 			c['polls'] = Poll.objects.filter(story_id=commentid).order_by('id')
 			for poll in c['polls']:
 				c['total_votes'] += poll.score
-			c['lastpoll'] = c['polls'].reverse()[0]
 	except Stories.DoesNotExist:
 		try:
 			c['nodes'] = HNComments.objects.get(id=commentid).get_descendants(True)
@@ -86,10 +89,6 @@ def comments(request, commentid, json=False):
 			c['perma'] = True
 		except HNComments.DoesNotExist:
 			raise Http404
-	try:
-		c['first_node'] = c['nodes'][0]
-	except IndexError:
-		c['first_node'] = None
 	if json:
 		template = 'templates/comments_json.html'
 	else:

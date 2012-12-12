@@ -17,6 +17,7 @@
 	},
 	{% endif %}
 	{% if story.poll %}
+	{% with lastpoll=polls|lastobject %}
 	"poll": [
 		{% for poll in polls %}
 		{
@@ -26,8 +27,10 @@
 		}{% if poll != lastpoll %},{% endif %}
 		{% endfor %}
 	],
+	{% endwith %}
 	{% endif %}
 	"comments": [
+	{% with first_node=nodes|first %}
 	{% recursetree nodes %}
 		{
 			"id": {{ node.id }},
@@ -49,5 +52,6 @@
 		 	{% if first_node != node or story %},{% endif %}
 		 {% endif %}
 	{% endrecursetree %}
+	{% endwith %}
 	]
 }

@@ -109,3 +109,19 @@ def markup2html(comment):
 			line += '</code></pre></p>'
 		new_comment += line
 	return new_comment
+
+
+@register.filter(is_safe=False)
+def lastobject(objects):
+	try:
+		return objects.reverse()[0]
+	except IndexError:
+		return ''
+
+
+@register.filter(is_safe=False)
+def lastpageobject(page):
+	try:
+		return page.object_list[-1]
+	except AssertionError:
+		return page.object_list[::-1][0]

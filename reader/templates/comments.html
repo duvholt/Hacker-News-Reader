@@ -54,6 +54,7 @@
 {% endif %}
 <div class="comments">
 	<ul>
+	{% with first_node=nodes|first %}
 	{% recursetree nodes %}
 		<li class="{% if node.level|add:first_node.level|divisibleby:"2" %}even{% endif %}" id="{{ node.id }}">
 			<div>
@@ -75,6 +76,7 @@
 			{% endif %}
 		</li>
 	{% endrecursetree %}
+	{% endwith %}
 	</ul>
 </div>
 {% endblock %}
