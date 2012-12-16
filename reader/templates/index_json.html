@@ -18,5 +18,9 @@
 		}{% if story != last_story %},{% endif %}
 	{% endfor %}
 	{% endwith %}
-	]
+	],
+	"page": {
+		"current": {{ stories.number }},
+		"total": {{ stories.paginator.num_pages }}
+	}
 }

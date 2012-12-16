@@ -11,7 +11,7 @@ $(function () {
 	}).bind('mouseout', function() {
 		$(this).closest('td').siblings('td').find('a.comments, a.score').removeClass('onhover');
 	});
-	$(window).resize($.debounce(300, resized));
+	$(window).resize($.debounce(100, resized));
 	time_format();
 	function resized() {
 		time_format();
