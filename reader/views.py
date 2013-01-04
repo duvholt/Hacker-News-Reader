@@ -40,7 +40,7 @@ def index(request, story_type='news', json=False):
 	try:
 		cache.update_stories(story_type=story_type, over_filter=over)
 		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
-	except utils.CustomError, e:
+	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)
 		message.url = reverse('index')
 		return custom_message_view(request, message, context_instance)

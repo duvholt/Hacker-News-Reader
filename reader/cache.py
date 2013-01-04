@@ -40,8 +40,8 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 			story_type = 'news'
 		try:
 			doc = urllib2.urlopen('http://news.ycombinator.com/' + url).read()
-		except urllib2.URLError:
-			raise utils.CustomError('Could not connect to news.ycombinator.com, try again later')
+		except:
+			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later')
 		soup = BeautifulSoup(doc, 'lxml')
 		# HN markup is odd. Basically every story use three rows each
 		stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
@@ -72,7 +72,10 @@ def update_comments(comment_id, cache_minutes=20):
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
-		doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + unicode(comment_id))
+		try:
+			doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + unicode(comment_id))
+		except:
+			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later')
 		soup = BeautifulSoup(doc, 'lxml')
 		try:
 			story_soup = soup.html.body.table.findAll('table')[1].find('tr')

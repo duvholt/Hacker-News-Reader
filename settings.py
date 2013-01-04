@@ -78,10 +78,10 @@ INTERNAL_IPS = ('127.0.0.1',)
 
 # Importing SECRET_KEY from file or generating a new one if missing.
 try:
-	from secret_key import *
+	from secret_key import SECRET_KEY
 except ImportError:
 	generate_secret_key(os.path.join(PROJECT_ROOT, 'secret_key.py'))
-	from secret_key import *
+	from secret_key import SECRET_KEY
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (

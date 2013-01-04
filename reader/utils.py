@@ -8,7 +8,7 @@ class UserMessage():
 		self.url = url
 
 
-class CustomError(Exception):
+class ShowError(Exception):
 	def __init__(self, value):
 		self.value = value
 
