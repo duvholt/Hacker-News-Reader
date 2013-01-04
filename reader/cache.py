@@ -74,6 +74,8 @@ def update_comments(comment_id, cache_minutes=20):
 	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
 		try:
 			doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + unicode(comment_id))
+			if re.search(r'^We\'ve limited requests for old items\.', doc):
+				raise urllib2.urlerror
 		except:
 			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later')
 		soup = BeautifulSoup(doc, 'lxml')

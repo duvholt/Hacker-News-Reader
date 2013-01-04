@@ -70,8 +70,13 @@ def comments(request, commentid, json=False):
 	context_instance = RequestContext(request)
 	# Context
 	c = {'story': None, 'polls': None, 'lastpoll': None, 'total_votes': 0}
-	cache.update_comments(comment_id=commentid)
-	c['nodes'] = cache.comments(commentid)
+	try:
+		cache.update_comments(comment_id=commentid)
+		c['nodes'] = cache.comments(commentid)
+	except utils.ShowError, e:
+		message = utils.UserMessage(e.value)
+		message.url = reverse('index')
+		return custom_message_view(request, message, context_instance)
 	try:
 		c['story'] = Stories.objects.get(pk=commentid)
 		if c['story'].poll:
