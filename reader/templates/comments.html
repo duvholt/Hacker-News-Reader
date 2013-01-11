@@ -2,12 +2,15 @@
 {% load mptt_tags %}
 {% load tags %}
 
+
 {% block title %}
-{% if story %}
-{{ story.title|safe }}
-{% else %}
-{{ first_node.text|truncatechars:"80" }}
-{% endif %}
+{% with first_node=nodes|first %}
+	{% if story %}
+	{{ story.title|safe }}
+	{% else %}
+	{{ first_node.text|truncatechars:"80" }}
+	{% endif %}
+{% endwith %}
 {% endblock %}
 
 
@@ -41,6 +44,7 @@
 	</p>
 </div>
 {% endif %}
+{% with first_node=nodes|first %}
 {% if perma %}
 	<div class="well well-small comment-well">
 		You are viewing a part of the comments on this submission<br>
@@ -48,13 +52,12 @@
 		<a href="/comments/{{ story.id }}">Click here to view all the comments</a>
 	{% else %}
 		<a href="/comments/{{ first_node.parent_id }}">Click here to load parent comment</a><br>
-		Story id is not known, try clicking parent a few times
+		Story ID is not known, try clicking parent a few times
 	{% endif %}
 	</div>
 {% endif %}
 <div class="comments">
 	<ul>
-	{% with first_node=nodes|first %}
 	{% recursetree nodes %}
 		<li class="{% if node.level|add:first_node.level|divisibleby:"2" %}even{% endif %}" id="{{ node.id }}">
 			<div>
@@ -76,7 +79,7 @@
 			{% endif %}
 		</li>
 	{% endrecursetree %}
-	{% endwith %}
 	</ul>
 </div>
+{% endwith %}
 {% endblock %}

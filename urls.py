@@ -25,7 +25,7 @@ urlpatterns = patterns('',
 	# url(r'^admin/', include(admin.site.urls)),
 	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/img/favicon.ico'}),
-	url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/robots.txt'}),
+	url(r'^robots\.txt$', 'django.views.generic.simple.direct_to_template', {'template': 'robots.txt', 'mimetype': 'text/plain'}),
 )
 urlpatterns += patterns('django.views.generic.simple',
 	(r'about$', 'direct_to_template', {'template': 'about.html'}),

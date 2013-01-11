@@ -12,6 +12,7 @@ import time
 from tzlocal import get_localzone
 import lxml
 import reader.utils as utils
+import httplib
 
 
 c = pdc.Constants()
@@ -40,7 +41,7 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 			story_type = 'news'
 		try:
 			doc = urllib2.urlopen('http://news.ycombinator.com/' + url).read()
-		except:
+		except (urllib2.URLError, httplib.BadStatusLine):
 			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later')
 		soup = BeautifulSoup(doc, 'lxml')
 		# HN markup is odd. Basically every story use three rows each
@@ -73,11 +74,13 @@ def update_comments(comment_id, cache_minutes=20):
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
 		try:
-			doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + unicode(comment_id))
-			if re.search(r'^We\'ve limited requests for old items\.', doc):
-				raise urllib2.urlerror
-		except:
+			doc = urllib2.urlopen('https://news.ycombinator.com/item?id=' + unicode(comment_id)).read()
+			if re.match(r'^We\'ve limited requests for old items', doc):
+				raise utils.OldItemDenied('Limited request')
+		except (urllib2.URLError, httplib.BadStatusLine):
 			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later')
+		except utils.OldItemDenied:
+			raise utils.ShowError('Requests have been limited to old items. It might take a while before you can access this.')
 		soup = BeautifulSoup(doc, 'lxml')
 		try:
 			story_soup = soup.html.body.table.findAll('table')[1].find('tr')
