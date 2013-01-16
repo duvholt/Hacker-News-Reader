@@ -1,22 +1,25 @@
-from bs4 import BeautifulSoup
-import urllib2
-import httplib
-import reader.utils as utils
-import re
 from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll
-from tzlocal import get_localzone
+import reader.utils as utils
+from django.conf import settings
 from django.utils import timezone
+from bs4 import BeautifulSoup
+import httplib
+import urllib2
+import time
+import datetime
 import parsedatetime.parsedatetime as pdt
 import parsedatetime.parsedatetime_consts as pdc
+from tzlocal import get_localzone
 from collections import OrderedDict
-import datetime
-import time
 import lxml
+import re
 
 
 c = pdc.Constants()
 p = pdt.Calendar(c)
 tz = get_localzone()
+# Getting rid of unused warning for lxml
+lxml = lxml
 
 
 def fetch(commentid=None, story_type=None, over_filter=0):
@@ -28,7 +31,10 @@ def fetch(commentid=None, story_type=None, over_filter=0):
 	elif story_type == 'news' and isinstance(over_filter, int):
 		url = 'over?points=' + str(over_filter)
 	try:
-		doc = urllib2.urlopen('http://news.ycombinator.com/' + url).read()
+		opener = urllib2.build_opener()
+		opener.addheaders = [('User-agent', 'Hacker News Reader (' + settings.DOMAIN_URL + ')')]
+		response = opener.open('http://news.ycombinator.com/' + url)
+		doc = response.read()
 		if re.match(r'^We\'ve limited requests for old items', doc):
 			raise utils.OldItemDenied('Limited request')
 	except (urllib2.URLError, httplib.BadStatusLine):
