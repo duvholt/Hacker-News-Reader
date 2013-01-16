@@ -67,11 +67,16 @@ def index(request, story_type='news', json=False):
 
 
 def comments(request, commentid, json=False):
+	if commentid:
+		try:
+			commentid = int(commentid, 10)
+		except ValueError:
+			commentid = None
 	context_instance = RequestContext(request)
 	# Context
 	c = {'story': None, 'polls': None, 'lastpoll': None, 'total_votes': 0}
 	try:
-		cache.update_comments(comment_id=commentid)
+		cache.update_comments(commentid=commentid)
 		c['nodes'] = cache.comments(commentid)
 	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)
