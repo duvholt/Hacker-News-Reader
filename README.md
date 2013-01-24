@@ -24,7 +24,7 @@ Written in Python 2.7 and uses the following:
 
 Currently the project scrapes news.ycombinator.com directly which leads to some problems:
 * One major problem is being unable to scrape older comments too often
-    * The �official� api HNSearch doesn�t allow fetching by id rendering it completely useless for my use and most of the other unofficial apis have some problems with the formatting. 
+    * The "official" api HNSearch doesn't allow fetching by id rendering it completely useless for my use and most of the other unofficial apis have some problems with the formatting. 
 * Semi-random banning of the scrape IP.
     * Normally I would just scrape with different IP addresses, but currently the project is hosted on AppFog free tier which only gives me one IP. I have a working port for Google App Engine, but for some reason it is unable to scrape HN at all. 
 
