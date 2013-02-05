@@ -46,7 +46,7 @@ def fetch(commentid=None, story_type=None, over_filter=0):
 
 def stories(story_type, over_filter):
 	doc = fetch(story_type=story_type, over_filter=over_filter)
-	soup = BeautifulSoup(doc, 'lxml')
+	soup = BeautifulSoup(doc, 'lxml', from_encoding='utf-8')
 	# HN markup is odd. Basically every story use three rows each
 	stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 	updated_cache = False
@@ -71,7 +71,7 @@ def stories(story_type, over_filter):
 
 def comments(commentid, cache_minutes=20):
 	doc = fetch(commentid=commentid)
-	soup = BeautifulSoup(doc, 'lxml')
+	soup = BeautifulSoup(doc, 'lxml', from_encoding='utf-8')
 	try:
 		story_soup = soup.html.body.table.findAll('table')[1].find('tr')
 	except AttributeError:
