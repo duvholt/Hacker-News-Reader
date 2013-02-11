@@ -6,10 +6,10 @@ This project was started out of frustration from lack of proper mobile layout an
 The main goal of the project is to give a more user friendly interface that should work on every platform. Mobile support is especially important. 
 
 **Current features:** 
-* Frontpage submissions and some simple sorting/filtering of those (new, top, Ask HN, etc.)
+* Frontpage submissions and some simple sorting/filtering of those (new, top, Ask HN, etc.).
 * Full support for comments viewing including polls and Ask HN posts. 
-* Can act as an API in reddit style (append .json to any page to get json)
-* Responsive layout thanks to Bootstrap (with some tweaking)
+* Can act as an API in reddit style (append .json to any page to get json output).
+* Responsive layout thanks to Bootstrap (with some tweaking).
 * Some comment enhancements like original posters name in a different color and comment collapsing. More planned. 
 
 Written in Python 2.7 and uses the following:
