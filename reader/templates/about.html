@@ -12,27 +12,41 @@
 		</div>
 		<p>This project was started out of frustration from lack of proper mobile layout and other minor annoyances.
 		The main goal of the project is to give a more user friendly interface that should work on every platform. Mobile support is especially important. </p>
-		<p><strong>Current features:</strong>
-		<em> Frontpage submissions and some simple sorting/filtering of those (new, top, Ask HN, etc.).
-		</em> Full support for comments viewing including polls and Ask HN posts.
-		<em> Can act as an API in reddit style (append .json to any page to get json output).
-		</em> Responsive layout thanks to Bootstrap (with some tweaking).
-		* Some comment enhancements like original posters name in a different color and comment collapsing. More planned. </p>
-		<p>Written in Python 2.7 and uses the following:
-		<em> Django
-		</em> Bootstrap as a CSS framework
-		<em> BeautifulSoup for parsing HTML
-		</em> Sass/Compass for CSS
-		<em> jQuery
-		</em> PostgreSQL
-		<em> Various timezone/time packages
-		</em> Check <a href="https://github.com/cXhristian/Hacker-News-Reader/blob/master/requirements.txt">requirements.txt</a> for a full list of Python packages</p>
-		<p>Currently the project scrapes news.ycombinator.com directly which leads to some problems:
-		<em> One major problem is being unable to scrape older comments too often
-		* The "official" api HNSearch doesn't allow fetching by id rendering it completely useless for my use and most of the other unofficial apis have some problems with the formatting.
-		</em> Semi-random banning of the scrape IP.
-		* Normally I would just scrape with different IP addresses, but currently the project is hosted on AppFog free tier which only gives me one IP. I have a working port for Google App Engine, but for some reason it is unable to scrape HN at all. </p>
-		<p><a href="https://github.com/cXhristian/Hacker-News-Reader"><strong>Source available on GitHub</strong></a></p>
+
+		<p><strong>Current features:</strong> </p>
+
+		<ul>
+			<li>Frontpage submissions and some simple sorting/filtering of those (new, top, Ask HN, etc.).</li>
+			<li>Full support for comments viewing including polls and Ask HN posts. </li>
+			<li>Can act as an API in reddit style (append .json to any page to get json output).</li>
+			<li>Responsive layout thanks to Bootstrap (with some tweaking).</li>
+			<li>Some comment enhancements like original posters name in a different color and comment collapsing. More planned. </li>
+		</ul><p>Written in Python 2.7 and uses the following:</p>
+
+		<ul>
+			<li>Django</li>
+			<li>Bootstrap as a CSS framework</li>
+			<li>BeautifulSoup for parsing HTML</li>
+			<li>Sass/Compass for CSS</li>
+			<li>jQuery</li>
+			<li>PostgreSQL</li>
+			<li>Various timezone/time packages</li>
+			<li>Check <a href="/cXhristian/Hacker-News-Reader/blob/master/Hacker-News-Reader/blob/master/requirements.txt">requirements.txt</a> for a full list of Python packages</li>
+		</ul><p>Currently the project scrapes news.ycombinator.com directly which leads to some problems:</p>
+
+		<ul>
+			<li>One major problem is being unable to scrape older comments too often
+			<ul>
+				<li>The "official" api HNSearch doesn't allow fetching by id rendering it completely useless for my use and most of the other unofficial apis have some problems with the formatting. </li>
+			</ul>
+			</li>
+			<li>Semi-random banning of the scrape IP.
+
+		<ul>
+			<li>Normally I would just scrape with different IP addresses, but currently the project is hosted on AppFog free tier which only gives me one IP. I have a working port for Google App Engine, but for some reason it is unable to scrape HN at all. </li>
+		</ul>
+		</li>
+<p><a href="https://github.com/cXhristian/Hacker-News-Reader"><strong>Source available on GitHub</strong></a></p>
 	</div>
 </div>
 {% endblock %}
