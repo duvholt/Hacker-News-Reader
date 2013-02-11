@@ -7,37 +7,32 @@
 		<div class="page-header">
 			<h1>Hacker News Reader</h1>
 			<small>
-				A small project aiming to provide a better user interface for Hacker News.<br>
-				<strong>This is site is not afflicted with Y Combinator in any way.</strong>
+				<em>Unofficial UI for news.ycombinator.com</em>
 			</small>
 		</div>
-		<p>Name is subject to change due to other (web)apps using the same name.</p>
-		<p>This small web-app is first of all a project I
-		started as a tool for learning Python and Django. I am very new to
-		both and have earlier used PHP for web programming.</p>
-		<p>The biggest reason I started this project was because I wanted to browse HN on Android phone and the web page was hard to read. And all the apps I could find on Play Store was lacking some functions that made it hard to use.</p>
-		<p>I am using <a href="http://twitter.github.com/bootstrap/">Bootstrap</a> as a CSS framework (with a still very
-		unfinished theme), <a href="http://sass-lang.com/">Sass</a> for CSS, <a href="http://www.crummy.com/software/BeautifulSoup/">BeautifulSoup</a> for HTML parsing, <a href="https://www.djangoproject.com/">Django</a> as a web
-		framework and <a href="http://www.postgresql.org/">PostgreSQL</a> as the database (actually for the moment I am using MySQL because PostgreSQL is not stable on AppFog). <br>
-		And for hosting I am using <a href="https://www.appfog.com/">AppFog</a> at the moment on their free plan. <br>
-		You can check <a href="https://github.com/cXhristian/Hacker-News-Reader/blob/master/requirements.txt">requirements.txt on Github</a> if you are actually interested in what
-		modules I use.
-		</p>
-		<p>The site is running on a 20min cache for the front
-		page (one cache for each sorting) and 20min cache for each story. The
-		plan is to run a worker for fetching the front page (and just the
-		default front page) every hour or so to provide a better coverage of
-		stories.
-		</p>
-		<p>Currently most of the site does not use ajax or
-		similar techniques for sorting etc, but that is planned as soon as I
-		get the site to work fine without javascript. I don't want to site to
-		end up being an unnavigable mess for noscript users.
-		</p>
-		<p>I am also planning to make an Android app with a similar function as this site, but I have no prior experience with Android programming and limited knowledge with Java so it might take a while.</p>
-		<p><strong><a href="https://github.com/cXhristian/Hacker-News-Reader">The project is available at Github</a>. Feel
-		free to look over the code and give me tips as I am sure as a novice
-		I am doing many mistakes. :-)</strong></p>
+		<p>This project was started out of frustration from lack of proper mobile layout and other minor annoyances.
+		The main goal of the project is to give a more user friendly interface that should work on every platform. Mobile support is especially important. </p>
+		<p><strong>Current features:</strong>
+		<em> Frontpage submissions and some simple sorting/filtering of those (new, top, Ask HN, etc.).
+		</em> Full support for comments viewing including polls and Ask HN posts.
+		<em> Can act as an API in reddit style (append .json to any page to get json output).
+		</em> Responsive layout thanks to Bootstrap (with some tweaking).
+		* Some comment enhancements like original posters name in a different color and comment collapsing. More planned. </p>
+		<p>Written in Python 2.7 and uses the following:
+		<em> Django
+		</em> Bootstrap as a CSS framework
+		<em> BeautifulSoup for parsing HTML
+		</em> Sass/Compass for CSS
+		<em> jQuery
+		</em> PostgreSQL
+		<em> Various timezone/time packages
+		</em> Check <a href="https://github.com/cXhristian/Hacker-News-Reader/blob/master/requirements.txt">requirements.txt</a> for a full list of Python packages</p>
+		<p>Currently the project scrapes news.ycombinator.com directly which leads to some problems:
+		<em> One major problem is being unable to scrape older comments too often
+		* The "official" api HNSearch doesn't allow fetching by id rendering it completely useless for my use and most of the other unofficial apis have some problems with the formatting.
+		</em> Semi-random banning of the scrape IP.
+		* Normally I would just scrape with different IP addresses, but currently the project is hosted on AppFog free tier which only gives me one IP. I have a working port for Google App Engine, but for some reason it is unable to scrape HN at all. </p>
+		<p><a href="https://github.com/cXhristian/Hacker-News-Reader"><strong>Source available on GitHub</strong></a></p>
 	</div>
 </div>
 {% endblock %}
