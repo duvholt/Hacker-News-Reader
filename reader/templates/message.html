@@ -6,7 +6,7 @@
 <div>
   <h4>{{ message.title }}</h4>
   {% for text in message.text %}
-  <div>{{ text }}</div>
+  <div>{{ text|safe }}</div>
   {% endfor %}
   <div><a href="{{ message.url }}">Back</a></div>
 </div>

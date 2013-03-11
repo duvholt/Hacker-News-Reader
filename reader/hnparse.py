@@ -8,15 +8,15 @@ import urllib2
 import time
 import datetime
 import parsedatetime.parsedatetime as pdt
-import parsedatetime.parsedatetime_consts as pdc
+# import parsedatetime.parsedatetime_consts as pdc
 from tzlocal import get_localzone
 from collections import OrderedDict
 import lxml
 import re
 
 
-c = pdc.Constants()
-p = pdt.Calendar(c)
+# c = pdc.Constants()
+p = pdt.Calendar()
 tz = get_localzone()
 # Getting rid of unused warning for lxml
 lxml = lxml

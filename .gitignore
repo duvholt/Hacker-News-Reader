@@ -1,10 +1,10 @@
-venv
+env
 *.pyc
 *.log
 *.pot
-local_settings.py
-.sublime-workspace
-.sublime-project
+localsettings.py
 secret_key.py
 .sass-cache
 manifest.yml
+hn.db
+static

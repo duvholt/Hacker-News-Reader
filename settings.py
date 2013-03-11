@@ -1,7 +1,6 @@
 # Django settings for a generic project.
 import os
 from generate_secret_key import generate_secret_key
-import dj_database_url
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -77,8 +76,6 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-INTERNAL_IPS = ('127.0.0.1',)
-
 # Importing SECRET_KEY from file or generating a new one if missing.
 try:
 	from secret_key import SECRET_KEY
@@ -102,8 +99,6 @@ MIDDLEWARE_CLASSES = (
 	# Uncomment the next line for simple clickjacking protection:
 	# 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django.middleware.gzip.GZipMiddleware',
-	'debug_toolbar.middleware.DebugToolbarMiddleware',
-	'middleware.ProfileMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -140,67 +135,19 @@ INSTALLED_APPS = (
 	'reader',
 	'south',
 	'mptt',
-	'debug_toolbar',
 )
 
-# LOGGING = {
-# 	'version': 1,
-# 	'disable_existing_loggers': True,
-# 	'formatters': {
-# 		'standard': {
-# 			'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-# 		},
-# 	},
-# 	'handlers': {
-# 		'default': {
-# 			'level': 'DEBUG',
-# 			'class': 'logging.handlers.RotatingFileHandler',
-# 			'filename': 'logs/mylog.log',
-# 			'maxBytes': 1024 * 1024 * 5,  # 5 MB
-# 			'backupCount': 5,
-# 			'formatter': 'standard',
-# 		},
-# 		'request_handler': {
-# 				'level': 'DEBUG',
-# 				'class': 'logging.handlers.RotatingFileHandler',
-# 				'filename': 'logs/django_request.log',
-# 				'maxBytes': 1024 * 1024 * 5,  # 5 MB
-# 				'backupCount': 5,
-# 				'formatter': 'standard',
-# 		},
-# 	},
-# 	'loggers': {
+# This will likely be overriden by localsettings.py
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+		'NAME': 'hn.db',                      # Or path to database file if using sqlite3.
+	},
+}
 
-# 		'': {
-# 			'handlers': ['default'],
-# 			'level': 'DEBUG',
-# 			'propagate': True
-# 		},
-# 		'django.request': {  # Stop SQL debug from logging to main logger
-# 			'handlers': ['request_handler'],
-# 			'level': 'DEBUG',
-# 			'propagate': False
-# 		},
-# 	}
-# }
+ALLOWED_HOSTS = ['localhost']
 
-# AppFog database connection
-if 'VCAP_SERVICES' in os.environ:
-	import json
-	vcap_services = json.loads(os.environ['VCAP_SERVICES'])
-	# XXX: avoid hardcoding here
-	psql_srv = vcap_services['mysql-5.1'][0]
-	cred = psql_srv['credentials']
-	DATABASES = {
-		'default': {
-			'ENGINE': 'django.db.backends.mysql',
-			'NAME': cred['name'],
-			'USER': cred['user'],
-			'PASSWORD': cred['password'],
-			'HOST': cred['hostname'],
-			'PORT': cred['port'],
-			}
-		}
-else:
-	# Heroku and local database
-	DATABASES = {'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))}
+try:
+	from localsettings import *
+except ImportError:
+	pass

@@ -1,6 +1,8 @@
 from django.conf.urls.defaults import *
-from django.contrib import admin
+# from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.generic.base import RedirectView
+from django.views.generic import TemplateView
 import settings
 
 # Uncomment the next two lines to enable the admin:
@@ -8,8 +10,10 @@ import settings
 # admin.autodiscover()
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+	'',
 	# url(r'^about', 'reader.views.index'),
+	(r'about$', TemplateView.as_view(template_name='about.html')),
 	# url(r'^contact', 'reader.views.index'),
 	url(r'^command/(?P<command>\w+)/$', 'reader.views.command', name='command'),
 	# Main page submssions
@@ -24,11 +28,8 @@ urlpatterns = patterns('',
 	# Uncomment the next line to enable the admin:
 	# url(r'^admin/', include(admin.site.urls)),
 	# Just a simple redirect for the favicon
-	url(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/img/favicon.ico'}),
-	url(r'^robots\.txt$', 'django.views.generic.simple.direct_to_template', {'template': 'robots.txt', 'mimetype': 'text/plain'}),
-)
-urlpatterns += patterns('django.views.generic.simple',
-	(r'about$', 'direct_to_template', {'template': 'about.html'}),
+	url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
+	url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 )
 # Couldn't find a decent way to serve staticfiles with AppFog
 if settings.DEBUG:
