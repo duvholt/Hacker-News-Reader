@@ -16,8 +16,8 @@
 				<li class="nav-header">Sorting
 					<ul class="nav nav-list">
 						<li class="{% active request '(^/$|^/page/|^/limit/|^/over/)' %}"><a href="/">Frontpage</a></li>
-						<li class="{% active request '^/ask' %}"><a href="/ask">Ask HN</a></li>			
-						<li class="{% active request '^/best' %}"><a href="/best">Best</a></li>	
+						<li class="{% active request '^/ask' %}"><a href="/ask">Ask HN</a></li>
+						<li class="{% active request '^/best' %}"><a href="/best">Best</a></li>
 						<li class="{% active request '^/newest' %}"><a href="/newest">Newest</a></li>
 					</ul>
 				</li>
@@ -55,7 +55,7 @@
 					<td><a class="comments" href="/comments/{{ story.id }}">{{ story.comments|default:"0" }}</a></td>
 					<td><a class="score" href="/comments/{{ story.id }}">{{ story.score|default:"0" }}</a></td>
 					{% if story.selfpost %}
-					<td><a class="link" href="/comments/{{ story.id }}">{{ story.title }}</a></td>
+					<td><a class="link" href="/comments/{{ story.id }}">{{ story.title|safe }}</a></td>
 					{% else %}
 					<td><a class="link" href="{{ story.url }}">{{ story.title }}</a> {{ story.domain }}</td>
 					{% endif %}
@@ -72,23 +72,23 @@
 				{% else %}
 				<li class="disabled"><span>&laquo;</span></li>
 				{% endif %}
-				
+
 				{% if stories.has_previous %}
 				<li><a href="{% query_string "page=stories.previous_page_number" "" %}">&lsaquo;</a></li>
 				{% else %}
 				<li class="disabled"><span>&lsaquo;</span></li>
 				{% endif %}
-				
+
 				{% for page in pages %}
 				<li{% if page == stories.number %} class="active" {% endif %}><a href="{% query_string "page=page" "" %}">{{ page }}</a></li>
 				{% endfor %}
-				
+
 				{% if stories.has_next %}
 				<li><a href="{% query_string "page=stories.next_page_number" "" %}">&rsaquo;</a></li>
 				{% else %}
 				<li class="disabled"><span>&rsaquo;</span></li>
 				{% endif %}
-					
+
 				{% if stories.number != stories.paginator.num_pages %}
 				<li><a href="{% query_string "page=stories.paginator.num_pages" "" %}">&raquo;</a></li>
 				{% else %}
