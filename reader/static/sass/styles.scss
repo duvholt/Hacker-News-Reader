@@ -78,12 +78,9 @@ div.comments {
 			> a, > span {
 				font-size: $smallFontSize;
 				color: $gray;
-				a {
-					color: $gray;
-				}
-				a.op {
-					color: $linkColor;
-				}
+			}
+			> a.op {
+				color: $linkColor;
 			}
 			&.selected {
 				outline: 1px dotted black;
