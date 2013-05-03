@@ -60,7 +60,7 @@
 	<ul>
 	{% recursetree nodes %}
 		<li class="{% if node.level|add:first_node.level|divisibleby:"2" %}even{% endif %}" id="{{ node.id }}">
-			<div>
+			<div class="comment">
 				<a href="#" class="hidetoggle">[-]</a>
 				<a{% if node.username == story.username %} class="op"{% endif %} href="http://news.ycombinator.com/user?id={{ node.username }}">{{ node.username }}</a>
 				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span>
@@ -70,8 +70,8 @@
 				{% elif not story and first_node == node %}
 				<a href="/comments/{{ node.story_id }}">parent</a>
 				{% endif %}
+				<div class="content" style="color: {{ node.hiddencolor }};">{{ node.text|markup2html|safe }}</div>
 			</div>
-			<div class="content" style="color: {{ node.hiddencolor }};">{{ node.text|markup2html|safe }}</div>
 			{% if not node.is_leaf_node %}
 			<ul class="children">
 				{{ children }}

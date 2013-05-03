@@ -49,7 +49,7 @@ $(function () {
 	}
 	$('.comments .hidetoggle').click(function (e) {
 		var toggler = $(this);
-		var content = $(this).parent().siblings('.content');
+		var content = $(this).siblings('.content');
 		var children = $(this).parent().siblings('.children');
 		if(toggler.data("state") === 'hidden') {
 			toggler.html('[-]');
@@ -67,5 +67,9 @@ $(function () {
 	});
 	$('.comments .content a[href*="item?id="]').each(function () {
 		$(this).attr('href', $(this).attr('href').replace(/https?:\/\/news.ycombinator.com\/item\?id=(\d+)/, '/comments/$1'));
+	});
+	$(".comments .comment").click(function () {
+		$(".comments .comment").removeClass("selected");
+		$(this).addClass("selected");
 	});
 });

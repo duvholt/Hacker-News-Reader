@@ -74,39 +74,48 @@ div.comments {
 				background-color: white;
 			}
 		}
-		> div:first-child {
-			font-size: $smallFontSize;
-			color: $gray;
-			a {
+		.comment {
+			> a, > span {
+				font-size: $smallFontSize;
 				color: $gray;
+				a {
+					color: $gray;
+				}
+				a.op {
+					color: $linkColor;
+				}
 			}
-			a.op {
-				color: $linkColor;
+			&.selected {
+				outline: 1px dotted black;
+				background: rgba(0, 0, 0, 0.06);
+				.content {
+					color: #000000 !important; // :-(
+				}
 			}
-		}
-		> div:nth-child(2) {
-			max-width: $maxWidth;
-		}
-		.hidetoggle {
-			letter-spacing: 0.4em;
-		}
-		pre {
-			position: relative;
-			padding: 25px 10px 5px;
-			*padding-top: 19px;
-		}
-		pre:after {
-			content: "Quote";
-			position: absolute;
-			top: -1px;
-			left: -1px;
-			padding: 3px 7px;
-			font-size: 12px;
-			font-weight: bold;
-			background-color: #f5f5f5;
-			border: 1px solid #ddd;
-			color: #9da0a4;
-			@include border-radius(4px 0 4px 0);
+			.content {
+				max-width: $maxWidth;
+			}
+			.hidetoggle {
+				letter-spacing: 0.4em;
+			}
+			pre {
+				position: relative;
+				padding: 25px 10px 5px;
+				*padding-top: 19px;
+			}
+			pre:after {
+				content: "Quote";
+				position: absolute;
+				top: -1px;
+				left: -1px;
+				padding: 3px 7px;
+				font-size: 12px;
+				font-weight: bold;
+				background-color: #f5f5f5;
+				border: 1px solid #ddd;
+				color: #9da0a4;
+				@include border-radius(4px 0 4px 0);
+			}
 		}
 	}
 	a {
