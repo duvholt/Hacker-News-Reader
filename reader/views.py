@@ -2,7 +2,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, Http404
 from django.template import RequestContext
 import reader.cache as cache
-from reader.models import Stories, HNComments, Poll
+from reader.models import Stories, HNComments, Poll, UserInfo
 from django.core import management
 import reader.utils as utils
 from django.core.urlresolvers import reverse
@@ -103,6 +103,25 @@ def comments(request, commentid, json=False):
 		template = 'templates/comments_json.html'
 	else:
 		template = 'templates/comments.html'
+	return render_to_response(template, c, context_instance)
+
+
+def userpage(request, username, json=False):
+	c = {}
+	context_instance = RequestContext(request)
+	try:
+		cache.update_userpage(username=username)
+		c['userinfo'] = cache.userinfo(username)
+	except utils.ShowError, e:
+		message = utils.UserMessage(e.value)
+		message.url = reverse('index')
+		return custom_message_view(request, message, context_instance)
+	except UserInfo.DoesNotExist:
+		raise Http404
+	if json:
+		template = 'templates/user_json.html'
+	else:
+		template = 'templates/user.html'
 	return render_to_response(template, c, context_instance)
 
 

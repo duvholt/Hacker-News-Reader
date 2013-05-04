@@ -1,4 +1,7 @@
 import re
+import datetime
+import parsedatetime.parsedatetime as pdt
+from tzlocal import get_localzone
 
 
 class UserMessage():
@@ -21,6 +24,10 @@ class OldItemDenied(Exception):
 	pass
 
 
+class UrlDenied(Exception):
+	pass
+
+
 def html2markup(comment):
 	# Remove <a>
 	comment = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment)
@@ -39,3 +46,9 @@ def calculate_score(votes, item_hour_age, gravity=1.8):
 	# Hacker News Sorting
 	# Taken from http://amix.dk/blog/post/19574
 	return (votes - 1) / pow((item_hour_age + 2), gravity)
+
+
+def parse_time(time_string):
+	p = pdt.Calendar()
+	tz = get_localzone()
+	return datetime.datetime(*p.parse(time_string)[0][:6]).replace(tzinfo=tz)

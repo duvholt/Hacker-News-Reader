@@ -2,7 +2,7 @@ from django.utils import timezone
 import parsedatetime.parsedatetime as pdt
 # import parsedatetime.parsedatetime_consts as pdc
 import datetime
-from reader.models import Stories, HNComments, StoryCache, HNCommentsCache
+from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, UserInfo
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from tzlocal import get_localzone
 import reader.utils as utils
@@ -37,6 +37,16 @@ def update_comments(commentid, cache_minutes=20):
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
 		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
+
+
+def update_userpage(username, cache_minutes=0):
+	try:
+		cachetime = UserInfo.objects.get(pk=username).cache
+	except UserInfo.DoesNotExist:
+		# Force updating cache
+		cachetime = timezone.now() - datetime.timedelta(days=1)
+	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
+		hnparse.userpage(username=username)
 
 
 def stories(page=1, limit=25, story_type=None, over_filter=0):
@@ -74,3 +84,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 
 def comments(story_id):
 	return HNComments.objects.all().filter(story_id=story_id)
+
+
+def userinfo(username):
+	return UserInfo.objects.get(pk__iexact=username)

@@ -44,6 +44,15 @@ class HNCommentsCache(models.Model):
 	time = models.DateTimeField(null=True, auto_now=True)
 
 
+class UserInfo(models.Model):
+	username = models.CharField(max_length=150, primary_key=True)
+	created = models.DateTimeField()
+	karma = models.IntegerField(null=True, default=1)
+	avg = models.DecimalField(null=True, default="", max_digits=20, decimal_places=2)
+	about = models.TextField(default="", null=True)
+	cache = models.DateTimeField(auto_now_add=True, null=True)
+
+
 class Poll(models.Model):
 	id = models.PositiveIntegerField(primary_key=True)
 	name = models.CharField(max_length=100)

@@ -1,0 +1,15 @@
+{% load tags %}
+{
+	"user": [
+		{
+			"username": "{{ userinfo.username }}",
+			"created": "{{ userinfo.username|date:'r' }}",
+			"karma": {{ userinfo.karma }},
+			"avg": {{ userinfo.avg }},
+			{% if userinfo.about %}
+			"about": "{{ userinfo.about|escapejs }}",
+			{% endif %}
+			"cache": "{{ userinfo.cache|date:'r' }}"
+		}
+	]
+}

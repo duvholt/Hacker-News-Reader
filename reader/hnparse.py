@@ -1,4 +1,4 @@
-from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll
+from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
 import reader.utils as utils
 from django.conf import settings
 from django.utils import timezone
@@ -7,56 +7,66 @@ import httplib
 import urllib2
 import time
 import datetime
-import parsedatetime.parsedatetime as pdt
-# import parsedatetime.parsedatetime_consts as pdc
-from tzlocal import get_localzone
 from collections import OrderedDict
 import lxml
 import re
+from decimal import Decimal, InvalidOperation
 
-
-# c = pdc.Constants()
-p = pdt.Calendar()
-tz = get_localzone()
 # Getting rid of unused warning for lxml
 lxml = lxml
 
 
-def fetch(commentid=None, story_type=None, over_filter=0):
-# Fetching plain HTML from comments or frontpage
-	if isinstance(commentid, int):
-		url = 'item?id=' + unicode(commentid)
-	elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
-		url = story_type
-	elif story_type == 'news' and isinstance(over_filter, int):
-		url = 'over?points=' + str(over_filter)
-	try:
-		opener = urllib2.build_opener()
-		opener.addheaders = [('User-agent', 'Hacker News Reader (' + settings.DOMAIN_URL + ')')]
-		response = opener.open('http://news.ycombinator.com/' + url)
-		doc = response.read()
-		if re.match(r'^We\'ve limited requests for old items', doc):
-			raise utils.OldItemDenied('Limited request')
-	except (urllib2.URLError, httplib.BadStatusLine):
-		raise utils.ShowError('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
-	except utils.OldItemDenied:
-		raise utils.ShowError('Requests have been limited for old items. It might take a while before you can access this.')
-	return doc
+class Fetch(object):
+# Kinda silly to use a class with static only methods
+	@staticmethod
+	def comments(commentid):
+		return Fetch.read('item?id=' + unicode(commentid))
+
+	@staticmethod
+	def stories(story_type, over_filter=None):
+		if story_type == 'news' and isinstance(over_filter, int):
+			return Fetch.read('over?points=' + unicode(over_filter))
+		elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
+			return Fetch.read(story_type)
+
+	@staticmethod
+	def userpage(username):
+		return Fetch.read('user?id=' + unicode(username))
+
+	@staticmethod
+	def read(url):
+		try:
+			opener = urllib2.build_opener()
+			opener.addheaders = [('User-agent', 'Hacker News Reader (' + settings.DOMAIN_URL + ')')]
+			response = opener.open('http://news.ycombinator.com/' + url)
+			doc = response.read()
+			if re.match(r'^We\'ve limited requests for old items', doc):
+				raise utils.OldItemDenied('Limited request')
+			elif re.match(r'^We\'ve limited requests for this url', doc):
+				raise utils.UrlDenied('Limited request')
+		except (urllib2.URLError, httplib.BadStatusLine):
+			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
+		except utils.OldItemDenied:
+			raise utils.ShowError('Requests have been limited for old items. It might take a while before you can access this.')
+		except utils.UrlDenied:
+			raise utils.ShowError('Requests have been limited for this page. It might take a while before you can access this.')
+		return BeautifulSoup(doc, 'lxml', from_encoding='utf-8')
 
 
 def stories(story_type, over_filter):
-	doc = fetch(story_type=story_type, over_filter=over_filter)
-	soup = BeautifulSoup(doc, 'lxml', from_encoding='utf-8')
+	soup = Fetch.stories(story_type=story_type, over_filter=over_filter)
 	# HN markup is odd. Basically every story use three rows each
 	stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
 	updated_cache = False
 	for story_soup in stories_soup:
 		story = story_info(story_soup)
 		if story:
-			story_object = Stories(id=story['id'], title=story['title'],
-							url=story['url'], score=story['score'], selfpost=story['selfpost'],
-							domain=story['domain'], username=story['username'], comments=story['comments'],
-							story_type=story_type, time=story['time'], cache=timezone.now())
+			story_object = Stories(
+				id=story['id'], title=story['title'],
+				url=story['url'], score=story['score'], selfpost=story['selfpost'],
+				domain=story['domain'], username=story['username'], comments=story['comments'],
+				story_type=story_type, time=story['time'], cache=timezone.now()
+			)
 			story_object.save()
 			# Only update cache once
 			if not updated_cache:
@@ -70,8 +80,7 @@ def stories(story_type, over_filter):
 
 
 def comments(commentid, cache_minutes=20):
-	doc = fetch(commentid=commentid)
-	soup = BeautifulSoup(doc, 'lxml', from_encoding='utf-8')
+	soup = Fetch.comments(commentid=commentid)
 	try:
 		story_soup = soup.html.body.table.findAll('table')[1].find('tr')
 	except AttributeError:
@@ -118,10 +127,12 @@ def comments(commentid, cache_minutes=20):
 			story['selfpost_text'] = utils.html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
 		else:
 			story['selfpost_text'] = ''
-		story_object = Stories(id=story['id'], title=story['title'],
-						url=story['url'], score=story['score'], selfpost=story['selfpost'],
-						selfpost_text=story['selfpost_text'], poll=poll, domain=story['domain'],
-						username=story['username'],	comments=story['comments'], time=story['time'], cache=timezone.now())
+		story_object = Stories(
+			id=story['id'], title=story['title'],
+			url=story['url'], score=story['score'], selfpost=story['selfpost'],
+			selfpost_text=story['selfpost_text'], poll=poll, domain=story['domain'],
+			username=story['username'],	comments=story['comments'], time=story['time'], cache=timezone.now()
+		)
 		story_object.save()
 	if story or permalink:
 		# Updating cache
@@ -173,7 +184,7 @@ def story_info(story_soup):
 			story['comments'] = 0
 		# Unfortunalely HN doesn't show any form timestamp other than "x hours"
 		# meaning that the time scraped is only approximately correct.
-		story['time'] = datetime.datetime(*p.parse(subtext.findAll("a")[1].previousSibling + ' ago')[0][:6]).replace(tzinfo=tz)
+		story['time'] = utils.parse_time(subtext.findAll("a")[1].previousSibling + ' ago')  # datetime.datetime(*p.parse()[0][:6]).replace(tzinfo=tz)
 		# parsedatetime doesn't have any built in support for DST
 		if time.localtime().tm_isdst:
 			story['time'] = story['time'] + datetime.timedelta(hours=-1)
@@ -204,7 +215,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	# Get percent by grabbing the red part of the color (#XY)
 	comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
 	comment['hiddencolor'] = hex_color
-	comment['time'] = datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
+	comment['time'] = utils.parse_time(td_default.find('a').nextSibling + ' ago')  # datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst == 1:
 		comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
@@ -224,9 +235,11 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 			except HNComments.DoesNotExist:
 				# Oops, looks like we'll just store a fake one for now
 				pass
-	comment_object = HNComments(id=comment['id'], story_id=story_id, username=comment['username'],
-								text=comment['text'], hiddenpercent=comment['hiddenpercent'],
-								hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object)
+	comment_object = HNComments(
+		id=comment['id'], story_id=story_id, username=comment['username'],
+		text=comment['text'], hiddenpercent=comment['hiddenpercent'],
+		hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object
+	)
 	if perma and not parent_object and parent_id:
 		# Forcing comment to be updated next time, since it doesn't have proper values
 		cache = timezone.now() - datetime.timedelta(days=1)
@@ -254,10 +267,32 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	return True
 
 
+def userpage(username):
+	soup = Fetch.userpage(username=username)
+	try:
+		userdata = soup.html.body.table.findAll('table')[1].findAll('tr')
+	except AttributeError:
+		return False
+	created = utils.parse_time(userdata[1].findAll('td')[1].decode_contents())
+	try:
+		avg = Decimal(userdata[3].findAll('td')[1].decode_contents())
+	except InvalidOperation:
+		avg = 0
+	UserInfo(
+		username=username,
+		created=created,
+		karma=int(userdata[2].findAll('td')[1].decode_contents(), 10),
+		avg=avg,
+		about=utils.html2markup(userdata[4].findAll('td')[1].decode_contents()),
+		cache=timezone.now()
+	).save()
+
+
 def poll_update(story_id, poll_soup):
 	for poll_element in poll_soup.table.findAll('tr')[::3]:
-		poll = {'name': poll_element.findAll('td')[1].div.font.decode_contents(),
-				'score': int(re.search(r'(\d+) points?', poll_element.findNext('tr').findAll('td')[1].span.span.decode_contents()).group(1)),
-				'id': poll_element.findNext('tr').findAll('td')[1].span.span['id'].lstrip('score_')
+		poll = {
+			'name': poll_element.findAll('td')[1].div.font.decode_contents(),
+			'score': int(re.search(r'(\d+) points?', poll_element.findNext('tr').findAll('td')[1].span.span.decode_contents()).group(1)),
+			'id': poll_element.findNext('tr').findAll('td')[1].span.span['id'].lstrip('score_')
 		}
 		Poll(id=poll['id'], name=poll['name'], score=poll['score'], story_id=story_id).save()

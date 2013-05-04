@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load tags %}
+
+
+{% block title %}
+{{ userinfo.username }}
+{% endblock %}
+
+
+{% block container %}
+<div class="userinfo">
+	<h2>{{ userinfo.username }}</h2>
+	<p>Joined <b>{{ userinfo.created|date:"d F, o"  }}</b> <i>({{ userinfo.created|timesince }} ago)</i></p>
+	<table class="table">
+		<tr>
+			<td>Karma</td>
+			<td>{{ userinfo.karma }}</td>
+		</tr>
+		<tr>
+			<td>Average karma</td>
+			<td>{{ userinfo.avg }}</td>
+		</tr>
+	</table>
+	{% if userinfo.about %}
+	<h4>About</h4>
+	<div class="well">
+		{{ userinfo.about|markup2html|safe }}
+	</div>
+	{% endif %}
+	<a href="http://news.ycombinator.com/user?id={{ userinfo.username }}">news.ycombinator link</a>
+</div>
+{% endblock %}
