@@ -39,7 +39,7 @@ def update_comments(commentid, cache_minutes=20):
 		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
 
 
-def update_userpage(username, cache_minutes=0):
+def update_userpage(username, cache_minutes=60):
 	try:
 		cachetime = UserInfo.objects.get(pk=username).cache
 	except UserInfo.DoesNotExist:
