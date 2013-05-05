@@ -65,10 +65,10 @@
 				<a{% if node.username == story.username %} class="op"{% endif %} href="/user/{{ node.username }}">{{ node.username }}</a>
 				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span>
 				<a href="/comments/{{ node.id }}">permalink</a>
-				{% if not story and first_node == node and node.parent_id %}
-				<a href="/comments/{{ node.parent_id }}">parent</a>
-				{% elif not story and first_node == node %}
-				<a href="/comments/{{ node.story_id }}">parent</a>
+				{% if first_node == node and node.parent_id %}
+					<a href="/comments/{{ node.parent_id }}">parent</a>
+				{% elif first_node != node and node.parent_id %}
+					<a href="#{{ node.parent_id }}">parent</a>
 				{% endif %}
 				<div class="content" style="color: {{ node.hiddencolor }};">{{ node.text|markup2html|safe }}</div>
 			</div>
