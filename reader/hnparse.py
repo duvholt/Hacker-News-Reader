@@ -73,7 +73,7 @@ def stories(story_type, over_filter):
 				if story_type == 'news' and over_filter:
 					story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over_filter)
 				else:
-					story_cache, created = StoryCache.objects.get_or_create(name=story_type)
+					story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=None)
 				story_cache.time = timezone.now()
 				story_cache.save()
 				updated_cache = True
