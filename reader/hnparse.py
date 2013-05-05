@@ -26,7 +26,7 @@ class Fetch(object):
 	def stories(story_type, over_filter=None):
 		if story_type == 'news' and isinstance(over_filter, int):
 			return Fetch.read('over?points=' + unicode(over_filter))
-		elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
+		elif story_type in ['best', 'active', 'newest', 'ask', 'news', 'poll']:
 			return Fetch.read(story_type)
 
 	@staticmethod
@@ -70,10 +70,10 @@ def stories(story_type, over_filter):
 			story_object.save()
 			# Only update cache once
 			if not updated_cache:
-				if not story_type == 'over':
-					story_cache = StoryCache.objects.get(name=story_type)
-				else:
+				if story_type == 'news' and over_filter:
 					story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over_filter)
+				else:
+					story_cache, created = StoryCache.objects.get_or_create(name=story_type)
 				story_cache.time = timezone.now()
 				story_cache.save()
 				updated_cache = True

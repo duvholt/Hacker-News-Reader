@@ -18,10 +18,10 @@ urlpatterns = patterns(
 	#url(r'^command/(?P<command>\w+)/$', 'reader.views.command', name='command'),
 	# Main page submssions
 	url(r'^$', 'reader.views.index', name='index'),
-	url(r'^(?P<story_type>news|newest|best|active|ask)$', 'reader.views.index', name='index_type'),
+	url(r'^(?P<story_type>news|newest|best|active|ask|poll)$', 'reader.views.index', name='index_type'),
 	# Main page json
 	url(r'^\.json$', 'reader.views.index', {'json': True}, name='index_json'),
-	url(r'^(?P<story_type>news|newest|best|active|ask)\.json$', 'reader.views.index', {'json': True}, name='index_type_json'),
+	url(r'^(?P<story_type>news|newest|best|active|ask|poll)\.json$', 'reader.views.index', {'json': True}, name='index_type_json'),
 	# Comments
 	url(r'^comments/(?P<commentid>\d+)/$', 'reader.views.comments', name='comments'),
 	url(r'^comments/(?P<commentid>\d+)\.json$', 'reader.views.comments', {'json': True}, name='comments_json'),
