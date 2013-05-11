@@ -30,8 +30,8 @@ class UrlDenied(Exception):
 
 def html2markup(comment):
 	# Remove <a>
-	comment = re.sub(r'<a href="(.*?)" rel="nofollow">.*?\s*?</a>', r' \1 ', comment)
-	# comment = re.sub(r'\s*<i>\s*(.+)\s*</i>\s*', r' *\1* ', comment)
+	comment = re.sub(r' ?<a href="(.+?)" rel="nofollow">.+?</a> ?', r' \1 ', comment)
+	# Change <i> to *
 	comment = re.sub(r'</?i>', r'*', comment)
 	# Change <p> to \n
 	comment = re.sub(r'<p>', r'\n\n', comment)
