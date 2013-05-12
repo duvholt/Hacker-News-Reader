@@ -14,7 +14,10 @@
 			"score": {{ story.score }},
 			"comments": {{ story.comments }},
 			"story_type": "{{ story.story_type }}",
-			"time": "{{ story.time }}"
+			"time": "{{ story.time|date:'r' }}",
+			"time_unix": "{{ story.time|date:'U' }}",
+			"cache": "{{ story.cache|date:'r' }}",
+			"cache_unix": "{{ story.cache|date:'U' }}"
 		}{% if story != last_story %},{% endif %}
 	{% endfor %}
 	{% endwith %}

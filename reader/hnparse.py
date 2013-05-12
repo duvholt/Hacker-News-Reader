@@ -77,7 +77,9 @@ def stories(story_type, over_filter):
 		over = over_filter
 	else:
 		over = None
-	StoryCache(name=story_type, over=over, time=timezone.now()).save()
+	story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over)
+	story_cache.time = timezone.now()
+	story_cache.save()
 
 
 def comments(commentid, cache_minutes=20):
@@ -192,7 +194,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	try:
 		comment.id = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
 	except IndexError:
-		raise CouldNotParse('Couldn\'t get comment id', td_default.string)
+		raise CouldNotParse('Couldn\'t get comment id' + unicode(td_default))
 	comment.username = ''.join(td_default.find('a').findAll(text=True))
 	# Get html contents of the comment excluding <span> and <font>
 	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).font.decode_contents())
@@ -256,7 +258,7 @@ def userpage(username):
 	try:
 		userdata = soup.html.body.table.findAll('table')[1].findAll('tr')
 	except AttributeError:
-		raise CouldNotParse('Couldn\'t get userdata', username)
+		raise CouldNotParse('Couldn\'t get userdata' + username)
 	created = utils.parse_time(userdata[1].findAll('td')[1].decode_contents())
 	try:
 		avg = Decimal(userdata[3].findAll('td')[1].decode_contents())

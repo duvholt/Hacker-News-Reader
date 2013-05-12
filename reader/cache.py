@@ -69,7 +69,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 		elif story_type == 'self':
 			stories = stories.filter(selfpost=True)
 		elif story_type == 'show':
-			stories = stories.filter(selfpost=True, title__startswith='Show HN')
+			stories = stories.filter(title__startswith='Show HN')
 		elif story_type == 'ask':
 			stories = stories.filter(selfpost=True, title__startswith='Ask HN')
 		elif story_type == 'poll':
