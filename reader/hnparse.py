@@ -11,9 +11,12 @@ from collections import OrderedDict
 import lxml
 import re
 from decimal import Decimal, InvalidOperation
+import logging
+import pprint
 
 # Getting rid of unused warning for lxml
 lxml = lxml
+logger = logging.getLogger(__name__)
 
 
 class Fetch(object):
@@ -53,30 +56,32 @@ class Fetch(object):
 		return BeautifulSoup(doc, 'lxml', from_encoding='utf-8')
 
 
+class CouldNotParse(Exception):
+	def __init__(self, value=''):
+		logger.error('Failed to parse comment' + value)
+
+
 def stories(story_type, over_filter):
 	soup = Fetch.stories(story_type=story_type, over_filter=over_filter)
 	# HN markup is odd. Basically every story use three rows each
 	stories_soup = soup.html.body.table.findAll('table')[1].findAll("tr")[::3]
-	updated_cache = False
+	# Scraping all stories
 	for story_soup in stories_soup:
-		story = story_info(story_soup)
-		if story:
-			story_object = Stories(
-				id=story['id'], title=story['title'],
-				url=story['url'], score=story['score'], selfpost=story['selfpost'],
-				domain=story['domain'], username=story['username'], comments=story['comments'],
-				story_type=story_type, time=story['time'], cache=timezone.now()
-			)
-			story_object.save()
-			# Only update cache once
-			if not updated_cache:
-				if story_type == 'news' and over_filter:
-					story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over_filter)
-				else:
-					story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=None)
-				story_cache.time = timezone.now()
-				story_cache.save()
-				updated_cache = True
+		try:
+			story = story_info(story_soup)
+			story.story_type = story_type
+			story.cache = timezone.now()
+			story.save()
+		except CouldNotParse:
+			continue
+	# Updating cache
+	if story_type == 'news' and over_filter:
+		over = over_filter
+	else:
+		over = None
+	story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over)
+	story_cache.time = timezone.now()
+	story_cache.save()
 
 
 def comments(commentid, cache_minutes=20):
@@ -85,7 +90,7 @@ def comments(commentid, cache_minutes=20):
 		story_soup = soup.html.body.table.findAll('table')[1].find('tr')
 	except AttributeError:
 		# Story does not exist
-		return False
+		raise CouldNotParse('Story not found: ' + str(commentid))
 	if story_soup.findNext('tr').find('td', {'class': 'subtext'}):
 		# Updating story info
 		story = story_info(story_soup)
@@ -103,12 +108,12 @@ def comments(commentid, cache_minutes=20):
 		except HNComments.DoesNotExist:
 			# Since the comment doesn't exist we have to improvise with the data a bit
 			# Story is is not provided for permalinked comments, but parent id is
-			# Story id will therefore temporarely we set to the comment id
+			# Story id will therefore temporarely be set to the comment id
 			traverse_comment(story_soup.parent, None, commentid, perma=True)
 			parent_object = HNComments.objects.get(id=commentid)
 		story_id = parent_object.story_id
 		permalink = True
-		story = False
+		story = None
 	poll = False
 	if story:
 		# Poll
@@ -116,36 +121,29 @@ def comments(commentid, cache_minutes=20):
 			poll = True
 			# I don't like using try here. Needs to be cleaned up
 			try:
-				poll_update(story['id'], story_soup.parent.findAll('tr')[5].findAll('td')[1])
-				story['selfpost_text'] = utils.html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
+				poll_update(story.id, story_soup.parent.findAll('tr')[5].findAll('td')[1])
+				story.selfpost_text = utils.html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
 			except AttributeError:
 				# No comment before poll
-				poll_update(story['id'], story_soup.parent.findAll('tr')[3].findAll('td')[1])
-				story['selfpost_text'] = ''
+				poll_update(story.id, story_soup.parent.findAll('tr')[3].findAll('td')[1])
+				story.selfpost_text = ''
 		# Check for self post text
 		elif len(story_soup.parent.findAll('tr')) == 6:
-			story['selfpost_text'] = utils.html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
+			story.selfpost_text = utils.html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
 		else:
-			story['selfpost_text'] = ''
-		story_object = Stories(
-			id=story['id'], title=story['title'],
-			url=story['url'], score=story['score'], selfpost=story['selfpost'],
-			selfpost_text=story['selfpost_text'], poll=poll, domain=story['domain'],
-			username=story['username'],	comments=story['comments'], time=story['time'], cache=timezone.now()
-		)
-		story_object.save()
+			story.selfpost_text = ''
+		story.save()
 	if story or permalink:
 		# Updating cache
-		comments_cache, created = HNCommentsCache.objects.get_or_create(pk=commentid, defaults={'time': timezone.now})
-		comments_cache.time = timezone.now()
-		comments_cache.save()
+		# comments_cache, c = HNCommentsCache.objects.get_or_create(pk=commentid, defaults={'time': timezone.now})
+		# comments_cache.time = timezone.now()
+		HNCommentsCache(id=commentid, time=timezone.now()).save()
 		# If there is a poll there will be an extra table before comments
+		i = 2
 		if poll:
-			i = 3
-		else:
-			i = 2
-		comments_soup = soup.html.body.table.findAll('table')[i].findAll('table')
+			i = i + 1
 		# Traversing all top comments
+		comments_soup = soup.html.body.table.findAll('table')[i].findAll('table')
 		for comment_soup in comments_soup:
 			td_default = comment_soup.tr.find('td', {'class': 'default'})
 			# Converting indent to a more readable format (0, 1, 2...)
@@ -156,7 +154,7 @@ def comments(commentid, cache_minutes=20):
 
 def story_info(story_soup):
 	if not story_soup.find('td'):
-		return False
+		raise CouldNotParse
 	title = story_soup.find('td', {'class': 'title'})
 	# In some special cases there are more than one title class
 	# Should probably make the initial query a bit more strict
@@ -165,60 +163,56 @@ def story_info(story_soup):
 	subtext = story_soup.findNext('tr').find('td', {'class': 'subtext'})
 	if subtext.findAll("a"):
 		# Turns out normal dicts aren't ordered
-		story = OrderedDict()
-		story['url'] = urllib2.unquote(title.find('a')['href'])
-		story['title'] = title.find('a').decode_contents()
+		story = Stories()
+		story.url = urllib2.unquote(title.find('a')['href'])
+		story.title = title.find('a').decode_contents()
 		try:
-			story['selfpost'] = False
-			story['domain'] = ''.join(title.find('span', {'class': 'comhead'}))
+			story.selfpost = False
+			story.domain = ''.join(title.find('span', {'class': 'comhead'}))
 		except TypeError:
 			# No domain provided, must be a Ask HN post
-			story['selfpost'] = True
-			story['domain'] = ''
-			story['url'] = ''
-		story['score'] = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
-		story['username'] = ''.join(subtext.findAll("a")[0])
+			story.selfpost = True
+			story.domain = ''
+			story.url = ''
+		story.score = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
+		story.username = ''.join(subtext.findAll("a")[0])
 		# Don't ask me about the "discu" thing. It just works
-		story['comments'] = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
-		if(story['comments'] == ""):
-			story['comments'] = 0
+		story.comments = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
+		if story.comments == "":
+			story.comments = 0
 		# Unfortunalely HN doesn't show any form timestamp other than "x hours"
 		# meaning that the time scraped is only approximately correct.
-		story['time'] = utils.parse_time(subtext.findAll("a")[1].previousSibling + ' ago')  # datetime.datetime(*p.parse()[0][:6]).replace(tzinfo=tz)
+		story.time = utils.parse_time(subtext.findAll("a")[1].previousSibling + ' ago')
 		# parsedatetime doesn't have any built in support for DST
 		if time.localtime().tm_isdst:
-			story['time'] = story['time'] + datetime.timedelta(hours=-1)
-		story['id'] = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
+			story.time = story.time + datetime.timedelta(hours=-1)
+		story.id = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
 		return story
 	else:
-		return False
+		raise CouldNotParse
 
 
 def traverse_comment(comment_soup, parent_object, story_id, perma=False):
-	comment = OrderedDict()
+	comment = HNComments()
 	# Comment <td> container shortcut
 	td_default = comment_soup.tr.find('td', {'class': 'default'})
 	# Retrieving comment id from the permalink
 	try:
-		comment['id'] = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
+		comment.id = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
 	except IndexError:
-		return False
-	comment['username'] = ''.join(td_default.find('a').findAll(text=True))
+		raise CouldNotParse('Couldn\'t get comment id', td_default.string)
+	comment.username = ''.join(td_default.find('a').findAll(text=True))
 	# Get html contents of the comment excluding <span> and <font>
-	comment['text'] = td_default.find('span', {'class': 'comment'}).font.decode_contents()
-	# Simple hack for fixing troubles with urlize inside code tags
-	# comment['text'] = re.sub(r'(</code>)', r' \1', comment['text'])
-
-	comment['text'] = utils.html2markup(comment['text'])
+	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).font.decode_contents())
 	hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
 	# Get percent by grabbing the red part of the color (#XY)
-	comment['hiddenpercent'] = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
-	comment['hiddencolor'] = hex_color
-	comment['time'] = utils.parse_time(td_default.find('a').nextSibling + ' ago')  # datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
+	comment.hiddenpercent = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
+	comment.hiddencolor = hex_color
+	comment.time = utils.parse_time(td_default.find('a').nextSibling + ' ago')  # datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst == 1:
-		comment['time'] = comment['time'] + datetime.timedelta(hours=-1)
+		comment.time = comment.time + datetime.timedelta(hours=-1)
 	# Some extra trickery for permalinked comments
 	if perma:
 		parent_id = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[2]['href']).group(1), 10)
@@ -235,18 +229,17 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 			except HNComments.DoesNotExist:
 				# Oops, looks like we'll just store a fake one for now
 				pass
-	comment_object = HNComments(
-		id=comment['id'], story_id=story_id, username=comment['username'],
-		text=comment['text'], hiddenpercent=comment['hiddenpercent'],
-		hiddencolor=comment['hiddencolor'], time=comment['time'], cache=timezone.now(), parent=parent_object
-	)
+	comment.story_id = story_id
+	comment.cache = timezone.now()
+	comment.parent = parent_object
 	if perma and not parent_object and parent_id:
 		# Forcing comment to be updated next time, since it doesn't have proper values
 		cache = timezone.now() - datetime.timedelta(days=1)
 		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
 		parent_object.save()
-		comment_object.parent = parent_object
-	comment_object.save()
+		comment.parent = parent_object
+	comment.save()
+
 	# Traversing over child comments:
 	# Since comments aren't actually children in the HTML we will have to parse all the siblings
 	# and check if they have +1 indent indicating that they are a child.
@@ -261,10 +254,9 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				sibling_td_default = sibling_soup.tr.find('td', {'class': 'default'})
 				sibling_indenting = int(sibling_td_default.previousSibling.previousSibling.img['width'], 10) / 40
 				if sibling_indenting == indenting + 1:
-					traverse_comment(sibling_soup, comment_object, story_id)
+					traverse_comment(sibling_soup, comment, story_id)
 				if sibling_indenting == indenting:
 					break
-	return True
 
 
 def userpage(username):
@@ -272,7 +264,7 @@ def userpage(username):
 	try:
 		userdata = soup.html.body.table.findAll('table')[1].findAll('tr')
 	except AttributeError:
-		return False
+		raise CouldNotParse('Couldn\'t get userdata', username)
 	created = utils.parse_time(userdata[1].findAll('td')[1].decode_contents())
 	try:
 		avg = Decimal(userdata[3].findAll('td')[1].decode_contents())
@@ -290,9 +282,9 @@ def userpage(username):
 
 def poll_update(story_id, poll_soup):
 	for poll_element in poll_soup.table.findAll('tr')[::3]:
-		poll = {
-			'name': poll_element.findAll('td')[1].div.font.decode_contents(),
-			'score': int(re.search(r'(\d+) points?', poll_element.findNext('tr').findAll('td')[1].span.span.decode_contents()).group(1)),
-			'id': poll_element.findNext('tr').findAll('td')[1].span.span['id'].lstrip('score_')
-		}
-		Poll(id=poll['id'], name=poll['name'], score=poll['score'], story_id=story_id).save()
+		Poll(
+			name=poll_element.findAll('td')[1].div.font.decode_contents(),
+			score=int(re.search(r'(\d+) points?', poll_element.findNext('tr').findAll('td')[1].span.span.decode_contents()).group(1)),
+			id=poll_element.findNext('tr').findAll('td')[1].span.span['id'].lstrip('score_'),
+			story_id=story_id
+		).save()

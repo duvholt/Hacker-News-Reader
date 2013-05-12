@@ -73,7 +73,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
 	'django.contrib.staticfiles.finders.FileSystemFinder',
 	'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+	# 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Importing SECRET_KEY from file or generating a new one if missing.
@@ -87,7 +87,7 @@ except ImportError:
 TEMPLATE_LOADERS = (
 	'django.template.loaders.filesystem.Loader',
 	'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+	# 'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -140,10 +140,11 @@ INSTALLED_APPS = (
 # This will likely be overriden by localsettings.py
 DATABASES = {
 	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-		'NAME': 'hn.db',                      # Or path to database file if using sqlite3.
+		'ENGINE': 'django.db.backends.sqlite3',
+		'NAME': 'hn.db',
 	},
 }
+
 
 ALLOWED_HOSTS = ['localhost']
 
