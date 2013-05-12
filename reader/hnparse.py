@@ -7,12 +7,10 @@ import httplib
 import urllib2
 import time
 import datetime
-from collections import OrderedDict
 import lxml
 import re
 from decimal import Decimal, InvalidOperation
 import logging
-import pprint
 
 # Getting rid of unused warning for lxml
 lxml = lxml
@@ -29,7 +27,7 @@ class Fetch(object):
 	def stories(story_type, over_filter=None):
 		if story_type == 'news' and isinstance(over_filter, int):
 			return Fetch.read('over?points=' + unicode(over_filter))
-		elif story_type in ['best', 'active', 'newest', 'ask', 'news', 'poll']:
+		elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
 			return Fetch.read(story_type)
 
 	@staticmethod
@@ -79,9 +77,7 @@ def stories(story_type, over_filter):
 		over = over_filter
 	else:
 		over = None
-	story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over)
-	story_cache.time = timezone.now()
-	story_cache.save()
+	StoryCache(name=story_type, over=over, time=timezone.now()).save()
 
 
 def comments(commentid, cache_minutes=20):
