@@ -18,6 +18,8 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 	# Poll is not a real story type
 	if story_type == 'poll':
 		story_type = 'news'
+	elif story_type in ['self', 'show']:
+		story_type = 'ask'
 	try:
 		if story_type == 'news' and over_filter:
 			# Over points can have different values meaning that it can't be cached normal
@@ -64,8 +66,12 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 			stories = stories.order_by('-score')
 		elif story_type == 'newest':
 			stories = stories.order_by('-time')
-		elif story_type == 'ask':
+		elif story_type == 'self':
 			stories = stories.filter(selfpost=True)
+		elif story_type == 'show':
+			stories = stories.filter(selfpost=True, title__startswith='Show HN')
+		elif story_type == 'ask':
+			stories = stories.filter(selfpost=True, title__startswith='Ask HN')
 		elif story_type == 'poll':
 			stories = stories.filter(poll=True)
 		else:

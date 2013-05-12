@@ -135,8 +135,6 @@ def comments(commentid, cache_minutes=20):
 		story.save()
 	if story or permalink:
 		# Updating cache
-		# comments_cache, c = HNCommentsCache.objects.get_or_create(pk=commentid, defaults={'time': timezone.now})
-		# comments_cache.time = timezone.now()
 		HNCommentsCache(id=commentid, time=timezone.now()).save()
 		# If there is a poll there will be an extra table before comments
 		i = 2
@@ -161,35 +159,33 @@ def story_info(story_soup):
 	if story_soup.findAll('td')[0] == title:
 		title = story_soup.findAll('td', {'class': 'title'})[1]
 	subtext = story_soup.findNext('tr').find('td', {'class': 'subtext'})
-	if subtext.findAll("a"):
-		# Turns out normal dicts aren't ordered
-		story = Stories()
-		story.url = urllib2.unquote(title.find('a')['href'])
-		story.title = title.find('a').decode_contents()
-		try:
-			story.selfpost = False
-			story.domain = ''.join(title.find('span', {'class': 'comhead'}))
-		except TypeError:
-			# No domain provided, must be a Ask HN post
-			story.selfpost = True
-			story.domain = ''
-			story.url = ''
-		story.score = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
-		story.username = ''.join(subtext.findAll("a")[0])
-		# Don't ask me about the "discu" thing. It just works
-		story.comments = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
-		if story.comments == "":
-			story.comments = 0
-		# Unfortunalely HN doesn't show any form timestamp other than "x hours"
-		# meaning that the time scraped is only approximately correct.
-		story.time = utils.parse_time(subtext.findAll("a")[1].previousSibling + ' ago')
-		# parsedatetime doesn't have any built in support for DST
-		if time.localtime().tm_isdst:
-			story.time = story.time + datetime.timedelta(hours=-1)
-		story.id = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
-		return story
-	else:
+	if not subtext.findAll("a"):
 		raise CouldNotParse
+	story = Stories()
+	story.url = urllib2.unquote(title.find('a')['href'])
+	story.title = title.find('a').decode_contents()
+	try:
+		story.selfpost = False
+		story.domain = ''.join(title.find('span', {'class': 'comhead'}))
+	except TypeError:
+		# No domain provided, must be a selfpost
+		story.selfpost = True
+		story.domain = ''
+		story.url = ''
+	story.score = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
+	story.username = ''.join(subtext.findAll("a")[0])
+	# Don't ask me about the "discu" thing. It just works
+	story.comments = ''.join(subtext.findAll("a")[1]).rstrip("discu").rstrip(" comments")
+	if story.comments == "":
+		story.comments = 0
+	# Unfortunalely HN doesn't show any form timestamp other than "x hours"
+	# meaning that the time scraped is only approximately correct.
+	story.time = utils.parse_time(subtext.findAll("a")[1].previousSibling + ' ago')
+	# parsedatetime doesn't have any built in support for DST
+	if time.localtime().tm_isdst:
+		story.time = story.time + datetime.timedelta(hours=-1)
+	story.id = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
+	return story
 
 
 def traverse_comment(comment_soup, parent_object, story_id, perma=False):
