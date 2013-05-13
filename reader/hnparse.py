@@ -194,7 +194,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	try:
 		comment.id = int(re.search(r'item\?id=(\d+)$', td_default.findAll('a')[1]['href']).group(1), 10)
 	except IndexError:
-		raise CouldNotParse('Couldn\'t get comment id' + unicode(td_default))
+		raise CouldNotParse('Couldn\'t get comment id' + str(story_id))
 	comment.username = ''.join(td_default.find('a').findAll(text=True))
 	# Get html contents of the comment excluding <span> and <font>
 	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).font.decode_contents())
