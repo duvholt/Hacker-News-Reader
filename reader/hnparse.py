@@ -128,6 +128,7 @@ def comments(commentid, cache_minutes=20):
 				# No comment before poll
 				poll_update(story.id, story_soup.parent.findAll('tr')[3].findAll('td')[1])
 				story.selfpost_text = ''
+			story.poll = poll
 		# Check for self post text
 		elif len(story_soup.parent.findAll('tr')) == 6:
 			story.selfpost_text = utils.html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
