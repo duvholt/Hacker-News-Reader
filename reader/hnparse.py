@@ -55,8 +55,8 @@ class Fetch(object):
 
 
 class CouldNotParse(Exception):
-	def __init__(self, value=''):
-		logger.error('Failed to parse comment' + value)
+	def __init__(self, value='Failed to parse'):
+		logger.error(value)
 
 
 def stories(story_type, over_filter):
@@ -101,7 +101,10 @@ def comments(commentid, cache_minutes=20):
 			# If comment already is in db get the info
 			parent_object = HNComments.objects.get(id=commentid)
 			if(parent_object.cache + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
-				traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
+				try:
+					traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
+				except CouldNotParse:
+					pass
 				parent_object = HNComments.objects.get(id=commentid)
 		except HNComments.DoesNotExist:
 			# Since the comment doesn't exist we have to improvise with the data a bit
@@ -145,7 +148,10 @@ def comments(commentid, cache_minutes=20):
 			# Converting indent to a more readable format (0, 1, 2...)
 			indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
 			if indenting == 0:
-				traverse_comment(comment_soup, parent_object, story_id)
+				try:
+					traverse_comment(comment_soup, parent_object, story_id)
+				except CouldNotParse:
+					continue
 
 
 def story_info(story_soup):
@@ -248,7 +254,10 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				sibling_td_default = sibling_soup.tr.find('td', {'class': 'default'})
 				sibling_indenting = int(sibling_td_default.previousSibling.previousSibling.img['width'], 10) / 40
 				if sibling_indenting == indenting + 1:
-					traverse_comment(sibling_soup, comment, story_id)
+					try:
+						traverse_comment(sibling_soup, comment, story_id)
+					except CouldNotParse:
+						continue
 				if sibling_indenting == indenting:
 					break
 
