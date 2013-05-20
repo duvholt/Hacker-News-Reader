@@ -61,44 +61,58 @@ def markup2html(comment):
 	code = False
 	lines = comment.split('\n\n')
 	for index, line in enumerate(lines):
-		code_r = re.search(r'^  ', line)
-		# Code block tags
-		if code_r:
+		# Starting with double space means it's a code block
+		code_block = re.search(r'^  ', line)
+		if code_block:
 			if not code:
 				line = '<p><pre><code>' + line
 				code = True
 			else:
 				line = '\n\n' + line
 		else:
-			# Ensuring that there are more than two *
-			# TODO: There is a bug with ****. Low priority
-			asterisk_total = len(re.findall(r'[^\s]\*|\*[^\s]', line))
+			# Replacing * with <i> or </i>
+			asterisk_total = len(re.findall(r'\*', line))
+			# Making sure that there are more than two *
 			if asterisk_total > 1:
-				asterisk_count = 0
 				start = True
 				# Index offset
 				j = 0
-				# Replacing * with <i> or </i>
-				for x in re.finditer(r'[^\s]\*|\*[^\s]', line):
-					asterisk_count += 1
-					# If there is an odd number of asterisks leave the last one
-					if asterisk_count == asterisk_total and asterisk_total % 2 is not 0:
-						continue
+				for asterisk_count, x in enumerate(re.finditer(r'\*', line)):
 					i = x.start(0)
-					if re.search(r'[^\s]\*', x.group(0)):
-						i += 1
-					if start:
-						italic = '<i>'
-					else:
-						italic = '</i>'
-					start = not start
-					line = line[0: i + j] + italic + line[i + j + 1:]
-					# Adding offset (string has more letters after adding <i>)
-					j += len(italic) - 1
+					try:
+						prev = line[i-1: i]
+					except IndexError:
+						prev = None
+
+					try:
+						next = line[i+1: i+2]
+					except IndexError:
+						next = None
+
+					prev_ws = re.match(r'\s', prev)
+					next_ws = re.match(r'\s', next)
+					# Kinda messy, but the code tries to emulate HNs parsing
+					# Replace all * with italic tag if it is either preceded or followed by another character
+					# This means that ** is valid, but * * is not
+					if ((not prev or prev_ws) and not next_ws) or \
+						((prev and not prev_ws) and (next and not next_ws)) or \
+						((prev and not prev_ws) and (not next or next_ws)):
+						# If there is an odd number of asterisks leave the last one
+						if asterisk_count == asterisk_total and asterisk_total % 2:
+							continue
+						if start:
+							italic = '<i>'
+						else:
+							italic = '</i>'
+						start = not start
+						# Replacing in line with some offset corrections
+						line = line[0: i + j] + italic + line[i + j + 1:]
+						# Adding offset (string has more letters after adding <i>)
+						j += len(italic) - 1
 		# Create urls
 		line = html.urlize(line, 63, True)
-		# Adding <p>
-		if not code_r:
+		if not code_block:
+			# Adding <p>
 			line = '<p>' + line + '</p>'
 			# Ending code tag
 			if code:
