@@ -80,13 +80,14 @@ def markup2html(comment):
 				line = '\n\n' + line
 		else:
 			# Replacing * with <i> or </i>
-			asterisk_total = len(re.findall(r'\*', line))
+			asterisk_total = len(re.findall(r'\S\*|\*\S', line))
+			asterisk_count = 0
 			# Making sure that there are more than two *
 			if asterisk_total > 1:
 				start = True
 				# Index offset
 				j = 0
-				for asterisk_count, x in enumerate(re.finditer(r'\*', line)):
+				for x in re.finditer(r'\*', line):
 					i = x.start(0)
 					try:
 						prev = line[i-1: i]
@@ -106,6 +107,7 @@ def markup2html(comment):
 					if ((not prev or prev_ws) and not next_ws) or \
 						((prev and not prev_ws) and (next and not next_ws)) or \
 						((prev and not prev_ws) and (not next or next_ws)):
+						asterisk_count += 1
 						# If there is an odd number of asterisks leave the last one
 						if asterisk_count == asterisk_total and asterisk_total % 2:
 							continue
