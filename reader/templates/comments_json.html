@@ -13,10 +13,10 @@
 		"score": {{ story.score|default:"0" }},
 		"username": "{{ story.username|escapejs }}",
 		"time": "{{ story.time|date:'r' }}",
-		"time_unix": "{{ story.time|date:'U' }}",
-		"comments": {{ story.comments|default:"0" }}
+		"time_unix": {{ story.time|date:'U' }},
+		"comments": {{ story.comments|default:"0" }},
 		"cache": "{{ story.time|date:'r' }}",
-		"cache_unix": "{{ story.time|date:'U' }}",
+		"cache_unix": {{ story.time|date:'U' }}
 	},
 	{% endif %}
 	{% if story.poll %}
@@ -39,7 +39,7 @@
 			"id": {{ node.id }},
 			"username":	"{{ node.username|escapejs }}",
 			"time": "{{ node.time|date:'r' }}",
-			"time_unix": "{{ node.time|date:'U' }}",
+			"time_unix": {{ node.time|date:'U' }},
 			{% if not story and first_node == node and node.parent_id %}
 			"parent": {{ node.parent_id }},
 			{% elif not story and first_node == node %}

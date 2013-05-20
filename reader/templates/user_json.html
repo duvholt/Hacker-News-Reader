@@ -3,15 +3,15 @@
 	"user": [
 		{
 			"username": "{{ userinfo.username }}",
-			"created": "{{ userinfo.username|date:'r' }}",
-			"created_unix": "{{ userinfo.username|date:'U' }}",
+			"created": "{{ userinfo.created|date:'r' }}",
+			"created_unix": {{ userinfo.created|date:'U' }},
 			"karma": {{ userinfo.karma }},
 			"avg": {{ userinfo.avg }},
 			{% if userinfo.about %}
 			"about": "{{ userinfo.about|escapejs }}",
 			{% endif %}
-			"cache": "{{ userinfo.cache|date:'r' }}"
-			"cache_unix": "{{ userinfo.cache|date:'U' }}"
+			"cache": "{{ userinfo.cache|date:'r' }}",
+			"cache_unix": {{ userinfo.cache|date:'U' }}
 		}
 	]
 }

@@ -2,6 +2,7 @@ from django import template
 from django.template.defaultfilters import stringfilter
 import re
 from django.utils import html
+
 register = template.Library()
 
 
@@ -59,8 +60,16 @@ def markup2html(comment):
 	new_comment = ''
 	# For code blocks
 	code = False
-	lines = comment.split('\n\n')
+	prev_line = True
+	lines = comment.split('\n')
 	for index, line in enumerate(lines):
+		if re.match(r'^$', line):
+			if code:
+				if not prev_line:
+					new_comment += '\n'
+			prev_line = line
+			continue
+		prev_line = line
 		# Starting with double space means it's a code block
 		code_block = re.search(r'^  ', line)
 		if code_block:
