@@ -9,15 +9,15 @@
 			"url": "{{ story.url|escapejs }}",
 			"selfpost": {{ story.selfpost|yesno:"true,false" }},
 			"poll": {{ story.poll|yesno:"true,false" }},
-			"domain": "{{ story.domain|escapejs }}",
+			"domain": "{{ story.url|domain|escapejs }}",
 			"username": "{{ story.username|escapejs }}",
 			"score": {{ story.score }},
 			"comments": {{ story.comments }},
 			"story_type": "{{ story.story_type }}",
 			"time": "{{ story.time|date:'r' }}",
-			"time_unix": "{{ story.time|date:'U' }}",
+			"time_unix": {{ story.time|date:'U' }},
 			"cache": "{{ story.cache|date:'r' }}",
-			"cache_unix": "{{ story.cache|date:'U' }}"
+			"cache_unix": {{ story.cache|date:'U' }}
 		}{% if story != last_story %},{% endif %}
 	{% endfor %}
 	{% endwith %}

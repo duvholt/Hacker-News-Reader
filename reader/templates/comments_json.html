@@ -5,10 +5,13 @@
 	"story": {
 		"id": {{ story.id }},
 		"title": "{{ story.title|escapejs }}",
-		"url": "{{ story.url|escapejs }}",
-		"domain": "{{ story.domain|escapejs }}",
+		"selfpost": {{ story.selfpost|yesno:"true,false" }},
+		"poll": {{ story.poll|yesno:"true,false" }},
 		{% if story.selfpost %}
 		"selfpost_text": "{{ story.selfpost_text|escapejs }}",
+		{% else %}
+		"url": "{{ story.url|escapejs }}",
+		"domain": "{{ story.url|domain|escapejs }}",
 		{% endif %}
 		"score": {{ story.score|default:"0" }},
 		"username": "{{ story.username|escapejs }}",
@@ -26,7 +29,7 @@
 		{
 			"name": "{{ poll.name|escapejs }}",
 			"votes": {{ poll.score }},
-			"percentage": "{% percentage poll.score total_votes 2 %}"
+			"percentage": {% percentage poll.score total_votes 2 %}
 		}{% if poll != lastpoll %},{% endif %}
 		{% endfor %}
 	],

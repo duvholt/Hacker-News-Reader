@@ -63,7 +63,7 @@
 					{% if story.selfpost %}
 					<td><a class="link" href="/comments/{{ story.id }}">{{ story.title|safe }}</a></td>
 					{% else %}
-					<td><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {{ story.domain }}</td>
+					<td><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> ({{ story.url|domain }})</td>
 					{% endif %}
 					<td><time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }}</time></td>
 				</tr>

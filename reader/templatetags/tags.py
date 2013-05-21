@@ -153,3 +153,7 @@ def lastpageobject(page):
 		return page.object_list[-1]
 	except AssertionError:
 		return page.object_list[::-1][0]
+
+@register.filter
+def domain(url):
+	return re.findall(r'^(?:.+//)?(?:www\.)?([^/#?]*)', url)[0].lower()

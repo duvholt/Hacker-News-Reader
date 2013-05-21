@@ -171,13 +171,12 @@ def story_info(story_soup):
 	story = Stories()
 	story.url = urllib2.unquote(title.find('a')['href'])
 	story.title = title.find('a').decode_contents()
-	try:
+	# Check for domain class
+	if title.find('span', {'class': 'comhead'}):
 		story.selfpost = False
-		story.domain = ''.join(title.find('span', {'class': 'comhead'}))
-	except TypeError:
+	else:
 		# No domain provided, must be a selfpost
 		story.selfpost = True
-		story.domain = ''
 		story.url = ''
 	story.score = int(re.search(r'(\d+) points?', ''.join(subtext.find("span"))).group(1))
 	story.username = ''.join(subtext.findAll("a")[0])
