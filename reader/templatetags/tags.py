@@ -50,7 +50,10 @@ def active_score(request, number):
 @register.simple_tag
 def percentage(number, total, rounding=2):
 	rounding = int(rounding)
-	return round((float(number) / float(total)) * 100, rounding)
+	if total != 0:
+		return round((float(number) / float(total)) * 100, rounding)
+	else:
+		return 0.0
 	# return '{percent:.2%}'.format(percent=float(number) / float(total))
 
 
