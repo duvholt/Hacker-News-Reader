@@ -90,7 +90,7 @@ def comments(request, commentid, json=False):
 				c['total_votes'] += poll.score
 	except Stories.DoesNotExist:
 		try:
-			c['nodes'] = HNComments.objects.get(id=commentid).get_descendants(True)
+			c['nodes'] = HNComments.objects.get(id=commentid, dead=False).get_descendants(True)
 			if c['nodes'][0]:
 				try:
 					c['story'] = Stories.objects.get(pk=c['nodes'][0].story_id)

@@ -83,6 +83,7 @@ def stories(story_type, over_filter):
 
 
 def comments(commentid, cache_minutes=20):
+	start_time = timezone.now()
 	soup = Fetch.comments(commentid=commentid)
 	try:
 		story_soup = soup.html.body.table.findAll('table')[1].find('tr')
@@ -153,6 +154,7 @@ def comments(commentid, cache_minutes=20):
 					traverse_comment(comment_soup, parent_object, story_id)
 				except CouldNotParse:
 					continue
+		HNComments.objects.filter(cache__lt=start_time).update(dead=True)
 
 
 def story_info(story_soup):

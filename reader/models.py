@@ -28,6 +28,7 @@ class HNComments(MPTTModel):
 	time = models.DateTimeField(null=True)
 	cache = models.DateTimeField(null=True)
 	parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
+	dead = models.BooleanField(default=False)
 
 	class MPTTMeta:
 		order_insertion_by = ['cache']
