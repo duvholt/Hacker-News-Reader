@@ -6,10 +6,12 @@
 		{
 			"id": {{ story.id }},
 			"title": "{{ story.title|escapejs }}",
-			"url": "{{ story.url|escapejs }}",
 			"selfpost": {{ story.selfpost|yesno:"true,false" }},
 			"poll": {{ story.poll|yesno:"true,false" }},
+			{% if not story.selfpost %}
+			"url": "{{ story.url|escapejs }}",
 			"domain": "{{ story.url|domain|escapejs }}",
+			{% endif %}
 			"username": "{{ story.username|escapejs }}",
 			"score": {{ story.score }},
 			"comments": {{ story.comments }},

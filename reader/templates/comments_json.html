@@ -18,8 +18,8 @@
 		"time": "{{ story.time|date:'r' }}",
 		"time_unix": {{ story.time|date:'U' }},
 		"comments": {{ story.comments|default:"0" }},
-		"cache": "{{ story.time|date:'r' }}",
-		"cache_unix": {{ story.time|date:'U' }}
+		"cache": "{{ story.cache|date:'r' }}",
+		"cache_unix": {{ story.cache|date:'U' }}
 	},
 	{% endif %}
 	{% if story.poll %}
@@ -49,7 +49,9 @@
 			"parent": {{ node.story_id }},
 			{% endif %}
 			"hiddenpercent": {{ node.hiddenpercent }},
-			"text": "{{ node.text|escapejs }}"
+			"text": "{{ node.text|escapejs }}",
+			"cache": "{{ node.cache|date:'r' }}",
+			"cache_unix": "{{ node.cache|date:'U' }}"
 			{% if not node.is_leaf_node %}
 				, "children": [
 					{{ children }}

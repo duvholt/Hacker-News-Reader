@@ -17,7 +17,7 @@
 {% block container %}
 {% if story %}
 <div class="story">
-	<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> ({{ story.url|domain }})</h4>
+	<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}</h4>
 	{% if story.selfpost %}
 	<div>{{ story.selfpost_text|markup2html|safe }}</div>
 	{% endif %}

@@ -191,6 +191,7 @@ def story_info(story_soup):
 	if time.localtime().tm_isdst:
 		story.time = story.time + datetime.timedelta(hours=-1)
 	story.id = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
+	story.cache = timezone.now()
 	return story
 
 
