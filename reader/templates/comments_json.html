@@ -53,13 +53,11 @@
 			"cache": "{{ node.cache|date:'r' }}",
 			"cache_unix": "{{ node.cache|date:'U' }}"
 			{% if not node.is_leaf_node %}
-				, "children": [
-					{{ children }}
-				]
+			, "children": [
+				{{ children }}
+			]
 			{% endif %}
-		}{% if node.get_next_sibling %}
-		 	{% if first_node != node or story %},{% endif %}
-		 {% endif %}
+		}{% if node.get_next_sibling and node.get_next_sibling.story_id == node.story_id  %},{% endif %}
 	{% endrecursetree %}
 	{% endwith %}
 	]

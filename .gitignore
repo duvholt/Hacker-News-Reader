@@ -8,3 +8,4 @@ secret_key.py
 manifest.yml
 hn.db
 static
+*.idea
