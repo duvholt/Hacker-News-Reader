@@ -93,23 +93,23 @@ def markup2html(comment):
 				for x in re.finditer(r'\*', line):
 					i = x.start(0)
 					try:
-						prev = line[i-1: i]
+						prev_char = line[i - 1: i]
 					except IndexError:
-						prev = None
+						prev_char = None
 
 					try:
-						next = line[i+1: i+2]
+						next_char = line[i + 1: i + 2]
 					except IndexError:
-						next = None
+						next_char = None
 
-					prev_ws = re.match(r'\s', prev)
-					next_ws = re.match(r'\s', next)
+					prev_ws = re.match(r'\s', prev_char)
+					next_ws = re.match(r'\s', next_char)
 					# Kinda messy, but the code tries to emulate HNs parsing
 					# Replace all * with italic tag if it is either preceded or followed by another character
 					# This means that ** is valid, but * * is not
-					if ((not prev or prev_ws) and not next_ws) or \
-						((prev and not prev_ws) and (next and not next_ws)) or \
-						((prev and not prev_ws) and (not next or next_ws)):
+					if ((not prev_char or prev_ws) and not next_ws) or \
+						(prev_char and not prev_ws and (next_char and not next_ws)) or \
+						(prev_char and not prev_ws and not next_char or next_ws):
 						asterisk_count += 1
 						# If there is an odd number of asterisks leave the last one
 						if asterisk_count == asterisk_total and asterisk_total % 2:
@@ -153,6 +153,7 @@ def lastpageobject(page):
 		return page.object_list[-1]
 	except AssertionError:
 		return page.object_list[::-1][0]
+
 
 @register.filter
 def domain(url):

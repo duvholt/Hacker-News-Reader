@@ -36,29 +36,32 @@
 	{% endwith %}
 	{% endif %}
 	"comments": [
-	{% with first_node=nodes|first %}
-	{% recursetree nodes %}
-		{
-			"id": {{ node.id }},
+	{% for node,structure in nodes|tree_info %}
+    {% with nodeloop=forloop%}
+		{% if not nodeloop.first %}
+	    {% if structure.new_level %}, "children": [{% else %}},{% endif %}
+	    {% endif %}
+    	{
+ 			"id": {{ node.id }},
 			"username":	"{{ node.username|escapejs }}",
 			"time": "{{ node.time|date:'r' }}",
 			"time_unix": {{ node.time|date:'U' }},
-			{% if not story and first_node == node and node.parent_id %}
+			{% if not story and nodeloop.first and node.parent_id %}
 			"parent": {{ node.parent_id }},
-			{% elif not story and first_node == node %}
+			{% elif not story and nodeloop.first %}
 			"parent": {{ node.story_id }},
 			{% endif %}
 			"hiddenpercent": {{ node.hiddenpercent }},
 			"text": "{{ node.text|escapejs }}",
 			"cache": "{{ node.cache|date:'r' }}",
 			"cache_unix": "{{ node.cache|date:'U' }}"
-			{% if not node.is_leaf_node %}
-			, "children": [
-				{{ children }}
+	    {% for level in structure.closed_levels %}
+			}
+			{% if not nodeloop.last or not forloop.last %}
 			]
 			{% endif %}
-		}{% if node.get_next_sibling and node.get_next_sibling.story_id == node.story_id  %},{% endif %}
-	{% endrecursetree %}
+		{% endfor %}
 	{% endwith %}
+	{% endfor %}
 	]
 }
