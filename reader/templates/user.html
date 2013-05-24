@@ -10,7 +10,7 @@
 {% block container %}
 <div class="userinfo">
 	<h2>{{ userinfo.username }}</h2>
-	<p>Joined <b>{{ userinfo.created|date:"d F, o"  }}</b> <i>({{ userinfo.created|timesince }} ago)</i></p>
+	<p>Joined <b>{{ userinfo.created|date:"d F, o" }}</b> <i>({{ userinfo.created|timesince }} ago)</i></p>
 	<table class="table">
 		<tr>
 			<td>Karma</td>

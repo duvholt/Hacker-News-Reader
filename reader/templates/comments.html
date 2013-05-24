@@ -31,7 +31,7 @@
 		{% for poll in polls %}
 		<p>{{ poll.name }}: {% percentage poll.score total_votes 2 %}% ({{ poll.score }} vote{{ poll.score|pluralize }})</p>
 		<div class="progress progress-hn poll">
-			<div class="bar" style="width:  {% percentage poll.score total_votes 0 %}%"></div>
+			<div class="bar" style="width: {% percentage poll.score total_votes 0 %}%"></div>
 		</div>
 		{% endfor %}
 	</div>

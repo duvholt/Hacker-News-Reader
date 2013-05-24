@@ -1,9 +1,5 @@
 /*jshint jquery:true, devel:true, browser:true*/
 
-var log = function(arg1) {
-	'use strict';
-	console.log(arg1);
-};
 $(function () {
 	'use strict';
 	$('a.comments, a.score').bind('mouseover', function() {
@@ -18,12 +14,14 @@ $(function () {
 		var width = $(window).width();
 		if(width > 767) {
 			if($('.sidebar-collapse.collapse').length > 0) {
-				$('.sidebar-collapse').removeAttr('style');
-				$('.sidebar-collapse').removeClass('collapse in');
+				var sidebar = $('.sidebar-collapse');
+				sidebar.removeAttr('style');
+				sidebar.removeClass('collapse in');
 			}
 			if($('.poll-collapse.collapse').length > 0) {
-				$('.poll-collapse').removeAttr('style');
-				$('.poll-collapse').removeClass('collapse in');
+				var poll = $('.poll-collapse');
+				poll.removeAttr('style');
+				poll.removeClass('collapse in');
 			}
 		}
 	}

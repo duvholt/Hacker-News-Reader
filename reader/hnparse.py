@@ -101,7 +101,7 @@ def comments(commentid, cache_minutes=20):
 		try:
 			# If comment already is in db get the info
 			parent_object = HNComments.objects.get(id=commentid)
-			if(parent_object.cache + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
+			if parent_object.cache + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 				try:
 					traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
 				except CouldNotParse:
@@ -142,7 +142,7 @@ def comments(commentid, cache_minutes=20):
 		# If there is a poll there will be an extra table before comments
 		i = 2
 		if poll:
-			i = i + 1
+			i += 1
 		# Traversing all top comments
 		comments_soup = soup.html.body.table.findAll('table')[i].findAll('table')
 		for comment_soup in comments_soup:
@@ -190,7 +190,7 @@ def story_info(story_soup):
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst:
 		story.time = story.time + datetime.timedelta(hours=-1)
-	story.id = re.search('item\?id\=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
+	story.id = re.search('item\?id=(\d+)$', subtext.findAll("a")[1]['href']).group(1)
 	story.cache = timezone.now()
 	return story
 
@@ -212,7 +212,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	# Get percent by grabbing the red part of the color (#XY)
 	comment.hiddenpercent = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
 	comment.hiddencolor = hex_color
-	comment.time = utils.parse_time(td_default.find('a').nextSibling + ' ago')  # datetime.datetime(*p.parse(td_default.find('a').nextSibling + ' ago')[0][:6]).replace(tzinfo=tz)
+	comment.time = utils.parse_time(td_default.find('a').nextSibling + ' ago')
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst == 1:
 		comment.time = comment.time + datetime.timedelta(hours=-1)
@@ -246,8 +246,8 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	# Traversing over child comments:
 	# Since comments aren't actually children in the HTML we will have to parse all the siblings
 	# and check if they have +1 indent indicating that they are a child.
-	# However if a following comment has the same indent value it is not a child and neither a sub child meaning that all child comments
-	# have been parsed.
+	# However if a following comment has the same indent value it is not a child and neither a sub child
+	# meaning that all child comments have been parsed.
 	if not perma:
 		indenting = int(td_default.previousSibling.previousSibling.img['width'], 10) / 40
 		for sibling_soup in comment_soup.parent.parent.findNextSiblings('tr'):

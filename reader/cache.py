@@ -30,7 +30,7 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	# More than cache_minutes since cache was updated
-	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
+	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		hnparse.stories(story_type=story_type, over_filter=over_filter)
 
 
@@ -40,7 +40,7 @@ def update_comments(commentid, cache_minutes=20):
 	except HNCommentsCache.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
-	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
+	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
 
 
@@ -50,7 +50,7 @@ def update_userpage(username, cache_minutes=60):
 	except UserInfo.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
-	if(cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now()):
+	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		hnparse.userpage(username=username)
 
 

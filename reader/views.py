@@ -36,7 +36,6 @@ def index(request, story_type='news', json=False):
 		except ValueError:
 			over = None
 	context_instance = RequestContext(request)
-	stories = None
 	try:
 		cache.update_stories(story_type=story_type, over_filter=over)
 		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
@@ -52,7 +51,7 @@ def index(request, story_type='news', json=False):
 			left = page - diff
 			right = page + diff
 			if stories.paginator.num_pages - page < diff:
-				left = left - (diff - (stories.paginator.num_pages - page))
+				left -= diff - (stories.paginator.num_pages - page)
 		else:
 			left = 0
 			right = visible_pages
@@ -74,7 +73,7 @@ def comments(request, commentid, json=False):
 			commentid = None
 	context_instance = RequestContext(request)
 	# Context
-	c = {'story': None, 'polls': None, 'lastpoll': None, 'total_votes': 0}
+	c = {'story': None, 'polls': None, 'total_votes': 0}
 	try:
 		cache.update_comments(commentid=commentid)
 		c['nodes'] = cache.comments(commentid)
