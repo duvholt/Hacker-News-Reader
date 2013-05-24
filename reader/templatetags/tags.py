@@ -73,46 +73,53 @@ def markup2html(comment):
 			prev_line = line
 			continue
 		prev_line = line
+		new_line = line
 		# Starting with double space means it's a code block
-		code_block = re.search(r'^  ', line)
+		code_block = re.search(r'^  ', new_line)
 		if code_block:
 			if not code:
-				line = '<p><pre><code>' + line
+				new_line = '<p><pre><code>' + new_line
 				code = True
 			else:
-				line = '\n\n' + line
+				new_line = '\n\n' + new_line
 		else:
 			# Replacing * with <i> or </i>
-			asterisk_total = len(re.findall(r'\S\*|\*\S', line))
-			asterisk_count = 0
-			# Making sure that there are more than two *
-			if asterisk_total > 1:
-				start = True
-				# Index offset
-				j = 0
-				for x in re.finditer(r'\*', line):
-					i = x.start(0)
-					try:
-						prev_char = line[i - 1: i]
-					except IndexError:
-						prev_char = None
+			start = True
+			# Index offset
+			j = 0
+			asterisks = []
+			# First getting all asterisk that should be replaced
+			for x in re.finditer(r'\*', line):
+				i = x.start(0)
+				try:
+					prev_char = line[i - 1: i]
+				except IndexError:
+					prev_char = None
 
-					try:
-						next_char = line[i + 1: i + 2]
-					except IndexError:
-						next_char = None
+				try:
+					next_char = line[i + 1: i + 2]
+				except IndexError:
+					next_char = None
 
-					prev_ws = re.match(r'\s', prev_char)
-					next_ws = re.match(r'\s', next_char)
-					# Kinda messy, but the code tries to emulate HNs parsing
-					# Replace all * with italic tag if it is either preceded or followed by another character
-					# This means that ** is valid, but * * is not
-					if ((not prev_char or prev_ws) and not next_ws) or \
-						(prev_char and not prev_ws and (next_char and not next_ws)) or \
-						(prev_char and not prev_ws and not next_char or next_ws):
-						asterisk_count += 1
+				prev_ws = re.match(r'\s', prev_char)
+				next_ws = re.match(r'\s', next_char)
+				# Kinda messy, but the code tries to emulate HNs parsing
+				# Replace all * with italic tag if it is either preceded or followed by another character
+				# This means that ** is valid, but * * is not
+
+				# The three steps check for the following:
+				# "^*\S" or " *\S"
+				# "\S*\S"
+				# "\S* " or "\S*$"
+				if ((not prev_char or prev_ws) and not next_ws) or \
+					(prev_char and not prev_ws and (next_char and not next_ws)) or \
+					(prev_char and not prev_ws and (not next_char or next_ws)):
+					asterisks.append(i)
+			# Replace all found asterisks
+			if len(asterisks) > 0:
+				for i, asterisk in enumerate(asterisks):
 						# If there is an odd number of asterisks leave the last one
-						if asterisk_count == asterisk_total and asterisk_total % 2:
+						if (i + 1) == len(asterisks) and len(asterisks) % 2:
 							continue
 						if start:
 							italic = '<i>'
@@ -120,22 +127,22 @@ def markup2html(comment):
 							italic = '</i>'
 						start = not start
 						# Replacing in line with some offset corrections
-						line = line[0: i + j] + italic + line[i + j + 1:]
+						new_line = new_line[0: asterisk + j] + italic + new_line[asterisk + j + 1:]
 						# Adding offset (string has more letters after adding <i>)
 						j += len(italic) - 1
 		# Create urls
-		line = html.urlize(line, 63, True)
+		new_line = html.urlize(new_line, 63, True)
 		if not code_block:
 			# Adding <p>
-			line = '<p>' + line + '</p>'
+			new_line = '<p>' + new_line + '</p>'
 			# Ending code tag
 			if code:
-				line = '</code></pre></p>' + line
+				new_line = '</code></pre></p>' + new_line
 				code = False
 		# Append proper closing tags if line is last and in a code block
 		if code and index == (len(lines) - 1):
-			line += '</code></pre></p>'
-		new_comment += line
+			new_line += '</code></pre></p>'
+		new_comment += new_line
 	return new_comment
 
 
