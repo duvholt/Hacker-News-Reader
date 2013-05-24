@@ -121,7 +121,6 @@ def comments(commentid, cache_minutes=20):
 		# Poll
 		if len(story_soup.parent.findAll('tr')) > 6:
 			poll = True
-			# I don't like using try here. Needs to be cleaned up
 			try:
 				poll_update(story.id, story_soup.parent.findAll('tr')[5].findAll('td')[1])
 				story.selfpost_text = utils.html2markup(story_soup.parent.findAll('tr')[3].findAll('td')[1].decode_contents())
@@ -242,6 +241,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 		parent_object.save()
 		comment.parent = parent_object
 	comment.save()
+	HNCommentsCache(id=comment.id, time=timezone.now()).save()
 
 	# Traversing over child comments:
 	# Since comments aren't actually children in the HTML we will have to parse all the siblings

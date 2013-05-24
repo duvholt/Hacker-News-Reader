@@ -90,9 +90,10 @@ def comments(request, commentid, json=False):
 	except Stories.DoesNotExist:
 		try:
 			c['nodes'] = HNComments.objects.get(id=commentid, dead=False).get_descendants(True)
-			if c['nodes'][0]:
+			node_first = c['nodes'][0]
+			if node_first:
 				try:
-					c['story'] = Stories.objects.get(pk=c['nodes'][0].story_id)
+					c['story'] = Stories.objects.get(pk=node_first.story_id)
 				except Stories.DoesNotExist:
 					c['story'] = None
 			c['perma'] = True

@@ -4,13 +4,13 @@
 
 
 {% block title %}
-{% with first_node=nodes|first %}
 	{% if story %}
-	{{ story.title|safe }}
+		{{ story.title|safe }}
 	{% else %}
-	{{ first_node.text|truncatechars:"80" }}
+		{% with first_node=nodes|first %}
+		{{ first_node.text|truncatechars:"80" }}
+		{% endwith %}
 	{% endif %}
-{% endwith %}
 {% endblock %}
 
 
