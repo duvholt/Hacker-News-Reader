@@ -65,11 +65,14 @@ def markup2html(comment):
 	code = False
 	prev_line = True
 	lines = comment.split('\n')
+	paragraph = False
 	for index, line in enumerate(lines):
 		if re.match(r'^$', line):
 			if code:
 				if not prev_line:
 					new_comment += '\n'
+			else:
+				new_comment += '<p>'
 			prev_line = line
 			continue
 		prev_line = line
@@ -81,7 +84,7 @@ def markup2html(comment):
 				new_line = '<p><pre><code>' + new_line
 				code = True
 			else:
-				new_line = '\n\n' + new_line
+				new_line = '\n' + new_line
 		else:
 			# Replacing * with <i> or </i>
 			start = True
@@ -133,12 +136,12 @@ def markup2html(comment):
 		# Create urls
 		new_line = html.urlize(new_line, 63, True)
 		if not code_block:
-			# Adding <p>
-			new_line = '<p>' + new_line + '</p>'
-			# Ending code tag
 			if code:
+				# Ending code tag
 				new_line = '</code></pre></p>' + new_line
 				code = False
+			else:
+				new_line += ' '
 		# Append proper closing tags if line is last and in a code block
 		if code and index == (len(lines) - 1):
 			new_line += '</code></pre></p>'
