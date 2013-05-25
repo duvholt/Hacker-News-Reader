@@ -75,6 +75,8 @@ def markup2html(comment):
 				new_comment += '<p>'
 			prev_line = line
 			continue
+		# Create urls
+		line = html.urlize(line, 63, True)
 		prev_line = line
 		new_line = line
 		# Starting with double space means it's a code block
@@ -92,7 +94,8 @@ def markup2html(comment):
 			j = 0
 			asterisks = []
 			# First getting all asterisk that should be replaced
-			for x in re.finditer(r'\*', line):
+			# * not followed by " rel= or </a> (basically * in links)
+			for x in re.finditer(r'\*((?!</a>)(?!" rel=))', line):
 				i = x.start(0)
 				try:
 					prev_char = line[i - 1: i]
@@ -119,7 +122,7 @@ def markup2html(comment):
 					(prev_char and not prev_ws and (not next_char or next_ws)):
 					asterisks.append(i)
 			# Replace all found asterisks
-			if len(asterisks) > 0:
+			if len(asterisks) > 1:
 				for i, asterisk in enumerate(asterisks):
 						# If there is an odd number of asterisks leave the last one
 						if (i + 1) == len(asterisks) and len(asterisks) % 2:
@@ -133,8 +136,6 @@ def markup2html(comment):
 						new_line = new_line[0: asterisk + j] + italic + new_line[asterisk + j + 1:]
 						# Adding offset (string has more letters after adding <i>)
 						j += len(italic) - 1
-		# Create urls
-		new_line = html.urlize(new_line, 63, True)
 		if not code_block:
 			if code:
 				# Ending code tag
