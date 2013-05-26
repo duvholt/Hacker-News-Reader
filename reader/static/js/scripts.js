@@ -2,11 +2,13 @@
 
 $(function () {
 	'use strict';
+	// Hover hack for frontpage
 	$('a.comments, a.score').bind('mouseover', function() {
 		$(this).closest('td').siblings('td').find('a.comments, a.score').addClass('onhover');
 	}).bind('mouseout', function() {
 		$(this).closest('td').siblings('td').find('a.comments, a.score').removeClass('onhover');
 	});
+	// Shorten time format on frontpage for smaller screens
 	$(window).resize($.debounce(100, resized));
 	time_format();
 	function resized() {
@@ -45,27 +47,43 @@ $(function () {
 			}
 		});
 	}
+	// Toggle show for comments
 	$('.comments .hidetoggle').click(function (e) {
 		var toggler = $(this);
 		var content = $(this).siblings('.content');
 		var children = $(this).parent().siblings('.children');
+		var hiddencontent = content.siblings('.hiddencontent');
 		if(toggler.data("state") === 'hidden') {
 			toggler.html('[-]');
 			toggler.data("state", 'visible');
 			content.show();
+			if (hiddencontent) {
+				hiddencontent.hide();
+			}
 			children.show();
 		}
 		else {
 			toggler.html('[+]');
 			toggler.data("state", 'hidden');
 			content.hide();
+			if (hiddencontent.length > 0) {
+				hiddencontent.show();
+			}
+			else {
+				hiddencontent = content.after(
+					'<div class="hiddencontent">' +
+					'<i>' + $('.comment', content.closest('li')).length + ' comment(s) hidden</i>' +
+					'</div>');
+			}
 			children.hide();
 		}
 		e.preventDefault();
 	});
+	// Replace news.ycombinator links with internal
 	$('.comments .content a[href*="item?id="]').each(function () {
 		$(this).attr('href', $(this).attr('href').replace(/https?:\/\/news.ycombinator.com\/item\?id=(\d+)/, '/comments/$1'));
 	});
+	// Selectable comments
 	$(".comments .comment").click(function () {
 		$(".comments .comment").removeClass("selected");
 		$(this).addClass("selected");
