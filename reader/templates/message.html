@@ -4,7 +4,7 @@
 
 {% block container %}
 <div>
-  <h4>{{ message.title }}</h4>
+  <h4>{{ message.title|safe }}</h4>
   {% for text in message.text %}
   <div>{{ text|safe }}</div>
   {% endfor %}

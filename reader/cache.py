@@ -1,6 +1,4 @@
 from django.utils import timezone
-import parsedatetime.parsedatetime as pdt
-# import parsedatetime.parsedatetime_consts as pdc
 import datetime
 from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, UserInfo
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
@@ -9,8 +7,6 @@ import reader.utils as utils
 import reader.hnparse as hnparse
 
 
-# c = pdc.Constants()
-p = pdt.Calendar()
 tz = get_localzone()
 
 

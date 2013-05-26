@@ -15,26 +15,24 @@ def custom_message_view(request, message, context_instance):
 
 
 def index(request, story_type='news', json=False):
+	try:
+		page = int(request.GET.get('page'))
+	except (ValueError, TypeError):
+		page = 1
+
+	try:
+		over = int(request.GET.get('over'))
+	except (ValueError, TypeError):
+		over = None
+
 	limit = request.GET.get('limit', None)
-	page = int(request.GET.get('page', 1))
-	over = request.GET.get('over', None)
 	if not limit:
-		limit_cookie = request.COOKIES.get('stories_limit')
-		if limit_cookie:
-			limit = int(limit_cookie)
-		else:
-			limit = 25
-	else:
-		try:
-			limit = int(limit, 10)
-		except ValueError:
-			limit = 25
-	if over:
-		try:
-			over = int(over, 10)
-			# story_type = 'over'
-		except ValueError:
-			over = None
+		limit = request.COOKIES.get('stories_limit')
+	try:
+		limit = int(limit)
+	except (ValueError, TypeError):
+		limit = 25
+
 	context_instance = RequestContext(request)
 	try:
 		cache.update_stories(story_type=story_type, over_filter=over)
@@ -43,6 +41,7 @@ def index(request, story_type='news', json=False):
 		message = utils.UserMessage(e.value)
 		message.url = reverse('index')
 		return custom_message_view(request, message, context_instance)
+
 	pages = stories.paginator.page_range
 	visible_pages = 6
 	if stories.paginator.num_pages > visible_pages:
@@ -56,6 +55,7 @@ def index(request, story_type='news', json=False):
 			left = 0
 			right = visible_pages
 		pages = pages[left:right]
+
 	if json:
 		template = 'templates/index_json.html'
 	else:
