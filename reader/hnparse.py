@@ -7,13 +7,10 @@ import httplib
 import urllib2
 import time
 import datetime
-import lxml
 import re
 from decimal import Decimal, InvalidOperation
 import logging
 
-# Getting rid of unused warning for lxml
-lxml = lxml
 logger = logging.getLogger(__name__)
 
 
@@ -51,7 +48,7 @@ class Fetch(object):
 			raise utils.ShowError('Requests have been limited for old items. It might take a while before you can access this.')
 		except utils.UrlDenied:
 			raise utils.ShowError('Requests have been limited for this page. It might take a while before you can access this.')
-		return BeautifulSoup(doc, 'lxml', from_encoding='utf-8')
+		return BeautifulSoup(doc, from_encoding='utf-8')
 
 
 class CouldNotParse(Exception):
