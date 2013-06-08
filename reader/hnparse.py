@@ -242,20 +242,21 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	if not perma:
 		indenting = int(td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
 		for sibling_soup in comment_soup.parent.parent.find_next_siblings('tr'):
-			sibling_soup = sibling_soup.table
-			# TODO: Check why this is needed for some comments
-			if sibling_soup:
-				sibling_td_default = sibling_soup.tr.find('td', {'class': 'default'})
+			sibling_table = sibling_soup.table
+			# Comment pages with a "More" link at the bottom will have two extra trs without a table
+			if sibling_table:
+				sibling_td_default = sibling_table.tr.find('td', {'class': 'default'})
 				sibling_indenting = int(sibling_td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
 				if sibling_indenting == indenting + 1:
 					try:
-						traverse_comment(sibling_soup, comment, story_id)
+						traverse_comment(sibling_table, comment, story_id)
 					except CouldNotParse:
 						continue
 				if sibling_indenting == indenting:
 					break
-			else:
-				t = 1
+			elif sibling_soup.find('td', {'class': 'title'}):
+				# TODO Add support for loading more comments
+				continue
 
 
 def userpage(username):
