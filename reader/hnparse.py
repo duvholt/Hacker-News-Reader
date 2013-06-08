@@ -92,7 +92,10 @@ def comments(commentid, cache_minutes=20):
 		raise CouldNotParse('Story not found: ' + str(commentid))
 	if story_soup.findNext('tr').find('td', {'class': 'subtext'}):
 		# Updating story info
-		story = story_info(story_soup)
+		try:
+			story = story_info(story_soup)
+		except CouldNotParse:
+			raise utils.ShowError('Story or comment deleted')
 		parent_object = None
 		permalink = False
 		story_id = commentid
@@ -155,6 +158,7 @@ def story_info(story_soup):
 		raise CouldNotParse
 	title = story_soup('td', {'class': 'title'})[-1]
 	subtext = story_soup.find_next('tr').find('td', {'class': 'subtext'})
+	# Dead post
 	if not subtext.find_all("a"):
 		raise CouldNotParse
 	story = Stories()
