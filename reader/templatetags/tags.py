@@ -109,17 +109,19 @@ def markup2html(comment):
 
 				prev_ws = re.match(r'\s', prev_char)
 				next_ws = re.match(r'\s', next_char)
-				# Kinda messy, but the code tries to emulate HNs parsing
 				# Replace all * with italic tag if it is either preceded or followed by another character
 				# This means that ** is valid, but * * is not
 
 				# The three steps check for the following:
 				# "^*\S" or " *\S"
 				# "\S*\S"
-				# "\S* " or "\S*$"
-				if ((not prev_char or prev_ws) and not next_ws) or \
-					(prev_char and not prev_ws and (next_char and not next_ws)) or \
-					(prev_char and not prev_ws and (not next_char or next_ws)):
+				# # "\S* " or "\S*$"
+				# Which creates this in code:
+				# 	if ((not prev_char or prev_ws) and not next_ws) or \
+				# 		(prev_char and not prev_ws and (next_char and not next_ws)) or \
+				# 		(prev_char and not prev_ws and (not next_char or next_ws)):
+				# Shortened version of previous code
+				if not next_ws or (prev_char and not prev_ws):
 					asterisks.append(i)
 			# Replace all found asterisks
 			if len(asterisks) > 1:
