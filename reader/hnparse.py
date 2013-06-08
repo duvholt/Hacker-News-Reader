@@ -32,6 +32,10 @@ class Fetch(object):
 		return Fetch.read('user?id=' + unicode(username))
 
 	@staticmethod
+	def login():
+		return Fetch.read('login')
+
+	@staticmethod
 	def read(url):
 		try:
 			opener = urllib2.build_opener()

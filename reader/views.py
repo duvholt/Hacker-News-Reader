@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponse, Http404
 from django.template import RequestContext
 import reader.cache as cache
@@ -6,6 +6,8 @@ from reader.models import Stories, HNComments, Poll, UserInfo
 from django.core import management
 import reader.utils as utils
 from django.core.urlresolvers import reverse
+from reader.hnparse import Fetch
+import requests
 
 
 # This is not a real view, but is used from other views
@@ -122,8 +124,45 @@ def userpage(request, username, json=False):
 		template = 'templates/user_json.html'
 	else:
 		template = 'templates/user.html'
-	return render_to_response(template, c, context_instance)
+	return render_to_response(template, c, RequestContext(request))
 
+
+def login(request):
+	c = {}
+	context_instance = RequestContext(request)
+	# Check that both username and password are in post
+	if all(key in request.POST for key in ['username', 'password']):
+		username = request.POST['username']
+		password = request.POST['password']
+		if username and password:
+			soup = Fetch.login()
+			fnid = soup.find('input', {'type': 'hidden'})['value']
+			payload = {'fnid': fnid, 'u': username, 'p': password}
+			r = requests.post('https://news.ycombinator.com/x', data=payload)
+			if 'user' in r.cookies:
+				request.session['username'] = username
+				request.session['usercookie'] = r.cookies['user']
+				message = utils.UserMessage('Logged in as ' + username)
+				message.url = reverse('index')
+			else:
+				message = utils.UserMessage('Username or password wrong')
+				message.url = reverse('login')
+		else:
+			message = utils.UserMessage('Username or password missing')
+			message.url = reverse('login')
+		return custom_message_view(request, message, context_instance)
+	return render_to_response('templates/login.html', c, context_instance)
+
+
+def logout(request):
+	c = {}
+	context_instance = RequestContext(request)
+	try:
+		del request.session['username']
+		del request.session['usercookie']
+	except KeyError:
+		pass
+	return redirect('index')
 
 def command(request, command):
 	# Secure this with some admin login

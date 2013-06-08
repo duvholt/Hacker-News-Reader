@@ -28,6 +28,9 @@ urlpatterns = patterns(
 	# User page
 	url(r'^user/(?P<username>\w+)/$', 'reader.views.userpage', name='userpage'),
 	url(r'^user/(?P<username>\w+)\.json$', 'reader.views.userpage', {'json': True}, name='userpage_json'),
+	# User login
+	url(r'^login$', 'reader.views.login', name='login'),
+	url(r'^logout', 'reader.views.logout', name='logout'),
 	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
 	url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),

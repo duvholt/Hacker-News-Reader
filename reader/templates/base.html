@@ -12,9 +12,26 @@
 		<div class="navbar-inner">
 			<div class="container">
 				<a class="brand hidden-phone" href="/">Hacker News Reader</a>
-				<ul class="nav">
+				<ul class="nav pull-left">
 					<li class="{% active request "^/[0-9 /]*$" %}"><a href="/">Home</a></li>
 					<li class="{% active request "^/about" %}"><a href="/about">About</a></li>
+				</ul>
+				<ul class="nav pull-right ">
+					{% with request.session.username as username %}
+					{% if username %}
+					{% with "^/user/"|add:request.session.username as usernamereg %}
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#">{{ username }}<b class="caret"></b></a>
+						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+							<li><a href="/user/{{ username }}">Profile</a></li>
+							<li><a href="/logout">Logout</a></li>
+						</ul>
+					</li>
+					{% endwith %}
+					{% else %}
+						<li class="{% active request "^/login" %}"><a href="/login">Login</a></li>
+					{% endif %}
+					{% endwith %}
 				</ul>
 				{% block navbar_button %}{% endblock %}
 			</div>
