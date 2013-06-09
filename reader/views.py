@@ -12,7 +12,7 @@ import requests
 
 # This is not a real view, but is used from other views
 def custom_message_view(request, message, context_instance):
-	response = render_to_response("templates/message.html", {'message': message}, context_instance)
+	response = render_to_response('templates/message.html', {'message': message}, context_instance)
 	return response
 
 
@@ -62,7 +62,7 @@ def index(request, story_type='news', json=False):
 		template = 'templates/index_json.html'
 	else:
 		template = 'templates/index.html'
-	response = render_to_response(template, {"stories": stories, "pages": pages, 'limit': limit}, context_instance)
+	response = render_to_response(template, {'stories': stories, 'pages': pages, 'limit': limit}, context_instance)
 	response.set_cookie('stories_limit', limit)
 	return response
 

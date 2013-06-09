@@ -38,7 +38,7 @@ class Fetch(object):
 	@staticmethod
 	def read(url, request=None):
 		try:
-			headers = {'User-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
+			headers = {'User-Agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
 			cookies = None
 			if request and 'usercookie' in request.session:
 				cookies = {'user': request.session['usercookie']}
@@ -64,7 +64,7 @@ class CouldNotParse(Exception):
 def stories(story_type, over_filter, request=None):
 	soup = Fetch.stories(story_type=story_type, over_filter=over_filter, request=request)
 	# HN markup is odd. Basically every story use three rows each
-	stories_soup = soup.html.body.table.find_all('table')[1].find_all("tr")[::3]
+	stories_soup = soup.html.body.table.find_all('table')[1].find_all('tr')[::3]
 	# Scraping all stories
 	for story_soup in stories_soup:
 		try:
@@ -190,7 +190,7 @@ def story_info(story_soup):
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst:
 		story.time = story.time + datetime.timedelta(hours=-1)
-	story.id = re.search('item\?id=(\d+)$', subtext.find_all("a")[1]['href']).group(1)
+	story.id = re.search('item\?id=(\d+)$', subtext.find_all('a')[1]['href']).group(1)
 	story.cache = timezone.now()
 	return story
 
