@@ -17,6 +17,7 @@ def custom_message_view(request, message, context_instance):
 
 
 def index(request, story_type='news', json=False):
+	c = {}
 	try:
 		page = int(request.GET.get('page'))
 	except (ValueError, TypeError):
@@ -34,7 +35,7 @@ def index(request, story_type='news', json=False):
 		limit = int(limit)
 	except (ValueError, TypeError):
 		limit = 25
-
+	c['limit'] = limit
 	context_instance = RequestContext(request)
 	try:
 		cache.update_stories(story_type=story_type, over_filter=over, request=request)
@@ -56,13 +57,13 @@ def index(request, story_type='news', json=False):
 		else:
 			left = 0
 			right = visible_pages
-		pages = pages[left:right]
-
+		c['pages'] = pages[left:right]
+	c['stories'] = stories
 	if json:
 		template = 'templates/index_json.html'
 	else:
 		template = 'templates/index.html'
-	response = render_to_response(template, {'stories': stories, 'pages': pages, 'limit': limit}, context_instance)
+	response = render_to_response(template, c, context_instance)
 	response.set_cookie('stories_limit', limit)
 	return response
 
@@ -91,7 +92,7 @@ def comments(request, commentid, json=False):
 				c['total_votes'] += poll.score
 	except Stories.DoesNotExist:
 		try:
-			c['nodes'] = HNComments.objects.get(id=commentid, dead=False).get_descendants(True)
+			c['nodes'] = HNComments.objects.get(id=commentid).get_descendants(True)
 			node_first = c['nodes'][0]
 			if node_first:
 				try:
