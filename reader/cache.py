@@ -10,7 +10,7 @@ import reader.hnparse as hnparse
 tz = get_localzone()
 
 
-def update_stories(cache_minutes=20, story_type='news', over_filter=0):
+def update_stories(cache_minutes=20, story_type='news', over_filter=0, request=None):
 	# Poll is not a real story type
 	if story_type == 'poll':
 		story_type = 'news'
@@ -27,27 +27,27 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	# More than cache_minutes since cache was updated
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
-		hnparse.stories(story_type=story_type, over_filter=over_filter)
+		hnparse.stories(story_type=story_type, over_filter=over_filter, request=request)
 
 
-def update_comments(commentid, cache_minutes=20):
+def update_comments(commentid, cache_minutes=20, request=None):
 	try:
 		cachetime = HNCommentsCache.objects.get(pk=commentid).time
 	except HNCommentsCache.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
-		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
+		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes, request=request)
 
 
-def update_userpage(username, cache_minutes=60):
+def update_userpage(username, cache_minutes=60, request=None):
 	try:
 		cachetime = UserInfo.objects.get(pk=username).cache
 	except UserInfo.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
-		hnparse.userpage(username=username)
+		hnparse.userpage(username=username, request=request)
 
 
 def stories(page=1, limit=25, story_type=None, over_filter=0):

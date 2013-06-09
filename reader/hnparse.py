@@ -3,8 +3,8 @@ import reader.utils as utils
 from django.conf import settings
 from django.utils import timezone
 from bs4 import BeautifulSoup
-import httplib
-import urllib2
+from requests.compat import unquote
+import requests
 import time
 import datetime
 import re
@@ -17,42 +17,43 @@ logger = logging.getLogger(__name__)
 class Fetch(object):
 # Kinda silly to use a class with static only methods
 	@staticmethod
-	def comments(commentid):
-		return Fetch.read('item?id=' + unicode(commentid))
+	def comments(commentid, request=None):
+		return Fetch.read('item?id=' + unicode(commentid), request=request)
 
 	@staticmethod
-	def stories(story_type, over_filter=None):
+	def stories(story_type, over_filter=None, request=None):
 		if story_type == 'news' and isinstance(over_filter, int):
-			return Fetch.read('over?points=' + unicode(over_filter))
+			return Fetch.read('over?points=' + unicode(over_filter), request=request)
 		elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
-			return Fetch.read(story_type)
+			return Fetch.read(story_type, request=request)
 
 	@staticmethod
-	def userpage(username):
-		return Fetch.read('user?id=' + unicode(username))
+	def userpage(username, request=None):
+		return Fetch.read('user?id=' + unicode(username), request=request)
 
 	@staticmethod
-	def login():
-		return Fetch.read('login')
+	def login(request=None):
+		return Fetch.read('login', request=request)
 
 	@staticmethod
-	def read(url):
+	def read(url, request=None):
 		try:
-			opener = urllib2.build_opener()
-			opener.addheaders = [('User-agent', 'Hacker News Reader (' + settings.DOMAIN_URL + ')')]
-			response = opener.open('http://news.ycombinator.com/' + url)
-			doc = response.read()
-			if re.match(r'^We\'ve limited requests for old items', doc):
+			headers = {'User-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
+			cookies = None
+			if request and 'usercookie' in request.session:
+				cookies = {'user': request.session['usercookie']}
+			r = requests.get('http://news.ycombinator.com/' + url, headers=headers, cookies=cookies)
+			if re.match(r'^We\'ve limited requests for old items', r.text):
 				raise utils.OldItemDenied('Limited request')
-			elif re.match(r'^We\'ve limited requests for this url', doc):
+			elif re.match(r'^We\'ve limited requests for this url', r.text):
 				raise utils.UrlDenied('Limited request')
-		except (urllib2.URLError, httplib.BadStatusLine):
+		except requests.HTTPError:
 			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
 		except utils.OldItemDenied:
 			raise utils.ShowError('Requests have been limited for old items. It might take a while before you can access this.')
 		except utils.UrlDenied:
 			raise utils.ShowError('Requests have been limited for this page. It might take a while before you can access this.')
-		return BeautifulSoup(doc, from_encoding='utf-8')
+		return BeautifulSoup(r.text, from_encoding='utf-8')
 
 
 class CouldNotParse(Exception):
@@ -60,8 +61,8 @@ class CouldNotParse(Exception):
 		logger.error(value)
 
 
-def stories(story_type, over_filter):
-	soup = Fetch.stories(story_type=story_type, over_filter=over_filter)
+def stories(story_type, over_filter, request=None):
+	soup = Fetch.stories(story_type=story_type, over_filter=over_filter, request=request)
 	# HN markup is odd. Basically every story use three rows each
 	stories_soup = soup.html.body.table.find_all('table')[1].find_all("tr")[::3]
 	# Scraping all stories
@@ -83,9 +84,9 @@ def stories(story_type, over_filter):
 	story_cache.save()
 
 
-def comments(commentid, cache_minutes=20):
+def comments(commentid, cache_minutes=20, request=None):
 	start_time = timezone.now()
-	soup = Fetch.comments(commentid=commentid)
+	soup = Fetch.comments(commentid=commentid, request=request)
 	try:
 		story_soup = soup.html.body.table.find_all('table')[1].find('tr')
 	except AttributeError:
@@ -163,7 +164,7 @@ def story_info(story_soup):
 	if not subtext.find_all("a"):
 		raise CouldNotParse
 	story = Stories()
-	story.url = urllib2.unquote(title.find('a')['href'])
+	story.url = unquote(title.find('a')['href'])
 	story.title = title.find('a').contents[0]
 	# Check for domain class
 	if title.find('span', {'class': 'comhead'}):
@@ -264,8 +265,8 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				continue
 
 
-def userpage(username):
-	soup = Fetch.userpage(username=username)
+def userpage(username, request=None):
+	soup = Fetch.userpage(username=username, request=request)
 	try:
 		userdata = soup.html.body.table.find_all('table')[1].find_all('tr')
 	except AttributeError:

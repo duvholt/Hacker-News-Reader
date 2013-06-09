@@ -37,7 +37,7 @@ def index(request, story_type='news', json=False):
 
 	context_instance = RequestContext(request)
 	try:
-		cache.update_stories(story_type=story_type, over_filter=over)
+		cache.update_stories(story_type=story_type, over_filter=over, request=request)
 		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)
@@ -77,7 +77,7 @@ def comments(request, commentid, json=False):
 	# Context
 	c = {'story': None, 'polls': None, 'total_votes': 0}
 	try:
-		cache.update_comments(commentid=commentid)
+		cache.update_comments(commentid=commentid, request=request)
 		c['nodes'] = cache.comments(commentid)
 	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)
@@ -112,7 +112,7 @@ def userpage(request, username, json=False):
 	c = {}
 	context_instance = RequestContext(request)
 	try:
-		cache.update_userpage(username=username)
+		cache.update_userpage(username=username, request=request)
 		c['userinfo'] = cache.userinfo(username)
 	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)
@@ -155,14 +155,13 @@ def login(request):
 
 
 def logout(request):
-	c = {}
-	context_instance = RequestContext(request)
 	try:
 		del request.session['username']
 		del request.session['usercookie']
 	except KeyError:
 		pass
 	return redirect('index')
+
 
 def command(request, command):
 	# Secure this with some admin login
