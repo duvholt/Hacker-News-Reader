@@ -64,7 +64,7 @@
 	<ul>
 	{% recursetree nodes %}
 		<li class="{% if node.level|add:first_node.level|divisibleby:"2" %}even{% endif %}" id="{{ node.id }}">
-			<div class="comment">
+			<div class="comment {% if node.dead %}dead{% endif %}">
 				<a href="#" class="hidetoggle">[-]</a>
 				<a{% if node.username == story.username %} class="op"{% endif %} href="/user/{{ node.username }}">{{ node.username }}</a>
 				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span>
@@ -74,7 +74,8 @@
 				{% elif first_node != node and node.parent_id %}
 					<a href="#{{ node.parent_id }}">parent</a>
 				{% endif %}
-				<div class="content" style="color: {{ node.hiddencolor }};">{{ node.text|markup2html|safe }}</div>
+				{% if node.dead %}[dead]{% endif %}
+				<div class="content" {% if not node.dead %}style="color: {{ node.hiddencolor }};"{% endif %}>{{ node.text|markup2html|safe }}</div>
 			</div>
 			{% if not node.is_leaf_node %}
 			<ul class="children">

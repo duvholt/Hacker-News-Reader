@@ -94,6 +94,11 @@ div.comments {
 					color: #000000 !important; // :-(
 				}
 			}
+			&.dead {
+				.content {
+					color: #dddddd;
+				}
+			}
 			.content {
 				max-width: $maxWidth;
 			}

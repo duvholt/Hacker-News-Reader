@@ -208,8 +208,11 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	# Get html contents of the comment excluding <span> and <font>
 	if td_default.find('span', {'class': 'dead'}):
 		comment.dead = True
-	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).find('font').decode_contents())
-	hex_color = td_default.find('span', {'class': 'comment'}).font['color']
+		comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).span.decode_contents())
+		hex_color = '#000000'
+	else:
+		comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).find('font').decode_contents())
+		hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
 	# Get percent by grabbing the red part of the color (#XY)
 	comment.hiddenpercent = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5

@@ -92,7 +92,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 
 
 def comments(story_id):
-	return HNComments.objects.all().filter(story_id=story_id, dead=False)
+	return HNComments.objects.all().filter(story_id=story_id)
 
 
 def userinfo(username):
