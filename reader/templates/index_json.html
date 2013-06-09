@@ -8,6 +8,7 @@
 			"title": "{{ story.title|escapejs }}",
 			"selfpost": {{ story.selfpost|yesno:"true,false" }},
 			"poll": {{ story.poll|yesno:"true,false" }},
+			"dead": {{ story.dead|yesno:"true,false" }},
 			{% if not story.selfpost %}
 			"url": "{{ story.url|escapejs }}",
 			"domain": "{{ story.url|domain|escapejs }}",

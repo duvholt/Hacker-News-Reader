@@ -9,6 +9,7 @@ class Stories(models.Model):
 	selfpost = models.BooleanField(default=False)
 	selfpost_text = models.TextField(default="", null=True)
 	poll = models.BooleanField(default=False)
+	dead = models.BooleanField(default=False)
 	username = models.CharField(max_length=150, null=True)
 	score = models.PositiveIntegerField(max_length=5)
 	comments = models.PositiveIntegerField(max_length=5)

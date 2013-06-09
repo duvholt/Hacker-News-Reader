@@ -60,7 +60,9 @@
 				<tr>
 					<td><a class="comments" href="/comments/{{ story.id }}">{{ story.comments|default:"0" }}</a></td>
 					<td><a class="score" href="/comments/{{ story.id }}">{{ story.score|default:"0" }}</a></td>
-					{% if story.selfpost %}
+					{% if story.dead %}
+					<td>{{ story.title|safe }} <span class="muted">(dead)</td>
+					{% elif story.selfpost %}
 					<td><a class="link" href="/comments/{{ story.id }}">{{ story.title|safe }}</a></td>
 					{% else %}
 					<td><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> ({{ story.url|domain }})</td>

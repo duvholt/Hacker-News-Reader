@@ -17,7 +17,11 @@
 {% block container %}
 {% if story %}
 <div class="story">
+	{% if story.dead %}
+	<h4>{{ story.title|safe }} <span class="muted">(dead)</span></h4>
+	{% else %}
 	<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}</h4>
+	{% endif %}
 	{% if story.selfpost %}
 	<div>{{ story.selfpost_text|markup2html|safe }}</div>
 	{% endif %}

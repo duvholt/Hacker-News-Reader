@@ -42,7 +42,7 @@ class Fetch(object):
 			cookies = None
 			if request and 'usercookie' in request.session:
 				cookies = {'user': request.session['usercookie']}
-			r = requests.get('http://news.ycombinator.com/' + url, headers=headers, cookies=cookies)
+			r = requests.get('https://news.ycombinator.com/' + url, headers=headers, cookies=cookies)
 			if re.match(r'^We\'ve limited requests for old items', r.text):
 				raise utils.OldItemDenied('Limited request')
 			elif re.match(r'^We\'ve limited requests for this url', r.text):
@@ -161,10 +161,14 @@ def story_info(story_soup):
 	title = story_soup('td', {'class': 'title'})[-1]
 	subtext = story_soup.find_next('tr').find('td', {'class': 'subtext'})
 	# Dead post
-	if not subtext.find_all("a"):
+	if not subtext.find_all('a'):
 		raise CouldNotParse
 	story = Stories()
-	story.url = unquote(title.find('a')['href'])
+	if title.next == ' [dead] ':
+		story.dead = True
+		story.url = ''
+	else:
+		story.url = unquote(title.find('a')['href'])
 	story.title = title.find('a').contents[0]
 	# Check for domain class
 	if title.find('span', {'class': 'comhead'}):
@@ -174,7 +178,7 @@ def story_info(story_soup):
 		story.selfpost = True
 		story.url = ''
 	story.score = int(re.search(r'(\d+) points?', unicode(subtext.find("span"))).group(1))
-	story.username = ''.join(subtext.find_all("a")[0])
+	story.username = subtext.find('a').find(text=True)
 	try:
 		story.comments = int(re.search(r'(\d+) comments?', unicode(subtext.find_all("a")[1])).group(1))
 	except AttributeError:
@@ -202,7 +206,9 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 		raise CouldNotParse('Couldn\'t get comment id' + str(story_id))
 	comment.username = td_default.find('a').find(text=True)
 	# Get html contents of the comment excluding <span> and <font>
-	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).font.decode_contents())
+	if td_default.find('span', {'class': 'dead'}):
+		comment.dead = True
+	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).find('font').decode_contents())
 	hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
 	# Get percent by grabbing the red part of the color (#XY)
@@ -213,6 +219,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	if time.localtime().tm_isdst == 1:
 		comment.time = comment.time + datetime.timedelta(hours=-1)
 	# Some extra trickery for permalinked comments
+	parent_id = None
 	if perma:
 		parent_id = int(re.search(r'item\?id=(\d+)$', td_default.find_all('a')[2]['href']).group(1), 10)
 		try:
