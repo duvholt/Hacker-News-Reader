@@ -38,7 +38,7 @@ def index(request, story_type='news', json=False):
 	c['limit'] = limit
 	context_instance = RequestContext(request)
 	try:
-		cache.update_stories(story_type=story_type, over_filter=over, request=request)
+		cache.update_stories(story_type=story_type, over_filter=over)
 		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)
@@ -78,7 +78,7 @@ def comments(request, commentid, json=False):
 	# Context
 	c = {'story': None, 'polls': None, 'total_votes': 0}
 	try:
-		cache.update_comments(commentid=commentid, request=request)
+		cache.update_comments(commentid=commentid)
 		c['nodes'] = cache.comments(commentid)
 	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)
@@ -113,7 +113,7 @@ def userpage(request, username, json=False):
 	c = {}
 	context_instance = RequestContext(request)
 	try:
-		cache.update_userpage(username=username, request=request)
+		cache.update_userpage(username=username)
 		c['userinfo'] = cache.userinfo(username)
 	except utils.ShowError, e:
 		message = utils.UserMessage(e.value)

@@ -10,6 +10,7 @@ import datetime
 import re
 from decimal import Decimal, InvalidOperation
 import logging
+from middleware import get_request
 
 logger = logging.getLogger(__name__)
 
@@ -17,29 +18,30 @@ logger = logging.getLogger(__name__)
 class Fetch(object):
 # Kinda silly to use a class with static only methods
 	@staticmethod
-	def comments(commentid, request=None):
-		return Fetch.read('item?id=' + unicode(commentid), request=request)
+	def comments(commentid):
+		return Fetch.read('item?id=' + unicode(commentid))
 
 	@staticmethod
-	def stories(story_type, over_filter=None, request=None):
+	def stories(story_type, over_filter=None):
 		if story_type == 'news' and isinstance(over_filter, int):
-			return Fetch.read('over?points=' + unicode(over_filter), request=request)
+			return Fetch.read('over?points=' + unicode(over_filter))
 		elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
-			return Fetch.read(story_type, request=request)
+			return Fetch.read(story_type)
 
 	@staticmethod
-	def userpage(username, request=None):
-		return Fetch.read('user?id=' + unicode(username), request=request)
+	def userpage(username):
+		return Fetch.read('user?id=' + unicode(username))
 
 	@staticmethod
-	def login(request=None):
-		return Fetch.read('login', request=request)
+	def login():
+		return Fetch.read('login')
 
 	@staticmethod
-	def read(url, request=None):
+	def read(url):
 		try:
 			headers = {'User-Agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
 			cookies = None
+			request = get_request()
 			if request and 'usercookie' in request.session:
 				cookies = {'user': request.session['usercookie']}
 			r = requests.get('https://news.ycombinator.com/' + url, headers=headers, cookies=cookies)
@@ -61,8 +63,8 @@ class CouldNotParse(Exception):
 		logger.error(value)
 
 
-def stories(story_type, over_filter, request=None):
-	soup = Fetch.stories(story_type=story_type, over_filter=over_filter, request=request)
+def stories(story_type, over_filter):
+	soup = Fetch.stories(story_type=story_type, over_filter=over_filter)
 	# HN markup is odd. Basically every story use three rows each
 	stories_soup = soup.html.body.table.find_all('table')[1].find_all('tr')[::3]
 	# Scraping all stories
@@ -84,9 +86,9 @@ def stories(story_type, over_filter, request=None):
 	story_cache.save()
 
 
-def comments(commentid, cache_minutes=20, request=None):
+def comments(commentid, cache_minutes=20):
 	start_time = timezone.now()
-	soup = Fetch.comments(commentid=commentid, request=request)
+	soup = Fetch.comments(commentid=commentid)
 	try:
 		story_soup = soup.html.body.table.find_all('table')[1].find('tr')
 	except AttributeError:
@@ -275,8 +277,8 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				continue
 
 
-def userpage(username, request=None):
-	soup = Fetch.userpage(username=username, request=request)
+def userpage(username):
+	soup = Fetch.userpage(username=username)
 	try:
 		userdata = soup.html.body.table.find_all('table')[1].find_all('tr')
 	except AttributeError:
