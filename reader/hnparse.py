@@ -39,15 +39,19 @@ class Fetch(object):
 			response = opener.open('http://news.ycombinator.com/' + url)
 			doc = response.read()
 			if re.match(r'^We\'ve limited requests for old items', doc):
-				raise utils.OldItemDenied('Limited request')
+				raise utils.ShowAlert('Requests have been limited for old items. It might take a while before you can access this.')
 			elif re.match(r'^We\'ve limited requests for this url', doc):
-				raise utils.UrlDenied('Limited request')
+				raise utils.ShowAlert('Requests have been limited for this page. It might take a while before you can access this.')
+			elif re.match(r'^No such user.$', doc):
+				raise utils.ShowAlert('No such user.')
+			elif re.match(r'^No such item.$', doc):
+				raise utils.ShowAlert('No such item.')
+			elif re.match(r'^((?!<body>).)*$', doc):
+				raise utils.ShowAlert('Hacker News is either not working or parsing failed')
+			elif re.match(r'<title>Error</title>', doc):
+				raise utils.ShowAlert('Hacker News is down')
 		except (urllib2.URLError, httplib.BadStatusLine):
-			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
-		except utils.OldItemDenied:
-			raise utils.ShowError('Requests have been limited for old items. It might take a while before you can access this.')
-		except utils.UrlDenied:
-			raise utils.ShowError('Requests have been limited for this page. It might take a while before you can access this.')
+			raise utils.ShowAlert('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
 		return BeautifulSoup(doc, from_encoding='utf-8')
 
 
@@ -92,7 +96,7 @@ def comments(commentid, cache_minutes=20):
 		try:
 			story = story_info(story_soup)
 		except CouldNotParse:
-			raise utils.ShowError('Story or comment deleted')
+			raise utils.ShowAlert('Story or comment deleted')
 		parent_object = None
 		permalink = False
 		story_id = commentid

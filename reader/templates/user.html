@@ -3,11 +3,16 @@
 
 
 {% block title %}
+{% if userinfo %}
 {{ userinfo.username }}
+{% else %}
+User not found
+{% endif %}
 {% endblock %}
 
 
 {% block container %}
+{% if userinfo %}
 <div class="userinfo">
 	<h2>{{ userinfo.username }}</h2>
 	<p>Joined <b>{{ userinfo.created|date:"d F, o" }}</b> <i>({{ userinfo.created|timesince }} ago)</i></p>
@@ -29,4 +34,5 @@
 	{% endif %}
 	<a href="http://news.ycombinator.com/user?id={{ userinfo.username }}">news.ycombinator link</a>
 </div>
+{% endif %}
 {% endblock %}

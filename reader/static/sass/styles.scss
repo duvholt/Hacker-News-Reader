@@ -34,7 +34,7 @@ table.table {
 	background-color: darken($wellBackground, 10%);
 	border: 1px solid darken($wellBackground, 17%);
 }
-.about, .userinfo {
+.about, .userinfo, .alerts {
 	max-width: $maxWidth;
 	padding-right: 20px;
 	padding-left: 20px;

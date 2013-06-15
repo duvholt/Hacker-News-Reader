@@ -15,6 +15,11 @@ def custom_message_view(request, message, context_instance):
 
 
 def index(request, story_type='news', json=False):
+	c = {}
+	if json:
+		template = 'templates/index_json.html'
+	else:
+		template = 'templates/index.html'
 	try:
 		page = int(request.GET.get('page'))
 	except (ValueError, TypeError):
@@ -37,11 +42,9 @@ def index(request, story_type='news', json=False):
 	try:
 		cache.update_stories(story_type=story_type, over_filter=over)
 		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
-	except utils.ShowError, e:
-		message = utils.UserMessage(e.value)
-		message.url = reverse('index')
-		return custom_message_view(request, message, context_instance)
-
+	except utils.ShowAlert, e:
+		c['alerts'] = [{'message': e.value, 'level': 'error'}]
+		return render_to_response(template, c, context_instance)
 	pages = stories.paginator.page_range
 	visible_pages = 6
 	if stories.paginator.num_pages > visible_pages:
@@ -55,12 +58,8 @@ def index(request, story_type='news', json=False):
 			left = 0
 			right = visible_pages
 		pages = pages[left:right]
-
-	if json:
-		template = 'templates/index_json.html'
-	else:
-		template = 'templates/index.html'
-	response = render_to_response(template, {"stories": stories, "pages": pages, 'limit': limit}, context_instance)
+	c.update({"stories": stories, "pages": pages, 'limit': limit})
+	response = render_to_response(template, c, context_instance)
 	response.set_cookie('stories_limit', limit)
 	return response
 
@@ -71,16 +70,18 @@ def comments(request, commentid, json=False):
 			commentid = int(commentid, 10)
 		except ValueError:
 			commentid = None
+	if json:
+			template = 'templates/comments_json.html'
+	else:
+		template = 'templates/comments.html'
 	context_instance = RequestContext(request)
 	# Context
 	c = {'story': None, 'polls': None, 'total_votes': 0}
 	try:
 		cache.update_comments(commentid=commentid)
 		c['nodes'] = cache.comments(commentid)
-	except utils.ShowError, e:
-		message = utils.UserMessage(e.value)
-		message.url = reverse('index')
-		return custom_message_view(request, message, context_instance)
+	except utils.ShowAlert, e:
+		c['alerts'] = [{'message': e.value, 'level': 'error'}]
 	try:
 		c['story'] = Stories.objects.get(pk=commentid)
 		if c['story'].poll:
@@ -98,30 +99,24 @@ def comments(request, commentid, json=False):
 					c['story'] = None
 			c['perma'] = True
 		except HNComments.DoesNotExist:
-			raise Http404
-	if json:
-		template = 'templates/comments_json.html'
-	else:
-		template = 'templates/comments.html'
+			c['alerts'] = [{'message': e.value, 'level': 'error'}]
 	return render_to_response(template, c, context_instance)
 
 
 def userpage(request, username, json=False):
 	c = {}
-	context_instance = RequestContext(request)
-	try:
-		cache.update_userpage(username=username)
-		c['userinfo'] = cache.userinfo(username)
-	except utils.ShowError, e:
-		message = utils.UserMessage(e.value)
-		message.url = reverse('index')
-		return custom_message_view(request, message, context_instance)
-	except UserInfo.DoesNotExist:
-		raise Http404
 	if json:
 		template = 'templates/user_json.html'
 	else:
 		template = 'templates/user.html'
+	context_instance = RequestContext(request)
+	try:
+		cache.update_userpage(username=username)
+		c['userinfo'] = cache.userinfo(username)
+	except UserInfo.DoesNotExist:
+		c['alerts'] = [{'message': 'User not found'}]
+	except utils.ShowAlert, e:
+		c['alerts'] = [{'message': e.value, 'level': 'error'}]
 	return render_to_response(template, c, context_instance)
 
 

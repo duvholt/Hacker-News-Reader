@@ -12,7 +12,7 @@ class UserMessage():
 		self.url = url
 
 
-class ShowError(Exception):
+class ShowAlert(Exception):
 	def __init__(self, value):
 		self.value = value
 
@@ -25,6 +25,10 @@ class OldItemDenied(Exception):
 
 
 class UrlDenied(Exception):
+	pass
+
+
+class ParsingError(Exception):
 	pass
 
 

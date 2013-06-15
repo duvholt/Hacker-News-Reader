@@ -21,6 +21,18 @@
 		</div>
 	</div>
 	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="alerts">
+				{% if alerts %}
+					{% for alert in alerts %}
+						<div class="alert alert-{{ alert.level|default:"default" }}  fade in">
+							{% if alert.dismiss %}<button type="button" class="close" data-dismiss="alert">&times;</button>{% endif %}
+							{{ alert.message|safe }}
+						</div>
+					{% endfor %}
+				{% endif %}
+			</div>
+		</div>
 	{% block container %}
 		<h1>Default Page</h1>
 		<p>Default template text</p>

@@ -8,7 +8,11 @@
 		{{ story.title|safe }}
 	{% else %}
 		{% with first_node=nodes|first %}
+		{% if first_node %}
 		{{ first_node.text|truncatechars:"80" }}
+		{% else %}
+		Item not found
+		{% endif %}
 		{% endwith %}
 	{% endif %}
 {% endblock %}
@@ -56,6 +60,7 @@
 	{% endif %}
 	</div>
 {% endif %}
+{% if nodes %}
 <div class="comments">
 	<ul>
 	{% recursetree nodes %}
@@ -81,5 +86,6 @@
 	{% endrecursetree %}
 	</ul>
 </div>
+{% endif %}
 {% endwith %}
 {% endblock %}
