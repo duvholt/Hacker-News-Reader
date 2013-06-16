@@ -23,6 +23,10 @@ class JSONResponseMixin(object):
 		return self.response_class(self.convert_context_to_json(context), **response_kwargs)
 
 	def convert_context_to_json(self, context):
+		if 'alerts' in context:
+			for alert in context['alerts']:
+				if alert['level'] == 'error':
+					return	json.dumps({'alerts': context['alerts']})
 		return json.dumps(context)
 
 
@@ -103,7 +107,7 @@ class IndexJsonView(JSONResponseMixin, IndexView):
 			}
 			if not story.selfpost:
 				story_json['url'] = story.url
-				story_json['domain'] = story.domain
+				story_json['domain'] = domain(story.url)
 			context['stories'].append(story_json)
 		context['page'] = {'current': stories.number, 'total': stories.paginator.num_pages}
 		return context
@@ -229,18 +233,19 @@ class UserView(TemplateView):
 class UserJsonView(JSONResponseMixin, UserView):
 	def get_context_data(self, **kwargs):
 		context = super(UserView, self).get_context_data(**kwargs)
-		userinfo = context['userinfo']
-		context = {
-			'user': {
-				'username': userinfo.username,
-				'created': format(userinfo.created, 'r'),
-				'created_unix': format(userinfo.created, 'U'),
-				'karma': userinfo.karma,
-				'avg': round(userinfo.avg, 2),
-				'cache': format(userinfo.cache, 'r'),
-				'cache_unix': format(userinfo.cache, 'U')
+		userinfo = context.get('userinfo', None)
+		if userinfo:
+			context = {
+				'user': {
+					'username': userinfo.username,
+					'created': format(userinfo.created, 'r'),
+					'created_unix': format(userinfo.created, 'U'),
+					'karma': userinfo.karma,
+					'avg': round(userinfo.avg, 2),
+					'cache': format(userinfo.cache, 'r'),
+					'cache_unix': format(userinfo.cache, 'U')
+				}
 			}
-		}
-		if userinfo.about:
-			context['user']['about'] = userinfo.about
+			if userinfo.about:
+				context['user']['about'] = userinfo.about
 		return context
