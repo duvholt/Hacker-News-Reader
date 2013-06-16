@@ -143,7 +143,7 @@ class CommentsView(TemplateView):
 						context['story'] = None
 				context['perma'] = True
 			except HNComments.DoesNotExist:
-				context['alerts'] = [{'message': e.value, 'level': 'error'}]
+				context['alerts'] = [{'message': 'Item not found', 'level': 'error'}]
 		return self.render_to_response(self.get_context_data(**context))
 
 
