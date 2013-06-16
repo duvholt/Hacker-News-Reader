@@ -115,7 +115,10 @@ def comments(commentid, cache_minutes=20):
 			# Since the comment doesn't exist we have to improvise with the data a bit
 			# Story is is not provided for permalinked comments, but parent id is
 			# Story id will therefore temporarely be set to the comment id
-			traverse_comment(story_soup.parent, None, commentid, perma=True)
+			try:
+				traverse_comment(story_soup.parent, None, commentid, perma=True)
+			except CouldNotParse:
+				return
 			parent_object = HNComments.objects.get(id=commentid)
 		story_id = parent_object.story_id
 		permalink = True
@@ -198,7 +201,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	try:
 		comment.id = int(re.search(r'item\?id=(\d+)$', td_default.find_all('a')[1]['href']).group(1), 10)
 	except IndexError:
-		raise CouldNotParse('Couldn\'t get comment id' + str(story_id))
+		raise CouldNotParse('Comment is dead')
 	comment.username = td_default.find('a').find(text=True)
 	# Get html contents of the comment excluding <span> and <font>
 	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).font.decode_contents())

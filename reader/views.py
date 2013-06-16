@@ -27,14 +27,34 @@ class JSONResponseMixin(object):
 			for alert in context['alerts']:
 				if alert['level'] == 'error':
 					return	json.dumps({'alerts': context['alerts']})
+			# Remove if empty
+			if not context['alerts']:
+				context.pop('alerts')
 		return json.dumps(context)
 
+	def clean_context(self, context):
+		"""
+		Used to clear up the context so it can be redone
+		"""
+		if 'alerts' in context:
+			context = {'alerts': context['alerts']}
+		else:
+			context = {}
+		return context
 
-class IndexView(TemplateView):
+
+class ContextView(TemplateView):
+	def get_context_data(self, **kwargs):
+		if 'alerts' not in kwargs:
+			kwargs['alerts'] = []
+		return kwargs
+
+
+class IndexView(ContextView):
 	template_name = 'templates/index.html'
 
 	def get(self, request, *args, **kwargs):
-		context = {}
+		context = super(IndexView, self).get_context_data()
 		story_type = kwargs.get('story_type', 'news')
 		try:
 			page = int(request.GET.get('page'))
@@ -58,7 +78,7 @@ class IndexView(TemplateView):
 			cachetime = cache.update_stories(story_type=story_type, over_filter=over)
 			stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 		except utils.ShowAlert, e:
-			context['alerts'] = [{'message': e.value, 'level': 'error'}]
+			context['alerts'].append({'message': e.message, 'level': e.level})
 			return self.render_to_response(self.get_context_data(**context))
 
 		pages = self.get_active_pages(stories, page)
@@ -87,9 +107,10 @@ class IndexView(TemplateView):
 
 class IndexJsonView(JSONResponseMixin, IndexView):
 	def get_context_data(self, **kwargs):
-		context = super(IndexView, self).get_context_data(**kwargs)
+		context = super(IndexJsonView, self).get_context_data(**kwargs)
 		stories = context['stories']
-		context = {'stories': []}
+		context = self.clean_context(context)
+		context['stories'] = []
 		for story in stories:
 			story_json = {
 				'id': story.id,
@@ -113,21 +134,22 @@ class IndexJsonView(JSONResponseMixin, IndexView):
 		return context
 
 
-class CommentsView(TemplateView):
+class CommentsView(ContextView):
 	template_name = 'templates/comments.html'
 
 	def get(self, request, *args, **kwargs):
+		context = super(CommentsView, self).get_context_data()
 		commentid = kwargs['commentid']
 		if commentid:
 			try:
 				commentid = int(commentid, 10)
 			except ValueError:
 				commentid = None
-		context = {'story': None, 'polls': None, 'total_votes': 0}
+		context.update({'story': None, 'polls': None, 'total_votes': 0})
 		try:
 			cache.update_comments(commentid=commentid)
 		except utils.ShowAlert, e:
-			context['alerts'] = [{'message': e.value, 'level': 'error'}]
+			context['alerts'].append({'message': e.message, 'level': e.level})
 		try:
 			context['story'] = Stories.objects.get(pk=commentid)
 			# Using list() to force evaluation
@@ -147,7 +169,7 @@ class CommentsView(TemplateView):
 						context['story'] = None
 				context['perma'] = True
 			except HNComments.DoesNotExist:
-				context['alerts'] = [{'message': 'Item not found', 'level': 'error'}]
+				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
 		return self.render_to_response(self.get_context_data(**context))
 
 
@@ -155,11 +177,11 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 
 	def get_context_data(self, **kwargs):
 		context = super(CommentsJsonView, self).get_context_data(**kwargs)
-		story = context['story']
-		polls = context['polls']
-		total_votes = context['total_votes']
-		root_comments = cache_tree_children(context['nodes'])
-		context = {}
+		story = context.get('story', None)
+		polls = context.get('polls', None)
+		total_votes = context.get('total_votes', None)
+		root_comments = cache_tree_children(context.get('nodes', None))
+		context = self.clean_context(context)
 		if story:
 			context['story'] = {
 				'id': story.id,
@@ -190,7 +212,6 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 		context['comments'] = []
 		for root_comment in root_comments:
 			context['comments'].append(self.recursive_node_to_dict(root_comment, bool(story)))
-
 		return context
 
 	def recursive_node_to_dict(self, node, story):
@@ -214,37 +235,36 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 		return result
 
 
-class UserView(TemplateView):
+class UserView(ContextView):
 	template_name = 'templates/user.html'
 
 	def get(self, request, *args, **kwargs):
-		context = {}
+		context = super(UserView, self).get_context_data()
 		username = kwargs['username']
 		try:
 			cache.update_userpage(username=username)
 			context['userinfo'] = cache.userinfo(username)
 		except UserInfo.DoesNotExist:
-			context['alerts'] = [{'message': 'User not found'}]
+			context['alerts'].append({'message': 'User not found'})
 		except utils.ShowAlert, e:
-			context['alerts'] = [{'message': e.value, 'level': 'error'}]
+			context['alerts'].append({'message': e.message, 'level': e.level})
 		return self.render_to_response(self.get_context_data(**context))
 
 
 class UserJsonView(JSONResponseMixin, UserView):
 	def get_context_data(self, **kwargs):
-		context = super(UserView, self).get_context_data(**kwargs)
+		context = super(UserJsonView, self).get_context_data(**kwargs)
 		userinfo = context.get('userinfo', None)
+		context = self.clean_context(context)
 		if userinfo:
-			context = {
-				'user': {
-					'username': userinfo.username,
-					'created': format(userinfo.created, 'r'),
-					'created_unix': format(userinfo.created, 'U'),
-					'karma': userinfo.karma,
-					'avg': round(userinfo.avg, 2),
-					'cache': format(userinfo.cache, 'r'),
-					'cache_unix': format(userinfo.cache, 'U')
-				}
+			context['user'] = {
+				'username': userinfo.username,
+				'created': format(userinfo.created, 'r'),
+				'created_unix': format(userinfo.created, 'U'),
+				'karma': userinfo.karma,
+				'avg': round(userinfo.avg, 2),
+				'cache': format(userinfo.cache, 'r'),
+				'cache_unix': format(userinfo.cache, 'U')
 			}
 			if userinfo.about:
 				context['user']['about'] = userinfo.about

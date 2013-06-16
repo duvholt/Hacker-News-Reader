@@ -13,11 +13,9 @@ class UserMessage():
 
 
 class ShowAlert(Exception):
-	def __init__(self, value):
-		self.value = value
-
-	def __str__(self):
-		return repr(self.value)
+	def __init__(self, message, level='error'):
+		self.message = message
+		self.level = level
 
 
 class OldItemDenied(Exception):
