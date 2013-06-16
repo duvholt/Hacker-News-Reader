@@ -4,6 +4,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
 import settings
+from reader.views import *
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -14,20 +15,18 @@ urlpatterns = patterns(
 	'',
 	# About page
 	(r'about$', TemplateView.as_view(template_name='about.html')),
-	# This was really only used for AppFog due to lack of proper command execution.
-	#url(r'^command/(?P<command>\w+)/$', 'reader.views.command', name='command'),
 	# Main page submssions
-	url(r'^$', 'reader.views.index', name='index'),
-	url(r'^(?P<story_type>news|newest|best|active|self|poll|show|ask)$', 'reader.views.index', name='index_type'),
+	url(r'^$', IndexView.as_view(), name='index'),
+	url(r'^(?P<story_type>news|newest|best|active|self|poll|show|ask)$', IndexView.as_view(), name='index_type'),
 	# Main page json
-	url(r'^\.json$', 'reader.views.index', {'json': True}, name='index_json'),
-	url(r'^(?P<story_type>news|newest|best|active|self|poll|show|ask)\.json$', 'reader.views.index', {'json': True}, name='index_type_json'),
+	url(r'^\.json$', IndexJsonView.as_view(), name='index_json'),
+	url(r'^(?P<story_type>news|newest|best|active|self|poll|show|ask)\.json$', IndexJsonView.as_view(), name='index_type_json'),
 	# Comments
-	url(r'^comments/(?P<commentid>\d+)/$', 'reader.views.comments', name='comments'),
-	url(r'^comments/(?P<commentid>\d+)\.json$', 'reader.views.comments', {'json': True}, name='comments_json'),
+	url(r'^comments/(?P<commentid>\d+)/$', CommentsView.as_view(), name='comments'),
+	url(r'^comments/(?P<commentid>\d+)\.json$', CommentsJsonView.as_view(), name='comments_json'),
 	# User page
-	url(r'^user/(?P<username>\w+)/$', 'reader.views.userpage', name='userpage'),
-	url(r'^user/(?P<username>\w+)\.json$', 'reader.views.userpage', {'json': True}, name='userpage_json'),
+	url(r'^user/(?P<username>\w+)/$', UserView.as_view(), name='userpage'),
+	url(r'^user/(?P<username>\w+)\.json$', UserJsonView.as_view(), name='userpage_json'),
 	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
 	url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
