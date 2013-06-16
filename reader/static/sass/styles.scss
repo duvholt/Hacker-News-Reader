@@ -124,6 +124,13 @@ div.comments {
 		word-wrap:break-word;
 	}
 }
+// Used to display how old cache is
+.cache {
+	font-size: $smallFontSize;
+	color: $gray;
+	font-style: italic;
+}
+
 // Bootstrap related
 .navbar .brand {
 	font-family: 'Cabin Condensed', sans-serif;

@@ -46,6 +46,9 @@
 		</div>
 	</div>
 	<div class="span9">
+		{% if cache %}
+			<div class="cache">Displaying cache from {{ cache|timesince }} ago</div>
+		{% endif %}
 		<table id="stories" class="table table-striped table-hover table-condensed">
 			<tbody>
 				<thead class="hidden-phone">

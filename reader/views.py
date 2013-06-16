@@ -51,7 +51,7 @@ class IndexView(TemplateView):
 			limit = 25
 
 		try:
-			cache.update_stories(story_type=story_type, over_filter=over)
+			cachetime = cache.update_stories(story_type=story_type, over_filter=over)
 			stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 		except utils.ShowAlert, e:
 			context['alerts'] = [{'message': e.value, 'level': 'error'}]
@@ -59,7 +59,7 @@ class IndexView(TemplateView):
 
 		pages = self.get_active_pages(stories, page)
 
-		context.update({"stories": stories, "pages": pages, 'limit': limit})
+		context.update({'stories': stories, 'pages': pages, 'limit': limit, 'cache': cachetime})
 		response = self.render_to_response(self.get_context_data(**context))
 		response.set_cookie('stories_limit', limit)
 		return response

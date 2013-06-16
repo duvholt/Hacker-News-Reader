@@ -42,9 +42,11 @@
 	{% endif %}
 	<p>
 		{{ story.score|default:"0" }} points  by <a href="/user/{{ story.username }}">{{ story.username }}</a>
-		<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince }} ago</time> |
+		<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time> |
 		{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }} |
 		<a href="http://news.ycombinator.com/item?id={{ story.id }}">news.ycombinator link</a>
+		<br>
+		<div class="cache">Displaying cache from {{ story.cache|timesince }} ago</div>
 	</p>
 </div>
 {% endif %}
@@ -68,7 +70,7 @@
 			<div class="comment">
 				<a href="#" class="hidetoggle">[-]</a>
 				<a{% if node.username == story.username %} class="op"{% endif %} href="/user/{{ node.username }}">{{ node.username }}</a>
-				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince }} ago</time></span>
+				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince|upto:',' }} ago</time></span>
 				<a href="/comments/{{ node.id }}">permalink</a>
 				{% if first_node == node and node.parent_id %}
 					<a href="/comments/{{ node.parent_id }}">parent</a>
