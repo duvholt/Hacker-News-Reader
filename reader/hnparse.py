@@ -10,6 +10,7 @@ import datetime
 import re
 from decimal import Decimal, InvalidOperation
 import logging
+from django.db.models import F
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ def stories(story_type, over_filter):
 		try:
 			story = story_info(story_soup)
 			story.story_type = story_type
+			story.poll = F('poll')
 			story.cache = timezone.now()
 			story.save()
 		except CouldNotParse:
@@ -129,7 +131,7 @@ def comments(commentid, cache_minutes=20):
 		if poll_table:
 			poll = True
 			poll_update(story.id, poll_table)
-			story.poll = poll
+			story.poll = True
 		selfpost_info = story_soup.parent.find_all('tr', {'style': 'height:2px'})
 		if selfpost_info:
 			story.selfpost_text = utils.html2markup(selfpost_info[0].next_sibling.find_all('td')[1].decode_contents())
