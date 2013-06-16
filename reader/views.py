@@ -122,18 +122,19 @@ class CommentsView(TemplateView):
 		context = {'story': None, 'polls': None, 'total_votes': 0}
 		try:
 			cache.update_comments(commentid=commentid)
-			context['nodes'] = cache.comments(commentid)
 		except utils.ShowAlert, e:
 			context['alerts'] = [{'message': e.value, 'level': 'error'}]
 		try:
 			context['story'] = Stories.objects.get(pk=commentid)
+			# Using list() to force evaluation
 			if context['story'].poll:
 				context['polls'] = Poll.objects.filter(story_id=commentid).order_by('id')
 				for poll in context['polls']:
 					context['total_votes'] += poll.score
+			context['nodes'] = list(cache.comments(commentid))
 		except Stories.DoesNotExist:
 			try:
-				context['nodes'] = HNComments.objects.get(id=commentid, dead=False).get_descendants(True)
+				context['nodes'] = list(HNComments.objects.get(id=commentid, dead=False).get_descendants(True))
 				node_first = context['nodes'][0]
 				if node_first:
 					try:
