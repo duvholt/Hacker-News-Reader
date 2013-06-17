@@ -2,6 +2,7 @@ import re
 import datetime
 import parsedatetime.parsedatetime as pdt
 from tzlocal import get_localzone
+from reader.models import HNComments
 
 
 class UserMessage():
@@ -66,3 +67,10 @@ def poll_percentage(number, total, rounding=2):
 
 def domain(url):
 	return re.findall(r'^(?:.+//)?(?:www\.)?([^/#?]*)', url)[0].lower()
+
+
+def story_rebuild(story_id):
+	root_nodes = HNComments.objects.filter(story_id=story_id, parent_id=None)
+	for root_node in root_nodes:
+		HNComments.tree._rebuild_helper(root_node.pk, 1, root_node.tree_id)
+	return

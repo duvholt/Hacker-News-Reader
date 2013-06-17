@@ -165,7 +165,7 @@ class CommentsView(ContextView):
 			context['nodes'] = list(cache.comments(commentid))
 		except Stories.DoesNotExist:
 			try:
-				context['nodes'] = list(HNComments.objects.get(id=commentid, dead=False).get_descendants(True))
+				context['nodes'] = list(HNComments.objects.get(id=commentid).get_descendants(True))
 				node_first = context['nodes'][0]
 				if node_first:
 					try:

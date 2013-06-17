@@ -1,3 +1,4 @@
+from django.db import transaction
 from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
 import reader.utils as utils
 from django.conf import settings
@@ -154,15 +155,17 @@ def comments(commentid, cache_minutes=20):
 			i += 1
 		# Traversing all top comments
 		comments_soup = soup.html.body.table.find_all('table')[i].find_all('table')
-		for comment_soup in comments_soup:
-			td_default = comment_soup.tr.find('td', {'class': 'default'})
-			# Converting indent to a more readable format (0, 1, 2...)
-			indenting = int(td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
-			if indenting == 0:
-				try:
-					traverse_comment(comment_soup, parent_object, story_id)
-				except CouldNotParse:
-					continue
+		with transaction.commit_on_success():
+			with HNComments.objects.delay_mptt_updates():
+				for comment_soup in comments_soup:
+					td_default = comment_soup.tr.find('td', {'class': 'default'})
+					# Converting indent to a more readable format (0, 1, 2...)
+					indenting = int(td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
+					if indenting == 0:
+						try:
+							traverse_comment(comment_soup, parent_object, story_id)
+						except CouldNotParse:
+							continue
 		HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
 
 
