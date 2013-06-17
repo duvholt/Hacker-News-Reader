@@ -1,10 +1,8 @@
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.http import HttpResponse
-from django.template import RequestContext
 import reader.cache as cache
 from reader.models import Stories, HNComments, Poll, UserInfo
 import reader.utils as utils
-from django.core.urlresolvers import reverse
 from reader.hnparse import Fetch
 import requests
 from django.views.generic import TemplateView
@@ -14,6 +12,7 @@ from utils import domain, poll_percentage
 from mptt.templatetags.mptt_tags import cache_tree_children
 
 # Warning levels: error, success, info and default (empty)
+
 
 class JSONResponseMixin(object):
 	"""
@@ -284,7 +283,7 @@ class LoginView(ContextView):
 		context = super(LoginView, self).get_context_data()
 		return self.render_to_response(self.get_context_data(**context))
 
-	def post(self, request, *args, **kwargs):
+	def post(self, request):
 		context = super(LoginView, self).get_context_data()
 		if all(key in request.POST for key in ['username', 'password']):
 			username = request.POST['username']
