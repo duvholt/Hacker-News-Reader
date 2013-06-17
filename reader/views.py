@@ -13,6 +13,7 @@ from django.utils.dateformat import format
 from utils import domain, poll_percentage
 from mptt.templatetags.mptt_tags import cache_tree_children
 
+# Warning levels: error, success, info and default (empty)
 
 class JSONResponseMixin(object):
 	"""
@@ -276,37 +277,39 @@ class UserJsonView(JSONResponseMixin, UserView):
 		return context
 
 
-def login(request):
-	c = {}
-	context_instance = RequestContext(request)
-	# Check that both username and password are in post
-	if all(key in request.POST for key in ['username', 'password']):
-		username = request.POST['username']
-		password = request.POST['password']
-		if username and password:
-			soup = Fetch.login()
-			fnid = soup.find('input', {'type': 'hidden'})['value']
-			payload = {'fnid': fnid, 'u': username, 'p': password}
-			r = requests.post('https://news.ycombinator.com/x', data=payload)
-			if 'user' in r.cookies:
-				request.session['username'] = username
-				request.session['usercookie'] = r.cookies['user']
-				message = utils.UserMessage('Logged in as ' + username)
-				message.url = reverse('index')
+class LoginView(ContextView):
+	template_name = 'templates/login.html'
+
+	def get(self, request, *args, **kwargs):
+		context = super(LoginView, self).get_context_data()
+		return self.render_to_response(self.get_context_data(**context))
+
+	def post(self, request, *args, **kwargs):
+		context = super(LoginView, self).get_context_data()
+		if all(key in request.POST for key in ['username', 'password']):
+			username = request.POST['username']
+			password = request.POST['password']
+			if username and password:
+				soup = Fetch.login()
+				fnid = soup.find('input', {'type': 'hidden'})['value']
+				payload = {'fnid': fnid, 'u': username, 'p': password}
+				r = requests.post('https://news.ycombinator.com/x', data=payload)
+				if 'user' in r.cookies:
+					request.session['username'] = username
+					request.session['usercookie'] = r.cookies['user']
+					context['alerts'].append({'message': 'Logged in as ' + username, 'level': 'success'})
+				else:
+					context['alerts'].append({'message': 'Username or password wrong', 'level': 'error'})
 			else:
-				message = utils.UserMessage('Username or password wrong')
-				message.url = reverse('login')
-		else:
-			message = utils.UserMessage('Username or password missing')
-			message.url = reverse('login')
-		return custom_message_view(request, message, context_instance)
-	return render_to_response('templates/login.html', c, context_instance)
+				context['alerts'].append({'message': 'Username or password missing', 'level': 'error'})
+		return self.render_to_response(self.get_context_data(**context))
 
 
-def logout(request):
-	try:
-		del request.session['username']
-		del request.session['usercookie']
-	except KeyError:
-		pass
-	return redirect('index')
+class  LogoutView(ContextView):
+	def get(self, request, *args, **kwargs):
+		try:
+			del request.session['username']
+			del request.session['usercookie']
+		except KeyError:
+			pass
+		return redirect('index')
