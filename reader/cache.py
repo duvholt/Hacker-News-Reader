@@ -28,6 +28,9 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 	# More than cache_minutes since cache was updated
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		hnparse.stories(story_type=story_type, over_filter=over_filter)
+		return None
+	else:
+		return cachetime
 
 
 def update_comments(commentid, cache_minutes=20):

@@ -2,6 +2,7 @@ from django import template
 from django.template.defaultfilters import stringfilter
 import re
 from django.utils import html
+import reader.utils as utils
 
 register = template.Library()
 
@@ -49,12 +50,7 @@ def active_score(request, number):
 
 @register.simple_tag
 def percentage(number, total, rounding=2):
-	rounding = int(rounding)
-	if total != 0:
-		return round((float(number) / float(total)) * 100, rounding)
-	else:
-		return 0.0
-	# return '{percent:.2%}'.format(percent=float(number) / float(total))
+	return utils.poll_percentage(number, total, rounding)
 
 
 @register.filter
@@ -170,4 +166,4 @@ def lastpageobject(page):
 
 @register.filter
 def domain(url):
-	return re.findall(r'^(?:.+//)?(?:www\.)?([^/#?]*)', url)[0].lower()
+	return utils.domain(url)

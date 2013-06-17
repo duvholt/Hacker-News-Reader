@@ -12,12 +12,10 @@ class UserMessage():
 		self.url = url
 
 
-class ShowError(Exception):
-	def __init__(self, value):
-		self.value = value
-
-	def __str__(self):
-		return repr(self.value)
+class ShowAlert(Exception):
+	def __init__(self, message, level='error'):
+		self.message = message
+		self.level = level
 
 
 class OldItemDenied(Exception):
@@ -25,6 +23,10 @@ class OldItemDenied(Exception):
 
 
 class UrlDenied(Exception):
+	pass
+
+
+class ParsingError(Exception):
 	pass
 
 
@@ -52,3 +54,14 @@ def parse_time(time_string):
 	p = pdt.Calendar()
 	tz = get_localzone()
 	return datetime.datetime(*p.parse(time_string)[0][:6]).replace(tzinfo=tz)
+
+
+def poll_percentage(number, total, rounding=2):
+	rounding = int(rounding)
+	if total != 0:
+		return round((float(number) / float(total)) * 100, rounding)
+	else:
+		return 0.0
+
+def domain(url):
+	return re.findall(r'^(?:.+//)?(?:www\.)?([^/#?]*)', url)[0].lower()

@@ -11,6 +11,7 @@ import re
 from decimal import Decimal, InvalidOperation
 import logging
 from middleware import get_request
+from django.db.models import F
 
 logger = logging.getLogger(__name__)
 
@@ -46,15 +47,19 @@ class Fetch(object):
 				cookies = {'user': request.session['usercookie']}
 			r = requests.get('https://news.ycombinator.com/' + url, headers=headers, cookies=cookies)
 			if re.match(r'^We\'ve limited requests for old items', r.text):
-				raise utils.OldItemDenied('Limited request')
+				raise utils.ShowAlert('Requests have been limited for old items. It might take a while before you can access this.')
 			elif re.match(r'^We\'ve limited requests for this url', r.text):
-				raise utils.UrlDenied('Limited request')
+				raise utils.ShowAlert('Requests have been limited for this page. It might take a while before you can access this.')
+			elif re.match(r'^No such user.$', r.text):
+				raise utils.ShowAlert('No such user.')
+			elif re.match(r'^No such item.$', r.text):
+				raise utils.ShowAlert('No such item.')
+			elif re.match(r'^((?!<body>).)*$', r.text):
+				raise utils.ShowAlert('Hacker News is either not working or parsing failed')
+			elif re.match(r'<title>Error</title>', r.text):
+				raise utils.ShowAlert('Hacker News is down')
 		except requests.HTTPError:
-			raise utils.ShowError('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
-		except utils.OldItemDenied:
-			raise utils.ShowError('Requests have been limited for old items. It might take a while before you can access this.')
-		except utils.UrlDenied:
-			raise utils.ShowError('Requests have been limited for this page. It might take a while before you can access this.')
+			raise utils.ShowAlert('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
 		return BeautifulSoup(r.text, from_encoding='utf-8')
 
 
@@ -72,6 +77,7 @@ def stories(story_type, over_filter):
 		try:
 			story = story_info(story_soup)
 			story.story_type = story_type
+			story.poll = F('poll')
 			story.cache = timezone.now()
 			story.save()
 		except CouldNotParse:
@@ -99,7 +105,7 @@ def comments(commentid, cache_minutes=20):
 		try:
 			story = story_info(story_soup)
 		except CouldNotParse:
-			raise utils.ShowError('Story or comment deleted')
+			raise utils.ShowAlert('Story or comment deleted')
 		parent_object = None
 		permalink = False
 		story_id = commentid
@@ -118,7 +124,10 @@ def comments(commentid, cache_minutes=20):
 			# Since the comment doesn't exist we have to improvise with the data a bit
 			# Story is is not provided for permalinked comments, but parent id is
 			# Story id will therefore temporarely be set to the comment id
-			traverse_comment(story_soup.parent, None, commentid, perma=True)
+			try:
+				traverse_comment(story_soup.parent, None, commentid, perma=True)
+			except CouldNotParse:
+				return
 			parent_object = HNComments.objects.get(id=commentid)
 		story_id = parent_object.story_id
 		permalink = True
@@ -129,7 +138,7 @@ def comments(commentid, cache_minutes=20):
 		if poll_table:
 			poll = True
 			poll_update(story.id, poll_table)
-			story.poll = poll
+			story.poll = True
 		selfpost_info = story_soup.parent.find_all('tr', {'style': 'height:2px'})
 		if selfpost_info:
 			story.selfpost_text = utils.html2markup(selfpost_info[0].next_sibling.find_all('td')[1].decode_contents())
@@ -205,7 +214,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	try:
 		comment.id = int(re.search(r'item\?id=(\d+)$', td_default.find_all('a')[1]['href']).group(1), 10)
 	except IndexError:
-		raise CouldNotParse('Couldn\'t get comment id' + str(story_id))
+		raise CouldNotParse('Comment is dead')
 	comment.username = td_default.find('a').find(text=True)
 	# Get html contents of the comment excluding <span> and <font>
 	if td_default.find('span', {'class': 'dead'}):
