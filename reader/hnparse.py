@@ -297,12 +297,18 @@ def userpage(username):
 		avg = Decimal(userdata[3].find_all('td')[1].decode_contents())
 	except InvalidOperation:
 		avg = 0
+	# If user is logged in there will be an editable textarea instead of just text
+	if userdata[4].find_all('td')[1].textarea:
+		about = userdata[4].find_all('td')[1].textarea.decode_contents()
+	else:
+		about = utils.html2markup(userdata[4].find_all('td')[1].decode_contents())
+
 	UserInfo(
 		username=username,
 		created=created,
 		karma=int(userdata[2].find_all('td')[1].decode_contents(), 10),
 		avg=avg,
-		about=utils.html2markup(userdata[4].find_all('td')[1].decode_contents()),
+		about=about,
 		cache=timezone.now()
 	).save()
 
