@@ -134,7 +134,7 @@ INSTALLED_APPS = (
 	# 'django.contrib.admindocs',
 	'reader',
 	'south',
-	'mptt',
+	'treebeard',
 )
 
 # This will likely be overriden by localsettings.py

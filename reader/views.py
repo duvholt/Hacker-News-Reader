@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 import reader.cache as cache
-from reader.models import Stories, HNComments, Poll, UserInfo
+from reader.models import Stories, Poll, UserInfo
+from reader.models import HNCommentsTree as HNComments
 import reader.utils as utils
 from django.views.generic import TemplateView
 import json
@@ -157,7 +158,10 @@ class CommentsView(ContextView):
 				context['polls'] = Poll.objects.filter(story_id=commentid).order_by('id')
 				for poll in context['polls']:
 					context['total_votes'] += poll.score
-			context['nodes'] = list(cache.comments(commentid))
+			# context['nodes'] = list(cache.comments(commentid))
+			context['comments'] = []
+			for root_node in HNComments.objects.filter(parent__isnull=True, story_id=commentid):
+				context['comments'].append(HNComments.get_annotated_list(parent=root_node))
 		except Stories.DoesNotExist:
 			try:
 				context['nodes'] = list(HNComments.objects.get(id=commentid, dead=False).get_descendants(True))

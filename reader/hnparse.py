@@ -1,4 +1,5 @@
-from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
+from reader.models import Stories, StoryCache, HNCommentsCache, Poll, UserInfo
+from reader.models import HNCommentsTree as HNComments
 import reader.utils as utils
 from django.conf import settings
 from django.utils import timezone
@@ -234,14 +235,26 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				pass
 	comment.story_id = story_id
 	comment.cache = timezone.now()
-	comment.parent = parent_object
+	# comment.parent = parent_object
 	if perma and not parent_object and parent_id:
 		# Forcing comment to be updated next time, since it doesn't have proper values
 		cache = timezone.now() - datetime.timedelta(days=1)
 		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
 		parent_object.save()
-		comment.parent = parent_object
-	comment.save()
+		# comment.parent = parent_object
+	temp_dict = comment.__dict__
+	temp_dict.pop('_state')
+	temp_dict.pop('depth')
+	temp_dict.pop('lft')
+	temp_dict.pop('rgt')
+	temp_dict.pop('tree_id')
+	temp_dict.pop('parent_id')
+
+	if parent_object:
+		parent_object = HNComments.objects.get(id=parent_object.id)
+		parent_object.add_child(**temp_dict)
+	else:
+		HNComments.add_root(**temp_dict)
 	HNCommentsCache(id=comment.id, time=timezone.now()).save()
 
 	# Traversing over child comments:

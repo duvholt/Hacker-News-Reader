@@ -1,5 +1,6 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from treebeard.ns_tree import NS_Node
 
 
 class Stories(models.Model):
@@ -32,6 +33,21 @@ class HNComments(MPTTModel):
 
 	class MPTTMeta:
 		order_insertion_by = ['cache']
+
+
+class HNCommentsTree(NS_Node):
+	id = models.PositiveIntegerField(primary_key=True)
+	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
+	username = models.CharField(max_length=150)
+	text = models.TextField(default="")
+	hiddenpercent = models.PositiveIntegerField(max_length=10, default=0)
+	hiddencolor = models.CharField(max_length=7, default="#000000")
+	time = models.DateTimeField(null=True)
+	cache = models.DateTimeField(null=True)
+	parent = models.ForeignKey('self', related_name='children', null=True, db_index=True)
+	dead = models.BooleanField(default=False)
+
+	node_order_by = ['dead', 'cache']
 
 
 class StoryCache(models.Model):

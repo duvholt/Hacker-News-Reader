@@ -1,6 +1,7 @@
 from django.utils import timezone
 import datetime
-from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, UserInfo
+from reader.models import Stories, StoryCache, HNCommentsCache, UserInfo
+from reader.models import HNCommentsTree as HNComments
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from tzlocal import get_localzone
 import reader.utils as utils
@@ -39,7 +40,7 @@ def update_comments(commentid, cache_minutes=20):
 	except HNCommentsCache.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
-	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
+	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now() or True:
 		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
 
 

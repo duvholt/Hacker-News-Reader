@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load mptt_tags %}
 {% load tags %}
 
 
@@ -50,44 +49,32 @@
 	</p>
 </div>
 {% endif %}
-{% with first_node=nodes|first %}
-{% if perma %}
-	<div class="well well-small comment-well">
-		You are viewing a part of the comments on this submission<br>
-	{% if story %}
-		<a href="/comments/{{ story.id }}">Click here to view all the comments</a>
-	{% else %}
-		<a href="/comments/{{ first_node.parent_id }}">Click here to load parent comment</a><br>
-		Story ID is not known, try clicking parent a few times
-	{% endif %}
-	</div>
-{% endif %}
-{% if nodes %}
+{% if comments %}
 <div class="comments">
-	<ul>
-	{% recursetree nodes %}
-		<li class="{% if node.level|add:first_node.level|divisibleby:"2" %}even{% endif %}" id="{{ node.id }}">
-			<div class="comment">
-				<a href="#" class="hidetoggle">[-]</a>
-				<a{% if node.username == story.username %} class="op"{% endif %} href="/user/{{ node.username }}">{{ node.username }}</a>
-				<span> <time title="{{ node.time|date:"r" }}" datetime="{{ node.time}}">{{ node.time|timesince|upto:',' }} ago</time></span>
-				<a href="/comments/{{ node.id }}">permalink</a>
-				{% if first_node == node and node.parent_id %}
-					<a href="/comments/{{ node.parent_id }}">parent</a>
-				{% elif first_node != node and node.parent_id %}
-					<a href="#{{ node.parent_id }}">parent</a>
-				{% endif %}
-				<div class="content" style="color: {{ node.hiddencolor }};">{{ node.text|markup2html|safe }}</div>
-			</div>
-			{% if not node.is_leaf_node %}
-			<ul class="children">
-				{{ children }}
-			</ul>
+	{% for comment_trees in comments %}
+		{% for comment, info in comment_trees %}
+			{% if info.open %}
+				<ul{% if not forloop.parentloop.first %} class="children"{% endif %}>
+			{% else %}
+				</li>
 			{% endif %}
-		</li>
-	{% endrecursetree %}
-	</ul>
-</div>
+			<li class="{% if info.level|divisibleby:"2" %}even{% endif %}" id="{{ comment.id }}">
+				<div class="comment">
+					<a href="#" class="hidetoggle">[-]</a>
+					<a{% if comment.username == story.username %} class="op"{% endif %} href="/user/{{ comment.username }}">{{ comment.username }}</a>
+					<span> <time title="{{ comment.time|date:"r" }}" datetime="{{ comment.time}}">{{ comment.time|timesince|upto:',' }} ago</time></span>
+					<a href="/comments/{{ comment.id }}">permalink</a>
+					{% if forloop.first and comment.parent_id %}
+						<a href="/comments/{{ comment.parent_id }}">parent</a>
+					{% elif not forloop.first and comment.parent_id %}
+						<a href="#{{ comment.parent_id }}">parent</a>
+					{% endif %}
+					<div class="content" style="color: {{ comment.hiddencolor }};">{{ comment.text|markup2html|safe }}</div>
+				</div>
+			{% for close in info.close %}
+				</li></ul>
+			{% endfor %}
+		{% endfor %}
+	{% endfor %}
 {% endif %}
-{% endwith %}
 {% endblock %}
