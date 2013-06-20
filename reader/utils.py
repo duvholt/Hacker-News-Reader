@@ -72,5 +72,5 @@ def domain(url):
 def story_rebuild(story_id):
 	root_nodes = HNComments.objects.filter(story_id=story_id, parent_id=None)
 	for root_node in root_nodes:
-		HNComments.tree._rebuild_helper(root_node.pk, 1, root_node.tree_id)
+		HNComments.objects._rebuild_helper(root_node.pk, 1, root_node.tree_id)
 	return

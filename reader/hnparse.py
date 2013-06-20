@@ -167,6 +167,8 @@ def comments(commentid, cache_minutes=20):
 						except CouldNotParse:
 							continue
 		HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
+		# Rebuilding comment trees as a workaround to faulty inserting
+		utils.story_rebuild(commentid)
 
 
 def story_info(story_soup):
