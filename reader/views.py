@@ -164,11 +164,11 @@ class CommentsView(ContextView):
 				context['comments'].append(HNComments.get_annotated_list(parent=root_node))
 		except Stories.DoesNotExist:
 			try:
-				context['nodes'] = list(HNComments.objects.get(id=commentid, dead=False).get_descendants(True))
-				node_first = context['nodes'][0]
-				if node_first:
+				comment = HNComments.objects.get(id=commentid)
+				context['comments'] = [HNComments.get_annotated_list(parent=comment)]
+				if comment:
 					try:
-						context['story'] = Stories.objects.get(pk=node_first.story_id)
+						context['story'] = Stories.objects.get(pk=comment.story_id)
 					except Stories.DoesNotExist:
 						context['story'] = None
 				context['perma'] = True

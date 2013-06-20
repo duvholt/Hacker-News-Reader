@@ -40,7 +40,7 @@ def update_comments(commentid, cache_minutes=20):
 	except HNCommentsCache.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
-	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now() or True:
+	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
 
 

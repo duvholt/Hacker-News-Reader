@@ -244,10 +244,6 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 		# comment.parent = parent_object
 	temp_dict = comment.__dict__
 	temp_dict.pop('_state')
-	temp_dict.pop('depth')
-	temp_dict.pop('lft')
-	temp_dict.pop('rgt')
-	temp_dict.pop('tree_id')
 	temp_dict.pop('parent_id')
 
 	if parent_object:

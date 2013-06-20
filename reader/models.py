@@ -1,6 +1,6 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-from treebeard.ns_tree import NS_Node
+from treebeard.al_tree import AL_Node
 
 
 class Stories(models.Model):
@@ -35,7 +35,7 @@ class HNComments(MPTTModel):
 		order_insertion_by = ['cache']
 
 
-class HNCommentsTree(NS_Node):
+class HNCommentsTree(AL_Node):
 	id = models.PositiveIntegerField(primary_key=True)
 	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
 	username = models.CharField(max_length=150)
