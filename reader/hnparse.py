@@ -1,5 +1,4 @@
-from reader.models import Stories, StoryCache, HNCommentsCache, Poll, UserInfo
-from reader.models import HNCommentsTree as HNComments
+from reader.models import Stories, StoryCache, HNComments, HNCommentsCache, Poll, UserInfo
 import reader.utils as utils
 from django.conf import settings
 from django.utils import timezone

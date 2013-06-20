@@ -1,7 +1,6 @@
 from django.utils import timezone
 import datetime
-from reader.models import Stories, StoryCache, HNCommentsCache, UserInfo
-from reader.models import HNCommentsTree as HNComments
+from reader.models import Stories, StoryCache, HNComments, HNCommentsCache, UserInfo
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from tzlocal import get_localzone
 import reader.utils as utils

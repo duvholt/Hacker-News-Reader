@@ -1,5 +1,4 @@
 from django.db import models
-from mptt.models import MPTTModel, TreeForeignKey
 from treebeard.al_tree import AL_Node
 
 
@@ -19,23 +18,7 @@ class Stories(models.Model):
 	cache = models.DateTimeField(auto_now_add=True, null=True)
 
 
-class HNComments(MPTTModel):
-	id = models.PositiveIntegerField(primary_key=True)
-	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
-	username = models.CharField(max_length=150)
-	text = models.TextField(default="")
-	hiddenpercent = models.PositiveIntegerField(max_length=10, default=0)
-	hiddencolor = models.CharField(max_length=7, default="#000000")
-	time = models.DateTimeField(null=True)
-	cache = models.DateTimeField(null=True)
-	parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
-	dead = models.BooleanField(default=False)
-
-	class MPTTMeta:
-		order_insertion_by = ['cache']
-
-
-class HNCommentsTree(AL_Node):
+class HNComments(AL_Node):
 	id = models.PositiveIntegerField(primary_key=True)
 	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
 	username = models.CharField(max_length=150)

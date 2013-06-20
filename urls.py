@@ -29,10 +29,6 @@ urlpatterns = patterns(
 	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
 	url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
-	url(r'^profiler/', include('profiler.urls')),
-	url(r'^admin/', include(admin.site.urls)),
-	url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'templates/about.html'}),
-	url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}),
 )
 if settings.DEBUG:
 	urlpatterns += staticfiles_urlpatterns()

@@ -1,7 +1,6 @@
 from django.http import HttpResponse
 import reader.cache as cache
-from reader.models import Stories, Poll, UserInfo
-from reader.models import HNCommentsTree as HNComments
+from reader.models import Stories, Poll, UserInfo, HNComments
 import reader.utils as utils
 from django.views.generic import TemplateView
 import json
