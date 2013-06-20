@@ -117,7 +117,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 	# "django.core.context_processors.media",
 	"django.core.context_processors.static",
 	# "django.core.context_processors.tz",
-	# "django.contrib.messages.context_processors.messages",
+	"django.contrib.messages.context_processors.messages",
 	'django.core.context_processors.request',
 )
 
@@ -129,7 +129,7 @@ INSTALLED_APPS = (
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
 	# Uncomment the next line to enable the admin:
-	# 'django.contrib.admin',
+	'django.contrib.admin',
 	# Uncomment the next line to enable admin documentation:
 	# 'django.contrib.admindocs',
 	'reader',
