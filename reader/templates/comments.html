@@ -49,6 +49,17 @@
 	</p>
 </div>
 {% endif %}
+{% if perma %}
+	<div class="well well-small comment-well">
+		You are viewing a part of the comments on this submission<br>
+		{% if story %}
+			<a href="/comments/{{ story.id }}">Click here to view all the comments</a>
+		{% else %}
+			<a href="/comments/{{ comments.0.0.0.parent_id }}">Click here to load parent comment</a><br>
+			Story ID is not known, try clicking parent a few times
+		{% endif %}
+	</div>
+{% endif %}
 {% if comments %}
 <div class="comments">
 	{% for comment_trees in comments %}
