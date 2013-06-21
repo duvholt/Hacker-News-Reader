@@ -118,18 +118,18 @@ class IndexJsonView(JSONResponseMixin, IndexView):
 		context['stories'] = []
 		for story in stories:
 			story_json = {
-			'id': story.id,
-			'title': story.title,
-			'selfpost': story.selfpost,
-			'poll': story.poll,
-			'username': story.username,
-			'score': story.score,
-			'comments': story.comments,
-			'story_type': story.story_type,
-			'time': format(story.time, 'r'),
-			'time_unix': format(story.time, 'U'),
-			'cache': format(story.cache, 'r'),
-			'cache_unix': format(story.cache, 'U')
+				'id': story.id,
+				'title': story.title,
+				'selfpost': story.selfpost,
+				'poll': story.poll,
+				'username': story.username,
+				'score': story.score,
+				'comments': story.comments,
+				'story_type': story.story_type,
+				'time': format(story.time, 'r'),
+				'time_unix': format(story.time, 'U'),
+				'cache': format(story.cache, 'r'),
+				'cache_unix': format(story.cache, 'U')
 			}
 			if not story.selfpost:
 				story_json['url'] = story.url
@@ -162,14 +162,16 @@ class CommentsView(ContextView):
 				context['polls'] = Poll.objects.filter(story_id=commentid).order_by('id')
 				for poll in context['polls']:
 					context['total_votes'] += poll.score
-			context['nodes'] = list(cache.comments(commentid))
+			context['comments'] = []
+			for root_node in HNComments.objects.filter(parent__isnull=True, story_id=commentid):
+				context['comments'].append(HNComments.get_annotated_list(parent=root_node))
 		except Stories.DoesNotExist:
 			try:
-				context['nodes'] = list(HNComments.objects.get(id=commentid).get_descendants(True))
-				node_first = context['nodes'][0]
-				if node_first:
+				comment = HNComments.objects.get(id=commentid)
+				context['comments'] = [HNComments.get_annotated_list(parent=comment)]
+				if comment:
 					try:
-						context['story'] = Stories.objects.get(pk=node_first.story_id)
+						context['story'] = Stories.objects.get(pk=comment.story_id)
 					except Stories.DoesNotExist:
 						context['story'] = None
 				context['perma'] = True
@@ -189,17 +191,17 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 		context = self.clean_context(context)
 		if story:
 			context['story'] = {
-			'id': story.id,
-			'title': story.title,
-			'selfpost': story.selfpost,
-			'poll': story.poll,
-			'score': story.score,
-			'username': story.username,
-			'time': format(story.time, 'r'),
-			'time_unix': format(story.time, 'U'),
-			'comments': story.comments,
-			'cache': format(story.cache, 'r'),
-			'cache_unix': format(story.cache, 'U')
+				'id': story.id,
+				'title': story.title,
+				'selfpost': story.selfpost,
+				'poll': story.poll,
+				'score': story.score,
+				'username': story.username,
+				'time': format(story.time, 'r'),
+				'time_unix': format(story.time, 'U'),
+				'comments': story.comments,
+				'cache': format(story.cache, 'r'),
+				'cache_unix': format(story.cache, 'U')
 			}
 			if story.selfpost:
 				context['story']['selfpost_text'] = story.selfpost_text
@@ -210,9 +212,9 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 			context['polls'] = []
 			for poll in polls:
 				context['polls'].append({
-				'name': poll.name,
-				'votes': poll.score,
-				'percentage': poll_percentage(poll.score, total_votes, 2)
+					'name': poll.name,
+					'votes': poll.score,
+					'percentage': poll_percentage(poll.score, total_votes, 2)
 				})
 		context['comments'] = []
 		for root_comment in root_comments:
@@ -221,14 +223,14 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 
 	def recursive_node_to_dict(self, node, story):
 		result = {
-		'id': node.id,
-		'username': node.username,
-		'time': format(node.time, 'r'),
-		'time_unix': format(node.time, 'U'),
-		'hiddenpercent': node.hiddenpercent,
-		'text': node.text,
-		'cache': format(node.cache, 'r'),
-		'cache_unix': format(node.cache, 'U')
+			'id': node.id,
+			'username': node.username,
+			'time': format(node.time, 'r'),
+			'time_unix': format(node.time, 'U'),
+			'hiddenpercent': node.hiddenpercent,
+			'text': node.text,
+			'cache': format(node.cache, 'r'),
+			'cache_unix': format(node.cache, 'U')
 		}
 		if node.parent_id:
 			result['parent'] = node.parent_id
@@ -263,13 +265,13 @@ class UserJsonView(JSONResponseMixin, UserView):
 		context = self.clean_context(context)
 		if userinfo:
 			context['user'] = {
-			'username': userinfo.username,
-			'created': format(userinfo.created, 'r'),
-			'created_unix': format(userinfo.created, 'U'),
-			'karma': userinfo.karma,
-			'avg': round(userinfo.avg, 2),
-			'cache': format(userinfo.cache, 'r'),
-			'cache_unix': format(userinfo.cache, 'U')
+				'username': userinfo.username,
+				'created': format(userinfo.created, 'r'),
+				'created_unix': format(userinfo.created, 'U'),
+				'karma': userinfo.karma,
+				'avg': round(userinfo.avg, 2),
+				'cache': format(userinfo.cache, 'r'),
+				'cache_unix': format(userinfo.cache, 'U')
 			}
 			if userinfo.about:
 				context['user']['about'] = userinfo.about

@@ -5,6 +5,7 @@ from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
 import settings
 from reader.views import *
+from django.conf.urls import patterns
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin

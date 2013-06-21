@@ -72,7 +72,7 @@ class CouldNotParse(Exception):
 def stories(story_type, over_filter):
 	soup = Fetch.stories(story_type=story_type, over_filter=over_filter)
 	# HN markup is odd. Basically every story use three rows each
-	stories_soup = soup.html.body.table.find_all('table')[1].find_all('tr')[::3]
+	stories_soup = soup.html.body.table.find_all('table')[1].find_all("tr")[::3]
 	# Scraping all stories
 	for story_soup in stories_soup:
 		try:
@@ -156,19 +156,16 @@ def comments(commentid, cache_minutes=20):
 		# Traversing all top comments
 		comments_soup = soup.html.body.table.find_all('table')[i].find_all('table')
 		with transaction.commit_on_success():
-			with HNComments.objects.delay_mptt_updates():
-				for comment_soup in comments_soup:
-					td_default = comment_soup.tr.find('td', {'class': 'default'})
-					# Converting indent to a more readable format (0, 1, 2...)
-					indenting = int(td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
-					if indenting == 0:
-						try:
-							traverse_comment(comment_soup, parent_object, story_id)
-						except CouldNotParse:
-							continue
+			for comment_soup in comments_soup:
+				td_default = comment_soup.tr.find('td', {'class': 'default'})
+				# Converting indent to a more readable format (0, 1, 2...)
+				indenting = int(td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
+				if indenting == 0:
+					try:
+						traverse_comment(comment_soup, parent_object, story_id)
+					except CouldNotParse:
+						continue
 		HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
-		# Rebuilding comment trees as a workaround to faulty inserting
-		utils.story_rebuild(commentid)
 
 
 def story_info(story_soup):
@@ -238,7 +235,6 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	if time.localtime().tm_isdst == 1:
 		comment.time = comment.time + datetime.timedelta(hours=-1)
 	# Some extra trickery for permalinked comments
-	parent_id = None
 	if perma:
 		parent_id = int(re.search(r'item\?id=(\d+)$', td_default.find_all('a')[2]['href']).group(1), 10)
 		try:
@@ -256,14 +252,19 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				pass
 	comment.story_id = story_id
 	comment.cache = timezone.now()
-	comment.parent = parent_object
-	if perma and not parent_object and parent_id:
+	if perma and not parent_object:
 		# Forcing comment to be updated next time, since it doesn't have proper values
 		cache = timezone.now() - datetime.timedelta(days=1)
 		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
 		parent_object.save()
-		comment.parent = parent_object
-	comment.save()
+	comment_dict = comment.__dict__
+	comment_dict.pop('_state')
+	comment_dict.pop('parent_id')
+
+	if parent_object:
+		comment = parent_object.add_child(**comment_dict)
+	else:
+		comment = HNComments.add_root(**comment_dict)
 	HNCommentsCache(id=comment.id, time=timezone.now()).save()
 
 	# Traversing over child comments:
