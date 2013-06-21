@@ -5,10 +5,12 @@ from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
 import settings
 from reader.views import *
-from django.conf.urls import patterns, include
-from django.contrib import admin
+from django.conf.urls import patterns
 
-admin.autodiscover()
+# Uncomment the next two lines to enable the admin:
+# from django.contrib import admin
+# admin.autodiscover()
+
 
 urlpatterns = patterns(
 	'',
