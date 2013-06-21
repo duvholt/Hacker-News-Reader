@@ -257,14 +257,8 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 		cache = timezone.now() - datetime.timedelta(days=1)
 		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
 		parent_object.save()
-	comment_dict = comment.__dict__
-	comment_dict.pop('_state')
-	comment_dict.pop('parent_id')
-
-	if parent_object:
-		comment = parent_object.add_child(**comment_dict)
-	else:
-		comment = HNComments.add_root(**comment_dict)
+	comment.parent = parent_object
+	comment.save()
 	HNCommentsCache(id=comment.id, time=timezone.now()).save()
 
 	# Traversing over child comments:

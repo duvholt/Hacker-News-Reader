@@ -10,6 +10,7 @@ import json
 from django.utils.dateformat import format
 from utils import domain, poll_percentage
 from mptt.templatetags.mptt_tags import cache_tree_children
+import operator
 
 # Warning levels: error, success, info and default (empty)
 
@@ -144,31 +145,29 @@ class CommentsView(ContextView):
 
 	def get(self, request, *args, **kwargs):
 		context = super(CommentsView, self).get_context_data()
-		commentid = kwargs['commentid']
-		if commentid:
+		self.comment_id = kwargs['commentid']
+		if self.comment_id:
 			try:
-				commentid = int(commentid, 10)
+				self.comment_id = int(self.comment_id, 10)
 			except ValueError:
-				commentid = None
+				self.comment_id = None
 		context.update({'story': None, 'polls': None, 'total_votes': 0})
 		try:
-			cache.update_comments(commentid=commentid)
+			cache.update_comments(commentid=self.comment_id)
 		except utils.ShowAlert, e:
 			context['alerts'].append({'message': e.message, 'level': e.level})
 		try:
-			context['story'] = Stories.objects.get(pk=commentid)
-			# Using list() to force evaluation
+			context['story'] = Stories.objects.get(pk=self.comment_id)
 			if context['story'].poll:
-				context['polls'] = Poll.objects.filter(story_id=commentid).order_by('id')
+				context['polls'] = Poll.objects.filter(story_id=self.comment_id).order_by('id')
 				for poll in context['polls']:
 					context['total_votes'] += poll.score
 			context['comments'] = []
-			for root_node in HNComments.objects.filter(parent__isnull=True, story_id=commentid):
-				context['comments'].append(HNComments.get_annotated_list(parent=root_node))
+			context['comments'] = self.full_comments_list()
 		except Stories.DoesNotExist:
 			try:
-				comment = HNComments.objects.get(id=commentid)
-				context['comments'] = [HNComments.get_annotated_list(parent=comment)]
+				comment = HNComments.objects.get(id=self.comment_id)
+				context['comments'] = self.permalink_comments_list(comment)
 				if comment:
 					try:
 						context['story'] = Stories.objects.get(pk=comment.story_id)
@@ -179,6 +178,54 @@ class CommentsView(ContextView):
 				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
 		return self.render_to_response(self.get_context_data(**context))
 
+	def full_comments_list(self):
+		return self.get_children(list(HNComments.objects.filter(story_id=self.comment_id)))
+
+	def permalink_comments_list(self, comment):
+		comments = [(comment, {'level': 0, 'open': True, 'close': []})]
+		children = self.get_children(list(HNComments.objects.filter(story_id=comment.story_id)), parent_id=comment.id, level=1)
+		comments += children
+		if not children:
+			comments[0][1]['close'] = [1]
+		return comments
+
+	def get_children(self, comments, parent_id=None, level=0, close=0):
+		# Inspired by django-mptt's tree_info and treebeard's get_annotated_list
+		result = []
+		roots = [comment for comment in comments if comment.parent_id == parent_id]
+		order = HNComments._meta.ordering
+		roots_sorted = sorted(roots, key=operator.attrgetter(*order))
+		num_roots = len(roots_sorted)
+		for index, root in enumerate(roots_sorted):
+			info = {
+			'level': level,
+			'open': index == 0,
+			'close': [],
+			}
+			if index == (num_roots - 1):
+				close += 1
+			children = self.get_children(comments, root.id, level=level + 1, close=close)
+			if index == (num_roots - 1) and not children:
+				info['close'] = list(range(0, close))
+			result.append((root, info))
+			result += children
+		return result
+
+	def list_to_nested(self, comments):
+		# Inspired by django-mptt's cache_tree_children
+		current_path, root_nodes = [], []
+		for comment, info in comments:
+			comment._children = []
+			while len(current_path) > info['level']:
+				current_path.pop(-1)
+			# Root node
+			if info['level'] == 0:
+				root_nodes.append(comment)
+			else:
+				current_path[-1]._children.append(comment)
+			current_path.append(comment)
+		return root_nodes
+
 
 class CommentsJsonView(JSONResponseMixin, CommentsView):
 
@@ -187,7 +234,7 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 		story = context.get('story', None)
 		polls = context.get('polls', None)
 		total_votes = context.get('total_votes', None)
-		root_comments = cache_tree_children(context.get('nodes', None))
+		root_comments = self.list_to_nested(context.get('comments', None))
 		context = self.clean_context(context)
 		if story:
 			context['story'] = {
@@ -217,26 +264,27 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 					'percentage': poll_percentage(poll.score, total_votes, 2)
 				})
 		context['comments'] = []
+		# recursive_comment_to_dict and list_to_nested could be combined to reduce looping
 		for root_comment in root_comments:
-			context['comments'].append(self.recursive_node_to_dict(root_comment, bool(story)))
+			context['comments'].append(self.recursive_comment_to_dict(root_comment, bool(story)))
 		return context
 
-	def recursive_node_to_dict(self, node, story):
+	def recursive_comment_to_dict(self, comment, story):
 		result = {
-			'id': node.id,
-			'username': node.username,
-			'time': format(node.time, 'r'),
-			'time_unix': format(node.time, 'U'),
-			'hiddenpercent': node.hiddenpercent,
-			'text': node.text,
-			'cache': format(node.cache, 'r'),
-			'cache_unix': format(node.cache, 'U')
+			'id': comment.id,
+			'username': comment.username,
+			'time': format(comment.time, 'r'),
+			'time_unix': format(comment.time, 'U'),
+			'hiddenpercent': comment.hiddenpercent,
+			'text': comment.text,
+			'cache': format(comment.cache, 'r'),
+			'cache_unix': format(comment.cache, 'U')
 		}
-		if node.parent_id:
-			result['parent'] = node.parent_id
+		if comment.parent_id:
+			result['parent'] = comment.parent_id
 		elif not story:
-			result['parent'] = node.story_id
-		children = [self.recursive_node_to_dict(child, story) for child in node.get_children()]
+			result['parent'] = comment.story_id
+		children = [self.recursive_comment_to_dict(child, story) for child in comment._children]
 		if children:
 			result['children'] = children
 		return result

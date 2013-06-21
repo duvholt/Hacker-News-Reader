@@ -1,5 +1,4 @@
 from django.db import models
-from treebeard.al_tree import AL_Node
 
 
 class Stories(models.Model):
@@ -18,7 +17,7 @@ class Stories(models.Model):
 	cache = models.DateTimeField(auto_now_add=True, null=True)
 
 
-class HNComments(AL_Node):
+class HNComments(models.Model):
 	id = models.PositiveIntegerField(primary_key=True)
 	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
 	username = models.CharField(max_length=150)
@@ -30,7 +29,8 @@ class HNComments(AL_Node):
 	parent = models.ForeignKey('self', related_name='children', null=True, db_index=True)
 	dead = models.BooleanField(default=False)
 
-	node_order_by = ['dead', 'cache']
+	class Meta:
+		ordering = ['dead', 'cache']
 
 
 class StoryCache(models.Model):
