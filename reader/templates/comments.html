@@ -65,7 +65,7 @@
 	{% for comment_trees in comments %}
 		{% for comment, info in comment_trees %}
 			{% if info.open %}
-				<ul{% if not forloop.parentloop.first %} class="children"{% endif %}>
+				<ul{% if not forloop.first %} class="children"{% endif %}>
 			{% else %}
 				</li>
 			{% endif %}
