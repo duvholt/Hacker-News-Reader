@@ -189,7 +189,7 @@ class CommentsView(ContextView):
 			comments[0][1]['close'] = [1]
 		return comments
 
-	def get_children(self, comments, parent_id=None, level=0, close=0):
+	def get_children(self, comments, parent_id=None, level=0, root_close=0):
 		# Inspired by django-mptt's tree_info and treebeard's get_annotated_list
 		result = []
 		roots = [comment for comment in comments if comment.parent_id == parent_id]
@@ -202,9 +202,12 @@ class CommentsView(ContextView):
 			'open': index == 0,
 			'close': [],
 			}
+			close = root_close
 			if index == (num_roots - 1):
 				close += 1
-			children = self.get_children(comments, root.id, level=level + 1, close=close)
+			else:
+				close = 0
+			children = self.get_children(comments, root.id, level=level + 1, root_close=close)
 			if index == (num_roots - 1) and not children:
 				info['close'] = list(range(0, close))
 			result.append((root, info))
@@ -255,6 +258,8 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 			else:
 				context['story']['url'] = story.url
 				context['story']['domain'] = domain(story.url)
+			if story.dead:
+				context['story']['dead'] = True
 		if polls:
 			context['polls'] = []
 			for poll in polls:
@@ -284,6 +289,8 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 			result['parent'] = comment.parent_id
 		elif not story:
 			result['parent'] = comment.story_id
+		if comment.dead:
+			result['dead'] = True
 		children = [self.recursive_comment_to_dict(child, story) for child in comment._children]
 		if children:
 			result['children'] = children
