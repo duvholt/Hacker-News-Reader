@@ -72,7 +72,6 @@ def get_query_string(p, new_params, remove, context):
 		except:
 			p[k] = v
 	return mark_safe('?' + '&amp;'.join([u'%s=%s' % (urllib.quote_plus(str(k)), urllib.quote_plus(str(v))) for k, v in p.items()]))
-	return mark_safe('?' + '&amp;'.join([u'%s=%s' % (k, v) for k, v in p.items()]).replace(' ', '%20'))
 
 
 # Taken from lib/utils.py

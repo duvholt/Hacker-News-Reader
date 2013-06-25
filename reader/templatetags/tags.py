@@ -61,7 +61,6 @@ def markup2html(comment):
 	code = False
 	prev_line = True
 	lines = comment.split('\n')
-	paragraph = False
 	for index, line in enumerate(lines):
 		if re.match(r'^$', line):
 			if code:

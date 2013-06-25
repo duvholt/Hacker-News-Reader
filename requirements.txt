@@ -1,10 +1,7 @@
 Django==1.5.1
 South==0.8.1
 beautifulsoup4==4.2.1
-django-debug-toolbar==0.9.4
-django-mptt==0.5.5
 parsedatetime==1.1.2
-psycopg2==2.5
 pytz==2013b
 tzlocal==1.0
 lxml==3.2.1

@@ -1,67 +1,18 @@
-from django.db import transaction
-from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
-import reader.utils as utils
-from django.conf import settings
-from django.utils import timezone
-from bs4 import BeautifulSoup
-from requests.compat import unquote
-import requests
-import time
-import datetime
-import re
 from decimal import Decimal, InvalidOperation
-import logging
-from middleware import get_request
+from django.db import transaction
+from django.utils import timezone
 from django.db.models import F
+from models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
+from requests.compat import unquote
+import datetime
+import fetch
+import logging
+import re
+import time
+import utils
+
 
 logger = logging.getLogger(__name__)
-
-
-class Fetch(object):
-# Kinda silly to use a class with static only methods
-	@staticmethod
-	def comments(commentid):
-		return Fetch.read('item?id=' + unicode(commentid))
-
-	@staticmethod
-	def stories(story_type, over_filter=None):
-		if story_type == 'news' and isinstance(over_filter, int):
-			return Fetch.read('over?points=' + unicode(over_filter))
-		elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
-			return Fetch.read(story_type)
-
-	@staticmethod
-	def userpage(username):
-		return Fetch.read('user?id=' + unicode(username))
-
-	@staticmethod
-	def login():
-		return Fetch.read('login')
-
-	@staticmethod
-	def read(url):
-		try:
-			headers = {'User-Agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
-			cookies = None
-			request = get_request()
-			if request and 'usercookie' in request.session:
-				cookies = {'user': request.session['usercookie']}
-			r = requests.get('https://news.ycombinator.com/' + url, headers=headers, cookies=cookies)
-			if re.match(r'^We\'ve limited requests for old items', r.text):
-				raise utils.ShowAlert('Requests have been limited for old items. It might take a while before you can access this.')
-			elif re.match(r'^We\'ve limited requests for this url', r.text):
-				raise utils.ShowAlert('Requests have been limited for this page. It might take a while before you can access this.')
-			elif re.match(r'^No such user.$', r.text):
-				raise utils.ShowAlert('No such user.')
-			elif re.match(r'^No such item.$', r.text):
-				raise utils.ShowAlert('No such item.')
-			elif re.match(r'^((?!<body>).)*$', r.text):
-				raise utils.ShowAlert('Hacker News is either not working or parsing failed')
-			elif re.match(r'<title>Error</title>', r.text):
-				raise utils.ShowAlert('Hacker News is down')
-		except requests.HTTPError:
-			raise utils.ShowAlert('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
-		return BeautifulSoup(r.text, from_encoding='utf-8')
 
 
 class CouldNotParse(Exception):
@@ -70,7 +21,7 @@ class CouldNotParse(Exception):
 
 
 def stories(story_type, over_filter):
-	soup = Fetch.stories(story_type=story_type, over_filter=over_filter)
+	soup = fetch.stories(story_type=story_type, over_filter=over_filter)
 	# HN markup is odd. Basically every story use three rows each
 	stories_soup = soup.html.body.table.find_all('table')[1].find_all("tr")[::3]
 	# Scraping all stories
@@ -94,8 +45,8 @@ def stories(story_type, over_filter):
 
 
 def comments(commentid, cache_minutes=20):
-	start_time = timezone.now()
-	soup = Fetch.comments(commentid=commentid)
+	# start_time = timezone.now()
+	soup = fetch.comments(commentid=commentid)
 	try:
 		story_soup = soup.html.body.table.find_all('table')[1].find('tr')
 	except AttributeError:
@@ -287,7 +238,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 
 
 def userpage(username):
-	soup = Fetch.userpage(username=username)
+	soup = fetch.userpage(username=username)
 	try:
 		userdata = soup.html.body.table.find_all('table')[1].find_all('tr')
 	except AttributeError:
@@ -313,11 +264,11 @@ def userpage(username):
 	).save()
 
 
-def poll_update(story_id, poll_soup):
-	for poll_element in poll_soup.find_all('tr')[::3]:
+def poll_update(story_id, polls):
+	for poll in polls.find_all('tr')[::3]:
 		Poll(
-			name=poll_element.find_all('td')[1].div.font.decode_contents(),
-			score=int(re.search(r'(\d+) points?', poll_element.find_next('tr').find_all('td')[1].span.span.decode_contents()).group(1)),
-			id=poll_element.find_next('tr').find_all('td')[1].span.span['id'].lstrip('score_'),
+			name=poll.find_all('td')[1].text,
+			score=int(re.search(r'(\d+) points?', poll.find_next('tr').find_all('td')[1].text).group(1)),
+			id=poll.find_next('tr').find_all('td')[1].span.span['id'].lstrip('score_'),
 			story_id=story_id
 		).save()

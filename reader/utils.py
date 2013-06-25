@@ -1,16 +1,7 @@
-import re
-import datetime
-import parsedatetime.parsedatetime as pdt
 from tzlocal import get_localzone
-from reader.models import HNComments
-
-
-class UserMessage():
-# Taken from http://www.djangocurrent.com/2011/04/django-pattern-for-reporting.html
-	def __init__(self, title="", text=[], url=None):
-		self.title = title
-		self.text = text if hasattr(text, '__iter__') else [text]
-		self.url = url
+import datetime
+import parsedatetime
+import re
 
 
 class ShowAlert(Exception):
@@ -52,9 +43,9 @@ def calculate_score(votes, item_hour_age, gravity=1.8):
 
 
 def parse_time(time_string):
-	p = pdt.Calendar()
+	cal = parsedatetime.Calendar()
 	tz = get_localzone()
-	return datetime.datetime(*p.parse(time_string)[0][:6]).replace(tzinfo=tz)
+	return datetime.datetime(*cal.parse(time_string)[0][:6]).replace(tzinfo=tz)
 
 
 def poll_percentage(number, total, rounding=2):
@@ -67,10 +58,3 @@ def poll_percentage(number, total, rounding=2):
 
 def domain(url):
 	return re.findall(r'^(?:.+//)?(?:www\.)?([^/#?]*)', url)[0].lower()
-
-
-def story_rebuild(story_id):
-	root_nodes = HNComments.objects.filter(story_id=story_id, parent_id=None)
-	for root_node in root_nodes:
-		HNComments.objects._rebuild_helper(root_node.pk, 1, root_node.tree_id)
-	return

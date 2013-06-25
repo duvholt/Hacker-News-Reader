@@ -1,16 +1,14 @@
 from django.shortcuts import redirect
 from django.http import HttpResponse
-import reader.cache as cache
-from reader.models import Stories, HNComments, Poll, UserInfo
-import reader.utils as utils
-from reader.hnparse import Fetch
-import requests
-from django.views.generic import TemplateView
-import json
 from django.utils.dateformat import format
-from utils import domain, poll_percentage
-from mptt.templatetags.mptt_tags import cache_tree_children
+from django.views.generic import TemplateView
+from models import Stories, HNComments, Poll, UserInfo
+import cache
+import fetch
+import json
 import operator
+import requests
+import utils
 
 # Warning levels: error, success, info and default (empty)
 
@@ -134,7 +132,7 @@ class IndexJsonView(JSONResponseMixin, IndexView):
 			}
 			if not story.selfpost:
 				story_json['url'] = story.url
-				story_json['domain'] = domain(story.url)
+				story_json['domain'] = utils.domain(story.url)
 			context['stories'].append(story_json)
 		context['page'] = {'current': stories.number, 'total': stories.paginator.num_pages}
 		return context
@@ -183,7 +181,8 @@ class CommentsView(ContextView):
 
 	def permalink_comments_list(self, comment):
 		comments = [(comment, {'level': 0, 'open': True, 'close': []})]
-		children = self.get_children(list(HNComments.objects.filter(story_id=comment.story_id)), parent_id=comment.id, level=1)
+		hncomments = list(HNComments.objects.filter(story_id=comment.story_id))
+		children = self.get_children(hncomments, parent_id=comment.id, level=1)
 		comments += children
 		if not children:
 			comments[0][1]['close'] = [1]
@@ -257,7 +256,7 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 				context['story']['selfpost_text'] = story.selfpost_text
 			else:
 				context['story']['url'] = story.url
-				context['story']['domain'] = domain(story.url)
+				context['story']['domain'] = utils.domain(story.url)
 			if story.dead:
 				context['story']['dead'] = True
 		if polls:
@@ -266,7 +265,7 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 				context['polls'].append({
 					'name': poll.name,
 					'votes': poll.score,
-					'percentage': poll_percentage(poll.score, total_votes, 2)
+					'percentage': utils.poll_percentage(poll.score, total_votes, 2)
 				})
 		context['comments'] = []
 		# recursive_comment_to_dict and list_to_nested could be combined to reduce looping
@@ -346,7 +345,7 @@ class LoginView(ContextView):
 			username = request.POST['username']
 			password = request.POST['password']
 			if username and password:
-				soup = Fetch.login()
+				soup = fetch.login()
 				fnid = soup.find('input', {'type': 'hidden'})['value']
 				payload = {'fnid': fnid, 'u': username, 'p': password}
 				r = requests.post('https://news.ycombinator.com/x', data=payload)

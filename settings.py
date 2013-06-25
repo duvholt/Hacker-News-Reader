@@ -1,6 +1,5 @@
-# Django settings for a generic project.
-import os
 from generate_secret_key import generate_secret_key
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
