@@ -165,7 +165,8 @@ def comments(commentid, cache_minutes=20):
 						traverse_comment(comment_soup, parent_object, story_id)
 					except CouldNotParse:
 						continue
-		HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
+		# Really show
+		# HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
 
 
 def story_info(story_soup):
@@ -224,6 +225,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 		comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).span.decode_contents())
 		hex_color = '#000000'
 	else:
+		comment.dead = False
 		comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).find('font').decode_contents())
 		hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
@@ -242,7 +244,10 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 			parent_object = HNComments.objects.get(pk=parent_id)
 			story_id = parent_object.story_id
 		except HNComments.DoesNotExist:
-			parent_object = None
+		# Forcing comment to be updated next time, since it doesn't have proper values
+			cache = timezone.now() - datetime.timedelta(days=1)
+			parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
+			parent_object.save()
 			# story_id is at this moment actually comment id of the parent object.
 			# Trying to correct this by checking for actualy story_id in the db
 			try:
@@ -252,11 +257,6 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				pass
 	comment.story_id = story_id
 	comment.cache = timezone.now()
-	if perma and not parent_object:
-		# Forcing comment to be updated next time, since it doesn't have proper values
-		cache = timezone.now() - datetime.timedelta(days=1)
-		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
-		parent_object.save()
 	comment.parent = parent_object
 	comment.save()
 	HNCommentsCache(id=comment.id, time=timezone.now()).save()
