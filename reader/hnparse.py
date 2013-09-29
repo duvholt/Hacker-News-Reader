@@ -2,6 +2,7 @@ from decimal import Decimal, InvalidOperation
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import F
+from middleware import get_request
 from models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
 from requests.compat import unquote
 import datetime
@@ -116,9 +117,8 @@ def comments(commentid, cache_minutes=20):
 						traverse_comment(comment_soup, parent_object, story_id)
 					except CouldNotParse:
 						continue
-		# Really show
+		# Slow
 		# HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
-
 
 def story_info(story_soup):
 	if not story_soup.find('td'):
@@ -155,8 +155,15 @@ def story_info(story_soup):
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst:
 		story.time = story.time + datetime.timedelta(hours=-1)
-	story.id = re.search('item\?id=(\d+)$', subtext.find_all('a')[1]['href']).group(1)
+	story.id = int(re.search('item\?id=(\d+)$', subtext.find_all('a')[1]['href']).group(1))
 	story.cache = timezone.now()
+	username = get_request().session.get('username', None)
+	if username:
+		# Adding vote auth to session
+		userdata = get_request().session.setdefault('userdata', {}).setdefault(username, {})
+		auth_code = re.search(r'&auth=([a-z0-9]+)&whence', story_soup.a['href']).group(1)
+		userdata.setdefault('upvotes', {}).setdefault(story.id, {})[story.id] = auth_code
+		get_request().session.modified = True
 	return story
 
 
@@ -212,6 +219,14 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	comment.save()
 	HNCommentsCache(id=comment.id, time=timezone.now()).save()
 
+	username = get_request().session.get('username', None)
+	if username:
+		# Adding vote auth to session
+		userdata = get_request().session.setdefault('userdata', {}).setdefault(username, {})
+		auth_code = re.search(r'&auth=([a-z0-9]+)&whence', comment_soup.find_all('td', {'valign': 'top'})[0].a['href']).group(1)
+		userdata.setdefault('upvotes', {}).setdefault(story_id, {})[comment.id] = auth_code
+		get_request().session.modified = True
+
 	# Traversing over child comments:
 	# Since comments aren't actually children in the HTML we will have to parse all the siblings
 	# and check if they have +1 indent indicating that they are a child.
@@ -264,7 +279,7 @@ def userpage(username):
 	).save()
 
 
-def poll_update(story_id, polls):
+def poll_update(story_id, polls, userdata=None):
 	for poll in polls.find_all('tr')[::3]:
 		Poll(
 			name=poll.find_all('td')[1].text,

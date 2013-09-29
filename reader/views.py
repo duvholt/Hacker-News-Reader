@@ -174,6 +174,11 @@ class CommentsView(ContextView):
 				context['perma'] = True
 			except HNComments.DoesNotExist:
 				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
+		username = request.session.get('username', None)
+		if context['comments'] and username:
+			userdata = request.session['userdata'].get(username, None)
+			if userdata:
+				context['upvotes'] = userdata['upvotes'][self.comment_id]
 		return self.render_to_response(self.get_context_data(**context))
 
 	def full_comments_list(self):
