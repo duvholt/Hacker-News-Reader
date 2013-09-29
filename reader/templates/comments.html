@@ -6,13 +6,11 @@
 	{% if story %}
 		{{ story.title|safe }}
 	{% else %}
-		{% with first_node=nodes|first %}
-		{% if first_node %}
-		{{ first_node.text|truncatechars:"80" }}
+		{% if comments.0.0.0 %}
+		{{ comments.0.0.0.text|truncatechars:"80" }}
 		{% else %}
 		Item not found
 		{% endif %}
-		{% endwith %}
 	{% endif %}
 {% endblock %}
 
