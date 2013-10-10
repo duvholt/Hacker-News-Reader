@@ -184,6 +184,8 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 		hex_color = '#000000'
 	else:
 		comment.dead = False
+		# TODO: BS4 doesn't handle <i> split over paragraphs.
+		# Therefore there is a bug that will only add italics on the first paragraph
 		comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).find('font').decode_contents())
 		hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.

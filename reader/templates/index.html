@@ -16,25 +16,25 @@
 				<li>
 					Sorting
 					<ul class="nav">
-						<li class="{% active request '(^/$)' %}"><a href="/">Frontpage</a></li>
-						<li class="{% active request '^/self' %}"><a href="/self">Selfpost</a>
+						<li class="{% active '(^/$)' %}"><a href="/">Frontpage</a></li>
+						<li class="{% active '^/self' %}"><a href="/self">Selfpost</a>
 							<ul class="nav nav-list">
-								<li class="{% active request '^/ask' %}"><a href="/ask">Ask HN</a></li>
+								<li class="{% active '^/ask' %}"><a href="/ask">Ask HN</a></li>
 							</ul>
 						</li>
-						<li class="{% active request '^/show' %}"><a href="/show">Show HN</a></li>
-						<li class="{% active request '^/poll' %}"><a href="/poll">Poll</a></li>
-						<li class="{% active request '^/best' %}"><a href="/best">Best</a></li>
-						<li class="{% active request '^/newest' %}"><a href="/newest">Newest</a></li>
+						<li class="{% active '^/show' %}"><a href="/show">Show HN</a></li>
+						<li class="{% active '^/poll' %}"><a href="/poll">Poll</a></li>
+						<li class="{% active '^/best' %}"><a href="/best">Best</a></li>
+						<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
 					</ul>
 				</li>
 				<li>
 					Score over
 					<ul class="nav">
-						<li class="{% active_score request '0' %}"><a href="{% query_string "over=0" "" %}">Show All</a></li>
-						<li class="{% active_score request '50' %}"><a href="{% query_string "over=50" "" %}">50</a></li>
-						<li class="{% active_score request '75' %}"><a href="{% query_string "over=75" "" %}">75</a></li>
-						<li class="{% active_score request '100' %}"><a href="{% query_string "over=100" "" %}">100</a></li>
+						<li class="{% active_score '0' %}"><a href="{% query_string "over=0" "" %}">Show All</a></li>
+						<li class="{% active_score '50' %}"><a href="{% query_string "over=50" "" %}">50</a></li>
+						<li class="{% active_score '75' %}"><a href="{% query_string "over=75" "" %}">75</a></li>
+						<li class="{% active_score '100' %}"><a href="{% query_string "over=100" "" %}">100</a></li>
 					</ul>
 				</li>
 				<li>

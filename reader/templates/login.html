@@ -3,28 +3,9 @@
 {% block title %}Login{% endblock %}
 
 {% block container %}
-	<form method="post" class="form-horizontal">
-	{% csrf_token %}
-		<fieldset>
-			<legend>Login</legend>
-			<div class="control-group">
-				<label class="control-label" for="loginUsername">Username</label>
-				<div class="controls">
-					<input type="text" name="username" id="loginUsername" placeholder="Username" autocorrect="off" autocapitalize="off">
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="loginPassword">Password</label>
-				<div class="controls">
-					<input type="password" name="password" id="loginPassword" placeholder="Password">
-					<span class="help-block">Password will not be stored</span>
-				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<button type="submit" class="btn">Submit</button>
-				</div>
-			</div>
-		</fieldset>
-	</form>
+<div class="col-lg-offset-1 col-lg-11">
+	<legend>Login</legend>
+	<span class="help-block">Login with your news.ycombinator.com account info to get access to voting</span>
+</div>
+{% include "login_form.html" %}
 {% endblock %}

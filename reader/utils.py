@@ -138,7 +138,7 @@ def calculate_score(votes, item_hour_age, gravity=1.8):
 
 
 def parse_time(time_string):
-	p = pdt.Calendar()
+	p = parsedatetime.Calendar()
 	tz = get_localzone()
 	return datetime.datetime(*p.parse(time_string)[0][:6]).replace(tzinfo=tz)
 
