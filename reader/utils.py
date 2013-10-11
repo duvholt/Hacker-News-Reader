@@ -55,7 +55,11 @@ def markup2html(comment):
 		# Making sure * won't be part of urls
 		html.TRAILING_PUNCTUATION += [u'.*', u'*']
 		# Create urls
-		line = html.urlize(line, 63, True)
+		try:
+			line = html.urlize(line, 63, True)
+		except ValueError:
+			# Temporarily fix for https://code.djangoproject.com/ticket/19070
+			pass
 		prev_line = line
 		new_line = line
 		# Starting with double space means it's a code block
