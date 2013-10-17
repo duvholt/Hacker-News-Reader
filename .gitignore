@@ -7,5 +7,5 @@ secret_key.py
 .sass-cache
 manifest.yml
 hn.db
-static
+/static
 *.idea
