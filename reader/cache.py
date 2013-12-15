@@ -1,10 +1,10 @@
-from django.utils import timezone
-import datetime
-from reader.models import Stories, StoryCache, HNComments, HNCommentsCache, UserInfo
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.utils import timezone
+from reader.models import Stories, StoryCache, HNComments, HNCommentsCache, UserInfo
 from tzlocal import get_localzone
-import reader.utils as utils
-import reader.hnparse as hnparse
+import datetime
+import utils
+import hnparse
 
 
 tz = get_localzone()
@@ -57,7 +57,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 	now = timezone.now()
 	stories = Stories.objects.all()
 	# Only show the last week
-	enddate = datetime.datetime.today().replace(tzinfo=tz)
+	enddate = datetime.datetime.now(tz)
 	startdate = enddate - datetime.timedelta(days=7)
 	stories = stories.filter(time__range=[startdate, enddate])
 	if story_type:
@@ -95,7 +95,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 
 
 def comments(story_id):
-	return HNComments.objects.all().filter(story_id=story_id, dead=False)
+	return HNComments.objects.all().filter(story_id=story_id)
 
 
 def userinfo(username):

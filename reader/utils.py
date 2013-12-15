@@ -1,16 +1,8 @@
-import re
-import datetime
-import parsedatetime.parsedatetime as pdt
-from tzlocal import get_localzone
 from django.utils import html
-
-
-class UserMessage():
-# Taken from http://www.djangocurrent.com/2011/04/django-pattern-for-reporting.html
-	def __init__(self, title="", text=[], url=None):
-		self.title = title
-		self.text = text if hasattr(text, '__iter__') else [text]
-		self.url = url
+from tzlocal import get_localzone
+import datetime
+import parsedatetime
+import re
 
 
 class ShowAlert(Exception):
@@ -63,7 +55,11 @@ def markup2html(comment):
 		# Making sure * won't be part of urls
 		html.TRAILING_PUNCTUATION += [u'.*', u'*']
 		# Create urls
-		line = html.urlize(line, 63, True)
+		try:
+			line = html.urlize(line, 63, True)
+		except ValueError:
+			# Temporarily fix for https://code.djangoproject.com/ticket/19070
+			pass
 		prev_line = line
 		new_line = line
 		# Starting with double space means it's a code block
@@ -146,7 +142,7 @@ def calculate_score(votes, item_hour_age, gravity=1.8):
 
 
 def parse_time(time_string):
-	p = pdt.Calendar()
+	p = parsedatetime.Calendar()
 	tz = get_localzone()
 	return datetime.datetime(*p.parse(time_string)[0][:6]).replace(tzinfo=tz)
 
@@ -160,4 +156,4 @@ def poll_percentage(number, total, rounding=2):
 
 
 def domain(url):
-	return re.findall(r'^(?:.+//)?(?:www\.)?([^/#?]*)', url)[0].lower()
+	return re.findall(r'^(?:.+?//)?(?:www\.)?([^/#?]*)', url)[0].lower()

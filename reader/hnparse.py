@@ -1,59 +1,19 @@
-from reader.models import Stories, StoryCache, HNComments, HNCommentsCache, Poll, UserInfo
-import reader.utils as utils
-from django.conf import settings
-from django.utils import timezone
-from bs4 import BeautifulSoup
-import httplib
-import urllib2
-import time
-import datetime
-import re
 from decimal import Decimal, InvalidOperation
-import logging
+from django.db import transaction
+from django.utils import timezone
 from django.db.models import F
+from middleware import get_request
+from models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
+from requests.compat import unquote
+import datetime
+import fetch
+import logging
+import re
+import time
+import utils
+
 
 logger = logging.getLogger(__name__)
-
-
-class Fetch(object):
-# Kinda silly to use a class with static only methods
-	@staticmethod
-	def comments(commentid):
-		return Fetch.read('item?id=' + unicode(commentid))
-
-	@staticmethod
-	def stories(story_type, over_filter=None):
-		if story_type == 'news' and isinstance(over_filter, int):
-			return Fetch.read('over?points=' + unicode(over_filter))
-		elif story_type in ['best', 'active', 'newest', 'ask', 'news']:
-			return Fetch.read(story_type)
-
-	@staticmethod
-	def userpage(username):
-		return Fetch.read('user?id=' + unicode(username))
-
-	@staticmethod
-	def read(url):
-		try:
-			opener = urllib2.build_opener()
-			opener.addheaders = [('User-agent', 'Hacker News Reader (' + settings.DOMAIN_URL + ')')]
-			response = opener.open('http://news.ycombinator.com/' + url)
-			doc = response.read()
-			if re.match(r'^We\'ve limited requests for old items', doc):
-				raise utils.ShowAlert('Requests have been limited for old items. It might take a while before you can access this.')
-			elif re.match(r'^We\'ve limited requests for this url', doc):
-				raise utils.ShowAlert('Requests have been limited for this page. It might take a while before you can access this.')
-			elif re.match(r'^No such user.$', doc):
-				raise utils.ShowAlert('No such user.')
-			elif re.match(r'^No such item.$', doc):
-				raise utils.ShowAlert('No such item.')
-			elif re.match(r'^((?!<body>).)*$', doc):
-				raise utils.ShowAlert('Hacker News is either not working or parsing failed')
-			elif re.match(r'<title>Error</title>', doc):
-				raise utils.ShowAlert('Hacker News is down')
-		except (urllib2.URLError, httplib.BadStatusLine):
-			raise utils.ShowAlert('Could not connect to news.ycombinator.com, try again later.<br>If this error persists please contact the developer.')
-		return BeautifulSoup(doc, from_encoding='utf-8')
 
 
 class CouldNotParse(Exception):
@@ -62,7 +22,7 @@ class CouldNotParse(Exception):
 
 
 def stories(story_type, over_filter):
-	soup = Fetch.stories(story_type=story_type, over_filter=over_filter)
+	soup = fetch.stories(story_type=story_type, over_filter=over_filter)
 	# HN markup is odd. Basically every story use three rows each
 	stories_soup = soup.html.body.table.find_all('table')[1].find_all("tr")[::3]
 	# Scraping all stories
@@ -86,8 +46,8 @@ def stories(story_type, over_filter):
 
 
 def comments(commentid, cache_minutes=20):
-	start_time = timezone.now()
-	soup = Fetch.comments(commentid=commentid)
+	# start_time = timezone.now()
+	soup = fetch.comments(commentid=commentid)
 	try:
 		story_soup = soup.html.body.table.find_all('table')[1].find('tr')
 	except AttributeError:
@@ -147,17 +107,18 @@ def comments(commentid, cache_minutes=20):
 			i += 1
 		# Traversing all top comments
 		comments_soup = soup.html.body.table.find_all('table')[i].find_all('table')
-		for comment_soup in comments_soup:
-			td_default = comment_soup.tr.find('td', {'class': 'default'})
-			# Converting indent to a more readable format (0, 1, 2...)
-			indenting = int(td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
-			if indenting == 0:
-				try:
-					traverse_comment(comment_soup, parent_object, story_id)
-				except CouldNotParse:
-					continue
-		HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
-
+		with transaction.commit_on_success():
+			for comment_soup in comments_soup:
+				td_default = comment_soup.tr.find('td', {'class': 'default'})
+				# Converting indent to a more readable format (0, 1, 2...)
+				indenting = int(td_default.previous_sibling.previous_sibling.img['width'], 10) / 40
+				if indenting == 0:
+					try:
+						traverse_comment(comment_soup, parent_object, story_id)
+					except CouldNotParse:
+						continue
+		# Slow
+		# HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
 
 def story_info(story_soup):
 	if not story_soup.find('td'):
@@ -165,10 +126,14 @@ def story_info(story_soup):
 	title = story_soup('td', {'class': 'title'})[-1]
 	subtext = story_soup.find_next('tr').find('td', {'class': 'subtext'})
 	# Dead post
-	if not subtext.find_all("a"):
+	if not subtext.find_all('a'):
 		raise CouldNotParse
 	story = Stories()
-	story.url = urllib2.unquote(title.find('a')['href'])
+	if title.next == ' [dead] ':
+		story.dead = True
+		story.url = ''
+	else:
+		story.url = unquote(title.find('a')['href'])
 	story.title = title.find('a').contents[0]
 	# Check for domain class
 	if title.find('span', {'class': 'comhead'}):
@@ -178,7 +143,7 @@ def story_info(story_soup):
 		story.selfpost = True
 		story.url = ''
 	story.score = int(re.search(r'(\d+) points?', unicode(subtext.find("span"))).group(1))
-	story.username = ''.join(subtext.find_all("a")[0])
+	story.username = subtext.find('a').find(text=True)
 	try:
 		story.comments = int(re.search(r'(\d+) comments?', unicode(subtext.find_all("a")[1])).group(1))
 	except AttributeError:
@@ -190,8 +155,15 @@ def story_info(story_soup):
 	# parsedatetime doesn't have any built in support for DST
 	if time.localtime().tm_isdst:
 		story.time = story.time + datetime.timedelta(hours=-1)
-	story.id = re.search('item\?id=(\d+)$', subtext.find_all("a")[1]['href']).group(1)
+	story.id = int(re.search('item\?id=(\d+)$', subtext.find_all('a')[1]['href']).group(1))
 	story.cache = timezone.now()
+	username = get_request().session.get('username', None)
+	if username:
+		# Adding vote auth to session
+		userdata = get_request().session.setdefault('userdata', {}).setdefault(username, {})
+		auth_code = re.search(r'&auth=([a-z0-9]+)&whence', story_soup.a['href']).group(1)
+		userdata.setdefault('upvotes', {}).setdefault(story.id, {})[story.id] = auth_code
+		get_request().session.modified = True
 	return story
 
 
@@ -206,8 +178,16 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 		raise CouldNotParse('Comment is dead')
 	comment.username = td_default.find('a').find(text=True)
 	# Get html contents of the comment excluding <span> and <font>
-	comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).font.decode_contents())
-	hex_color = td_default.find('span', {'class': 'comment'}).font['color']
+	if td_default.find('span', {'class': 'dead'}):
+		comment.dead = True
+		comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).span.decode_contents())
+		hex_color = '#000000'
+	else:
+		comment.dead = False
+		# TODO: BS4 doesn't handle <i> split over paragraphs.
+		# Therefore there is a bug that will only add italics on the first paragraph
+		comment.text = utils.html2markup(td_default.find('span', {'class': 'comment'}).find('font').decode_contents())
+		hex_color = td_default.find('span', {'class': 'comment'}).font['color']
 	# All colors are in the format of #XYXYXY, meaning that they are all grayscale.
 	# Get percent by grabbing the red part of the color (#XY)
 	comment.hiddenpercent = int(re.search(r'^#(\w{2})', hex_color).group(1), 16) / 2.5
@@ -224,7 +204,10 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 			parent_object = HNComments.objects.get(pk=parent_id)
 			story_id = parent_object.story_id
 		except HNComments.DoesNotExist:
-			parent_object = None
+		# Forcing comment to be updated next time, since it doesn't have proper values
+			cache = timezone.now() - datetime.timedelta(days=1)
+			parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
+			parent_object.save()
 			# story_id is at this moment actually comment id of the parent object.
 			# Trying to correct this by checking for actualy story_id in the db
 			try:
@@ -234,22 +217,17 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 				pass
 	comment.story_id = story_id
 	comment.cache = timezone.now()
-	# comment.parent = parent_object
-	if perma and not parent_object:
-		# Forcing comment to be updated next time, since it doesn't have proper values
-		cache = timezone.now() - datetime.timedelta(days=1)
-		parent_object = HNComments(id=parent_id, username='', parent=None, cache=cache)
-		parent_object.save()
-		# comment.parent = parent_object
-	temp_dict = comment.__dict__
-	temp_dict.pop('_state')
-	temp_dict.pop('parent_id')
-
-	if parent_object:
-		comment = parent_object.add_child(**temp_dict)
-	else:
-		comment = HNComments.add_root(**temp_dict)
+	comment.parent = parent_object
+	comment.save()
 	HNCommentsCache(id=comment.id, time=timezone.now()).save()
+
+	username = get_request().session.get('username', None)
+	if username:
+		# Adding vote auth to session
+		userdata = get_request().session.setdefault('userdata', {}).setdefault(username, {})
+		auth_code = re.search(r'&auth=([a-z0-9]+)&whence', comment_soup.find_all('td', {'valign': 'top'})[0].a['href']).group(1)
+		userdata.setdefault('upvotes', {}).setdefault(story_id, {})[comment.id] = auth_code
+		get_request().session.modified = True
 
 	# Traversing over child comments:
 	# Since comments aren't actually children in the HTML we will have to parse all the siblings
@@ -277,7 +255,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 
 
 def userpage(username):
-	soup = Fetch.userpage(username=username)
+	soup = fetch.userpage(username=username)
 	try:
 		userdata = soup.html.body.table.find_all('table')[1].find_all('tr')
 	except AttributeError:
@@ -287,21 +265,27 @@ def userpage(username):
 		avg = Decimal(userdata[3].find_all('td')[1].decode_contents())
 	except InvalidOperation:
 		avg = 0
+	# If user is logged in there will be an editable textarea instead of just text
+	if userdata[4].find_all('td')[1].textarea:
+		about = userdata[4].find_all('td')[1].textarea.decode_contents()
+	else:
+		about = utils.html2markup(userdata[4].find_all('td')[1].decode_contents())
+
 	UserInfo(
 		username=username,
 		created=created,
 		karma=int(userdata[2].find_all('td')[1].decode_contents(), 10),
 		avg=avg,
-		about=utils.html2markup(userdata[4].find_all('td')[1].decode_contents()),
+		about=about,
 		cache=timezone.now()
 	).save()
 
 
-def poll_update(story_id, poll_soup):
-	for poll_element in poll_soup.find_all('tr')[::3]:
+def poll_update(story_id, polls, userdata=None):
+	for poll in polls.find_all('tr')[::3]:
 		Poll(
-			name=poll_element.find_all('td')[1].div.font.decode_contents(),
-			score=int(re.search(r'(\d+) points?', poll_element.find_next('tr').find_all('td')[1].span.span.decode_contents()).group(1)),
-			id=poll_element.find_next('tr').find_all('td')[1].span.span['id'].lstrip('score_'),
+			name=poll.find_all('td')[1].text,
+			score=int(re.search(r'(\d+) points?', poll.find_next('tr').find_all('td')[1].text).group(1)),
+			id=poll.find_next('tr').find_all('td')[1].span.span['id'].lstrip('score_'),
 			story_id=story_id
 		).save()

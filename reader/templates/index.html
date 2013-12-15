@@ -9,33 +9,36 @@
 </a>
 {% endblock %}
 {% block container %}
-<div class="row-fluid">
-	<div class="span3">
+<div class="row">
+	<div class="col-lg-3">
 		<div class="sidebar-container">
-			<ul class="nav nav-list sidebar sidebar-collapse">
-				<li class="nav-header">Sorting
-					<ul class="nav nav-list">
-						<li class="{% active request '(^/$)' %}"><a href="/">Frontpage</a></li>
-						<li class="{% active request '^/self' %}"><a href="/self">Selfpost</a>
+			<ul class="hn-sidebar nav sidebar-collapse">
+				<li>
+					Sorting
+					<ul class="nav">
+						<li class="{% active '(^/$)' %}"><a href="/">Frontpage</a></li>
+						<li class="{% active '^/self' %}"><a href="/self">Selfpost</a>
 							<ul class="nav nav-list">
-								<li class="{% active request '^/ask' %}"><a href="/ask">Ask HN</a></li>
-								<li class="{% active request '^/show' %}"><a href="/show">Show HN</a></li>
+								<li class="{% active '^/ask' %}"><a href="/ask">Ask HN</a></li>
 							</ul>
 						</li>
-						<li class="{% active request '^/poll' %}"><a href="/poll">Poll</a></li>
-						<li class="{% active request '^/best' %}"><a href="/best">Best</a></li>
-						<li class="{% active request '^/newest' %}"><a href="/newest">Newest</a></li>
+						<li class="{% active '^/show' %}"><a href="/show">Show HN</a></li>
+						<li class="{% active '^/poll' %}"><a href="/poll">Poll</a></li>
+						<li class="{% active '^/best' %}"><a href="/best">Best</a></li>
+						<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
 					</ul>
 				</li>
-				<li class="nav-header">Score over
-					<ul class="nav nav-list">
-						<li class="{% active_score request '0' %}"><a href="{% query_string "over=0" "" %}">Show All</a></li>
-						<li class="{% active_score request '50' %}"><a href="{% query_string "over=50" "" %}">50</a></li>
-						<li class="{% active_score request '75' %}"><a href="{% query_string "over=75" "" %}">75</a></li>
-						<li class="{% active_score request '100' %}"><a href="{% query_string "over=100" "" %}">100</a></li>
+				<li>
+					Score over
+					<ul class="nav">
+						<li class="{% active_score '0' %}"><a href="{% query_string "over=0" "" %}">Show All</a></li>
+						<li class="{% active_score '50' %}"><a href="{% query_string "over=50" "" %}">50</a></li>
+						<li class="{% active_score '75' %}"><a href="{% query_string "over=75" "" %}">75</a></li>
+						<li class="{% active_score '100' %}"><a href="{% query_string "over=100" "" %}">100</a></li>
 					</ul>
 				</li>
-				<li class="nav-header">Show per page
+				<li>
+					Show per page
 					<ul class="nav nav-list">
 						<li{% if limit == 25 %} class="active"{% endif %}><a href="{% query_string "limit=25" "" %}">25</a></li>
 						<li{% if limit == 50 %} class="active"{% endif %}><a href="{% query_string "limit=50" "" %}">50</a></li>
@@ -45,7 +48,7 @@
 			</ul>
 		</div>
 	</div>
-	<div class="span9">
+	<div class="col-lg-9">
 		{% if cache %}
 			<div class="cache">Displaying cache from {{ cache|timesince }} ago</div>
 		{% endif %}
@@ -63,7 +66,9 @@
 				<tr>
 					<td><a class="comments" href="/comments/{{ story.id }}">{{ story.comments|default:"0" }}</a></td>
 					<td><a class="score" href="/comments/{{ story.id }}">{{ story.score|default:"0" }}</a></td>
-					{% if story.selfpost %}
+					{% if story.dead %}
+					<td>{{ story.title|safe }} <span class="muted">(dead)</td>
+					{% elif story.selfpost %}
 					<td><a class="link" href="/comments/{{ story.id }}">{{ story.title|safe }}</a></td>
 					{% else %}
 					<td><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> ({{ story.url|domain }})</td>
@@ -74,38 +79,35 @@
 			</tbody>
 		</table>
 		{% if pages|length > 1 %}
-		<div class="pagination pagination-centered">
-			<ul>
-				{% if stories.number != 1 %}
-				<li><a href="{% query_string "page=1" "" %}">&laquo;</a></li>
-				{% else %}
-				<li class="disabled"><span>&laquo;</span></li>
-				{% endif %}
+		<ul class="pagination pagination-centered">
+			{% if stories.number != 1 %}
+			<li><a href="{% query_string "page=1" "" %}">&laquo;</a></li>
+			{% else %}
+			<li class="disabled"><span>&laquo;</span></li>
+			{% endif %}
 
-				{% if stories.has_previous %}
-				<li><a href="{% query_string "page=stories.previous_page_number" "" %}">&lsaquo;</a></li>
-				{% else %}
-				<li class="disabled"><span>&lsaquo;</span></li>
-				{% endif %}
+			{% if stories.has_previous %}
+			<li><a href="{% query_string "page=stories.previous_page_number" "" %}">&lsaquo;</a></li>
+			{% else %}
+			<li class="disabled"><span>&lsaquo;</span></li>
+			{% endif %}
 
-				{% for page in pages %}
-				<li{% if page == stories.number %} class="active" {% endif %}><a href="{% query_string "page=page" "" %}">{{ page }}</a></li>
-				{% endfor %}
+			{% for page in pages %}
+			<li{% if page == stories.number %} class="active" {% endif %}><a href="{% query_string "page=page" "" %}">{{ page }}</a></li>
+			{% endfor %}
 
-				{% if stories.has_next %}
-				<li><a href="{% query_string "page=stories.next_page_number" "" %}">&rsaquo;</a></li>
-				{% else %}
-				<li class="disabled"><span>&rsaquo;</span></li>
-				{% endif %}
+			{% if stories.has_next %}
+			<li><a href="{% query_string "page=stories.next_page_number" "" %}">&rsaquo;</a></li>
+			{% else %}
+			<li class="disabled"><span>&rsaquo;</span></li>
+			{% endif %}
 
-				{% if stories.number != stories.paginator.num_pages %}
-				<li><a href="{% query_string "page=stories.paginator.num_pages" "" %}">&raquo;</a></li>
-				{% else %}
-				<li class="disabled"><span>&raquo;</span></li>
-				{% endif %}
-
-			</ul>
-		</div>
+			{% if stories.number != stories.paginator.num_pages %}
+			<li><a href="{% query_string "page=stories.paginator.num_pages" "" %}">&raquo;</a></li>
+			{% else %}
+			<li class="disabled"><span>&raquo;</span></li>
+			{% endif %}
+		</ul>
 	</div>
 </div>
 {% endif %}

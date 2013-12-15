@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block container %}
+<div class="col-lg-offset-1 col-lg-11">
+	<legend>Login</legend>
+	<span class="help-block">Login with your news.ycombinator.com account info to get access to voting</span>
+</div>
+{% include "login_form.html" %}
+{% endblock %}

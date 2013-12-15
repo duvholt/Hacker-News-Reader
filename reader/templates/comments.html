@@ -6,8 +6,8 @@
 	{% if story %}
 		{{ story.title|safe }}
 	{% else %}
-		{% if comments.0.0.0 %}
-		{{ comments.0.0.0.text|truncatechars:"80" }}
+		{% if comments.0.0 %}
+		{{ comments.0.0.text|safe|truncatechars:"80" }}
 		{% else %}
 		Item not found
 		{% endif %}
@@ -18,33 +18,50 @@
 {% block container %}
 {% if story %}
 <div class="story">
-	<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}</h4>
+	<div class="row">
+		<ul class="col-1 col-sm-1 col-lg-1 vote">
+			<li><a href="#" class="up">▲</a></li>
+			<li>{{ story.score|default:"0" }}</li>
+			<li><a href="#" class="down">▼</a></li>
+		</ul>
+		<div class="col-11 col-sm-11 col-lg-11">
+			<div>
+			{% if story.dead %}
+				<h4>{{ story.title|safe }} <span class="muted">(dead)</span></h4>
+			{% else %}
+				<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}</h4>
+			{% endif %}
+			</div>
+			<div>
+				by <a href="/user/{{ story.username }}">{{ story.username }}</a>
+				<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time> |
+				{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }} |
+				<a href="http://news.ycombinator.com/item?id={{ story.id }}">news.ycombinator link</a>
+				<br>
+				<div class="cache">Displaying cache from {{ story.cache|timesince }} ago</div>
+			</div>
+		</div>
+	</div>
 	{% if story.selfpost %}
-	<div>{{ story.selfpost_text|markup2html|safe }}</div>
+		<div>{{ story.selfpost_text|markup2html|safe }}</div>
 	{% endif %}
 	{% if story.poll %}
-	<a class="btn btn-poll" data-toggle="collapse" data-target=".poll-collapse">
-		<span class="icon-bar"></span>
-		<span class="icon-bar"></span>
-		<span class="icon-bar"></span>
-	</a>
-	<div class="poll-collapse">
-		{% for poll in polls %}
-		<p>{{ poll.name }}: {% percentage poll.score total_votes 2 %}% ({{ poll.score }} vote{{ poll.score|pluralize }})</p>
-		<div class="progress progress-hn poll">
-			<div class="bar" style="width: {% percentage poll.score total_votes 0 %}%"></div>
+	<div>
+		<button class="poll-toggle" data-toggle="collapse" data-target=".poll-collapse">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</button>
+		<div class="poll-collapse">
+			{% for poll in polls %}
+			<p>{{ poll.name }}: {% percentage poll.score total_votes 2 %}% ({{ poll.score }} vote{{ poll.score|pluralize }})</p>
+			<div class="progress">
+				<div class="progress-bar progress-bar-hn" style="width: {% percentage poll.score total_votes 0 %}%"></div>
+			</div>
+			{% endfor %}
 		</div>
-		{% endfor %}
 	</div>
 	{% endif %}
-	<p>
-		{{ story.score|default:"0" }} points  by <a href="/user/{{ story.username }}">{{ story.username }}</a>
-		<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time> |
-		{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }} |
-		<a href="http://news.ycombinator.com/item?id={{ story.id }}">news.ycombinator link</a>
-		<br>
-		<div class="cache">Displaying cache from {{ story.cache|timesince }} ago</div>
-	</p>
 </div>
 {% endif %}
 {% if perma %}
@@ -53,36 +70,38 @@
 		{% if story %}
 			<a href="/comments/{{ story.id }}">Click here to view all the comments</a>
 		{% else %}
-			<a href="/comments/{{ comments.0.0.0.parent_id }}">Click here to load parent comment</a><br>
+			<a href="/comments/{{ comments.0.0.parent_id }}">Click here to load parent comment</a><br>
 			Story ID is not known, try clicking parent a few times
 		{% endif %}
 	</div>
 {% endif %}
 {% if comments %}
 <div class="comments">
-	{% for comment_trees in comments %}
-		{% for comment, info in comment_trees %}
-			{% if info.open %}
-				<ul{% if not forloop.first %} class="children"{% endif %}>
-			{% else %}
-				</li>
-			{% endif %}
-			<li class="{% if info.level|divisibleby:"2" %}even{% endif %}" id="{{ comment.id }}">
-				<div class="comment">
-					<a href="#" class="hidetoggle">[-]</a>
-					<a{% if comment.username == story.username %} class="op"{% endif %} href="/user/{{ comment.username }}">{{ comment.username }}</a>
-					<span> <time title="{{ comment.time|date:"r" }}" datetime="{{ comment.time}}">{{ comment.time|timesince|upto:',' }} ago</time></span>
-					<a href="/comments/{{ comment.id }}">permalink</a>
-					{% if forloop.first and comment.parent_id %}
-						<a href="/comments/{{ comment.parent_id }}">parent</a>
-					{% elif not forloop.first and comment.parent_id %}
-						<a href="#{{ comment.parent_id }}">parent</a>
-					{% endif %}
-					<div class="content" style="color: {{ comment.hiddencolor }};">{{ comment.text|markup2html|safe }}</div>
-				</div>
-			{% for close in info.close %}
-				</li></ul>
-			{% endfor %}
+	{% for comment, info in comments %}
+		{% if info.open %}
+			<ul{% if not forloop.first %} class="children"{% endif %}>
+		{% else %}
+			</li>
+		{% endif %}
+		<li class="{% if info.level|divisibleby:"2" %}even{% endif %}" id="{{ comment.id }}">
+			<div class="comment {% if comment.dead %}dead{% endif %}">
+				<a href="#" class="hidetoggle">[-]</a>
+				<a{% if comment.username == story.username %} class="op"{% endif %} href="/user/{{ comment.username }}">{{ comment.username }}</a>
+				<span> <time title="{{ comment.time|date:"r" }}" datetime="{{ comment.time}}">{{ comment.time|timesince|upto:',' }} ago</time></span>
+				<a href="/comments/{{ comment.id }}">permalink</a>
+				{% if forloop.first and comment.parent_id %}
+					<a href="/comments/{{ comment.parent_id }}">parent</a>
+				{% elif not forloop.first and comment.parent_id %}
+					<a href="#{{ comment.parent_id }}">parent</a>
+				{% endif %}
+				{% if comment.dead %}[dead]{% endif %}
+				{% if comment.id in upvotes %}
+					UPVOTEABLE
+				{% endif %}
+				<div class="content" style="color: {{ comment.hiddencolor }};">{{ comment.text|markup2html|safe }}</div>
+			</div>
+		{% for close in info.close %}
+			</li></ul>
 		{% endfor %}
 	{% endfor %}
 {% endif %}

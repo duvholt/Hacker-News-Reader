@@ -9,8 +9,11 @@ import hotshot
 import hotshot.stats
 import tempfile
 import StringIO
+from threading import currentThread
 
 from django.conf import settings
+
+_requests = {}
 
 words_re = re.compile(r'\s+')
 
@@ -113,3 +116,24 @@ class ProfileMiddleware(object):
 			os.unlink(self.tmpfile)
 
 		return response
+
+
+class GlobalRequestMiddlewareException(Exception):
+	pass
+
+
+def get_request():
+	t = currentThread()
+	if not t in _requests:
+		raise GlobalRequestMiddlewareException
+	return _requests[t]
+
+
+def has_request():
+	t = currentThread()
+	return t in _requests
+
+
+class GlobalRequestMiddleware(object):
+	def process_request(self, request):
+		_requests[currentThread()] = request
