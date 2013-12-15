@@ -1,7 +1,7 @@
-@import "bootstrap/bootstrap";
 @import "bootstrap-variables";
+@import "bootstrap/bootstrap";
 //@import url(http://fonts.googleapis.com/css?family=Cabin+Condensed);
-@import url(http://fonts.googleapis.com/css?family=Patua+One);
+@import url(//fonts.googleapis.com/css?family=Patua+One);
 
 // Local variables
 $gray: #5F5F5F;
@@ -127,6 +127,15 @@ table.table {
 	a {
 		word-wrap:break-word;
 	}
+	@media (max-width: $screen-sm) {
+		ul {
+			margin: 0 0 4px 0px;
+		}
+		li {
+			padding: 0px 1px 0px 5px;
+			margin: 4px 1px 4px 1px;
+		}
+	}
 }
 ul.vote {
 	float: left;
@@ -139,7 +148,6 @@ ul.vote {
 	color: $gray;
 	font-style: italic;
 }
-
 // Filtering sidebar
 .hn-sidebar {
 	margin-top: 30px;
@@ -185,97 +193,45 @@ ul.vote {
 	}
 }
 // Bootstrap related
-.navbar {
-	border-radius: 0;
-}
 .navbar-brand {
 	padding: 15px 14px;
 	font-family: 'Patua One', sans-serif;
 }
-
-//.btn-group-centered {
-//  text-align: center;
-//}
-//.btn-group {
-//	padding-bottom: 10px;
-//}
-//.navbar-inner {
-//	border-radius: 1px;
-//}
-//.progress {
-//	margin-bottom: 0;
-//}
-.progress-hn .bar, .progress .bar-hn {
-	@include gradient-vertical($link-color, darken($link-color, 15%));
+.progress {
+	margin-bottom: 0;
 }
-//
-.btn-poll .icon-bar {
-	display: block;
-	width: 18px;
-	height: 2px;
-	background-color: #565656;
-	border-radius: 1px;
-	@include box-shadow(#{0 1px 0 rgba(0,0,0,.25)});
-
-}
-.btn-poll .icon-bar + .icon-bar {
-	margin-top: 3px;
-}
-.btn-poll {
-	display: none;
-	float: right;
-	padding: 7px 10px;
-	margin: 0 25px 10px 5px;
-}
-//.sidebar-collapse.collapse, .poll-collapse.collapse {
-//	height: auto;
-//	overflow: visible;
-//}
-//// Media styling
-//// Tablet/small laptop
-//@media (max-width: 979px) {
-//	.btn-navbar {
-//		display: none !important;
-//	}
-//	.navbar .brand {
-//		padding: 10px 20px 10px;
-//		margin: 0 0 0 -20px;
-//	}
-//}
-//// Phone
-@media (max-width: 767px) {
-//	body {
-//		padding-right: 0px;
-//		padding-left: 0px;
-//	}
-//	.pagination ul > li > a, .pagination ul > li > span {
-//		padding: 0 9px;
-//	}
-//	div.story {
-//		margin-left: 8px;
-//	}
-	div.comments {
-		ul {
-			margin: 0 0 4px 0px;
-		}
-		li {
-			padding: 0px 1px 0px 5px;
-			margin: 4px 1px 4px 1px;
-		}
+// Toggle button for polls
+.poll-toggle {
+	margin-right: $navbar-padding-horizontal;
+	padding: 9px 10px;
+	border: 1px solid #ccc;
+	border-radius: $border-radius-base;
+	border-color: #ccc;
+	&:hover, &:focus {
+			background-color: #efe;
 	}
-//	.poll-collapse, .poll-collapse.collapse,
-//	.sidebar-collapse, .sidebar-collapse.collapse {
-//		overflow: hidden;
-//		height: 0;
-//	}
-//	.poll-collapse .btn,
-//	.sidebar-collapse .btn {
-//		padding: 4px 10px 4px;
-//		font-weight: normal;
-//		border-radius: 4px;
-//	}
-//	.btn-poll,
-//	.btn-navbar {
-//		display: block !important;
-//	}
+	.icon-bar {
+		display: block;
+		width: 22px;
+		height: 2px;
+		border-radius: 1px;
+		background-color: #000;
+	}
+	.icon-bar + .icon-bar {
+		margin-top: 4px;
+	}
+
+	@media (min-width: $screen-sm) {
+		display: none;
+	}
+}
+// Wrapper for polls that will toggle
+.poll-collapse {
+	height: auto;
+	overflow: visible;
+
+	@media (max-width: $screen-sm) {
+		overflow: hidden;
+		height: 0;
+	}
 }

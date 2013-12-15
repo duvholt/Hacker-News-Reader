@@ -7,7 +7,7 @@
 		{{ story.title|safe }}
 	{% else %}
 		{% if comments.0.0 %}
-		{{ comments.0.0.text|truncatechars:"80" }}
+		{{ comments.0.0.text|safe|truncatechars:"80" }}
 		{% else %}
 		Item not found
 		{% endif %}
@@ -47,16 +47,16 @@
 	{% endif %}
 	{% if story.poll %}
 	<div>
-		<a class="btn btn-poll" data-toggle="collapse" data-target=".poll-collapse">
+		<button class="poll-toggle" data-toggle="collapse" data-target=".poll-collapse">
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
-		</a>
+		</button>
 		<div class="poll-collapse">
 			{% for poll in polls %}
 			<p>{{ poll.name }}: {% percentage poll.score total_votes 2 %}% ({{ poll.score }} vote{{ poll.score|pluralize }})</p>
-			<div class="progress progress-hn poll">
-				<div class="bar" style="width: {% percentage poll.score total_votes 0 %}%"></div>
+			<div class="progress">
+				<div class="progress-bar progress-bar-hn" style="width: {% percentage poll.score total_votes 0 %}%"></div>
 			</div>
 			{% endfor %}
 		</div>
