@@ -156,4 +156,4 @@ def poll_percentage(number, total, rounding=2):
 
 
 def domain(url):
-	return re.findall(r'^(?:.+//)?(?:www\.)?([^/#?]*)', url)[0].lower()
+	return re.findall(r'^(?:.+?//)?(?:www\.)?([^/#?]*)', url)[0].lower()
