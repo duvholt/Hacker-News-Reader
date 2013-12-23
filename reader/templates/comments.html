@@ -18,21 +18,19 @@
 {% block container %}
 {% if story %}
 <div class="story">
-	<div class="row">
-		<ul class="col-1 col-sm-1 col-lg-1 vote">
+	<div>
+		<ul class="vote">
 			<li><a href="#" class="up">▲</a></li>
 			<li>{{ story.score|default:"0" }}</li>
 			<li><a href="#" class="down">▼</a></li>
 		</ul>
-		<div class="col-11 col-sm-11 col-lg-11">
-			<div>
+		<div class="info">
 			{% if story.dead %}
-				<h4>{{ story.title|safe }} <span class="muted">(dead)</span></h4>
+			<h4>{{ story.title|safe }} <span class="muted">(dead)</span></h4>
 			{% else %}
-				<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}</h4>
+			<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}</h4>
 			{% endif %}
-			</div>
-			<div>
+			<div class="meta">
 				by <a href="/user/{{ story.username }}">{{ story.username }}</a>
 				<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time> |
 				{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }} |
