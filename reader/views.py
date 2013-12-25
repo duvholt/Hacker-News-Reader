@@ -9,6 +9,7 @@ import json
 import operator
 import requests
 import utils
+import settings
 
 # Warning levels: error, success, info and default (empty)
 
@@ -353,10 +354,12 @@ class LoginView(ContextView):
 				soup = fetch.login()
 				fnid = soup.find('input', {'type': 'hidden'})['value']
 				payload = {'fnid': fnid, 'u': username, 'p': password}
-				r = requests.post('https://news.ycombinator.com/x', data=payload)
-				if 'user' in r.cookies:
+				s = requests.Session()
+				headers = {'user-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
+				s.post('https://news.ycombinator.com/y', data=payload, headers=headers)
+				if 'user' in s.cookies:
 					request.session['username'] = username
-					request.session['usercookie'] = r.cookies['user']
+					request.session['usercookie'] = s.cookies['user']
 					context['alerts'].append({'message': 'Logged in as ' + username, 'level': 'success'})
 				else:
 					context['alerts'].append({'message': 'Username or password wrong', 'level': 'error'})
