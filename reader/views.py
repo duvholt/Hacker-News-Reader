@@ -177,7 +177,7 @@ class CommentsView(ContextView):
 				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
 		username = request.session.get('username', None)
 		if context['comments'] and username:
-			userdata = request.session['userdata'].get(username, None)
+			userdata = request.session.get('userdata', {}).get(username)
 			if userdata:
 				context['upvotes'] = userdata['upvotes'][self.comment_id]
 		return self.render_to_response(self.get_context_data(**context))
