@@ -6,6 +6,7 @@ localsettings.py
 secret_key.py
 .sass-cache
 manifest.yml
-hn.db
+*.db
 /static
 *.idea
+*.iml
