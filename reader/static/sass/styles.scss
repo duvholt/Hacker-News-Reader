@@ -55,6 +55,27 @@ table.table {
 	font-size: $small-font-size;
 	color: $gray;
 	}
+	ul.vote {
+		float: left;
+		text-align: center;
+		list-style: none;
+		padding: 7px 0 0 0;
+		margin: 0 5px 0 0;
+		li {
+			line-height: 20px;
+			font-size: 20px;
+			a:hover {
+				text-decoration: none;
+			}
+		}
+		// Vote score
+		li:nth-child(2) {
+			font-size: 15px;
+		}
+	}
+	.info {
+		overflow: hidden;
+	}
 }
 .comments {
 	> ul {
@@ -64,7 +85,7 @@ table.table {
 			margin-bottom: 10px;
 		}
 	}
-	li {
+	> ul > li, ul.children > li {
 		line-height: 20px;
 		background-color: white;
 		border-radius: 5px;
@@ -79,12 +100,15 @@ table.table {
 			}
 		}
 		.comment {
-			> a, > span {
-				font-size: $small-font-size;
-				color: $gray;
-			}
-			> a.op {
-				color: $link-color;
+			.wrapper {
+				overflow: hidden;
+				> a, > span {
+					font-size: $small-font-size;
+					color: $gray;
+				}
+				> a.op {
+					color: $link-color;
+				}
 			}
 			&.selected {
 				outline: 1px dotted black;
@@ -122,6 +146,21 @@ table.table {
 				color: #9da0a4;
 				border-radius: 4px 0 4px 0;
 			}
+			> ul.vote {
+				float: left;
+				height: 100%;
+				text-align: center;
+				list-style: none;
+				padding: 0;
+				margin: 0 5px 0 0;
+				li {
+					line-height: 25px;
+					font-size: 20px;
+					a:hover {
+						text-decoration: none;
+					}
+				}
+			}
 		}
 	}
 	a {
@@ -131,18 +170,11 @@ table.table {
 		ul {
 			margin: 0 0 4px 0px;
 		}
-		li {
+		> ul > li, ul.children > li {
 			padding: 0px 1px 0px 5px;
 			margin: 4px 1px 4px 1px;
 		}
 	}
-}
-ul.vote {
-	float: left;
-	text-align: center;
-	list-style: none;
-	padding: 0;
-	margin: 0 5px 0 0;
 }
 // Used to display how old cache is
 .cache {

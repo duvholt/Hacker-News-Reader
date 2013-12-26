@@ -19,11 +19,13 @@
 {% if story %}
 <div class="story">
 	<div>
+		{% if request.session.username %}
 		<ul class="vote">
 			<li><a href="#" class="up">▲</a></li>
 			<li>{{ story.score|default:"0" }}</li>
 			<li><a href="#" class="down">▼</a></li>
 		</ul>
+		{% endif %}
 		<div class="info">
 			{% if story.dead %}
 			<h4>{{ story.title|safe }} <span class="muted">(dead)</span></h4>
@@ -83,20 +85,25 @@
 		{% endif %}
 		<li class="{% if info.level|divisibleby:"2" %}even{% endif %}" id="{{ comment.id }}">
 			<div class="comment {% if comment.dead %}dead{% endif %}">
-				<a href="#" class="hidetoggle">[-]</a>
-				<a{% if comment.username == story.username %} class="op"{% endif %} href="/user/{{ comment.username }}">{{ comment.username }}</a>
-				<span> <time title="{{ comment.time|date:"r" }}" datetime="{{ comment.time}}">{{ comment.time|timesince|upto:',' }} ago</time></span>
-				<a href="/comments/{{ comment.id }}">permalink</a>
-				{% if forloop.first and comment.parent_id %}
-					<a href="/comments/{{ comment.parent_id }}">parent</a>
-				{% elif not forloop.first and comment.parent_id %}
-					<a href="#{{ comment.parent_id }}">parent</a>
+				{% if request.session.username %}
+				<ul class="vote">
+					<li><a href="#" class="up">▲</a></li>
+					<li><a href="#" class="down">▼</a></li>
+				</ul>
 				{% endif %}
-				{% if comment.dead %}[dead]{% endif %}
-				{% if comment.id in upvotes %}
-					UPVOTEABLE
-				{% endif %}
-				<div class="content" style="color: {{ comment.hiddencolor }};">{{ comment.text|markup2html|safe }}</div>
+				<div class="wrapper">
+					<a href="#" class="hidetoggle">[-]</a>
+					<a{% if comment.username == story.username %} class="op"{% endif %} href="/user/{{ comment.username }}">{{ comment.username }}</a>
+					<span> <time title="{{ comment.time|date:"r" }}" datetime="{{ comment.time}}">{{ comment.time|timesince|upto:',' }} ago</time></span>
+					<a href="/comments/{{ comment.id }}">permalink</a>
+					{% if forloop.first and comment.parent_id %}
+						<a href="/comments/{{ comment.parent_id }}">parent</a>
+					{% elif not forloop.first and comment.parent_id %}
+						<a href="#{{ comment.parent_id }}">parent</a>
+					{% endif %}
+					{% if comment.dead %}[dead]{% endif %}
+					<div class="content" style="color: {{ comment.hiddencolor }};">{{ comment.text|markup2html|safe }}</div>
+				</div>
 			</div>
 		{% for close in info.close %}
 			</li></ul>
