@@ -1,16 +1,9 @@
-from django.conf.urls.defaults import *
-# from django.contrib import admin
+from django.conf.urls import patterns, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
-import settings
 from reader.views import *
-from django.conf.urls import patterns
-
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
-
+import settings
 
 urlpatterns = patterns(
 	'',
@@ -34,6 +27,7 @@ urlpatterns = patterns(
 	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
 	url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
-	)
+)
+
 if settings.DEBUG:
 	urlpatterns += staticfiles_urlpatterns()
