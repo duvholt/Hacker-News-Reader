@@ -21,9 +21,9 @@
 	<div>
 		{% if request.session.username %}
 		<ul class="vote">
-			<li><a href="#" class="up">▲</a></li>
+			<li><a href="/vote/{{ story.id }}?dir=up" class="up">▲</a></li>
 			<li>{{ story.score|default:"0" }}</li>
-			<li><a href="#" class="down">▼</a></li>
+			<li><a href="/vote/{{ story.id }}?dir=down" class="down">▼</a></li>
 		</ul>
 		{% endif %}
 		<div class="info">
@@ -87,8 +87,8 @@
 			<div class="comment {% if comment.dead %}dead{% endif %}">
 				{% if request.session.username %}
 				<ul class="vote">
-					<li><a href="#" class="up">▲</a></li>
-					<li><a href="#" class="down">▼</a></li>
+					<li><a href="/vote/{{ comment.id }}?dir=up" class="up">▲</a></li>
+					<li><a href="/vote/{{ comment.id }}?dir=down" class="down">▼</a></li>
 				</ul>
 				{% endif %}
 				<div class="wrapper">

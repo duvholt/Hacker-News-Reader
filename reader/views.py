@@ -2,9 +2,11 @@ from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.utils.dateformat import format
 from django.views.generic import TemplateView
+from middleware import get_request
 from models import Stories, HNComments, Poll, UserInfo
 import cache
 import fetch
+import hnparse
 import json
 import operator
 import requests
@@ -175,11 +177,6 @@ class CommentsView(ContextView):
 				context['perma'] = True
 			except HNComments.DoesNotExist:
 				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
-		username = request.session.get('username', None)
-		if context['comments'] and username:
-			userdata = request.session.get('userdata', {}).get(username)
-			if userdata:
-				context['upvotes'] = userdata['upvotes'][self.comment_id]
 		return self.render_to_response(self.get_context_data(**context))
 
 	def full_comments_list(self):
@@ -300,6 +297,60 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 		if children:
 			result['children'] = children
 		return result
+
+
+class VoteView(ContextView):
+	def get(self, request, *args, **kwargs):
+		context = super(VoteView, self).get_context_data()
+		vote_id = int(kwargs.get('id') or None)
+		direction = request.GET.get('dir', 'up')
+		try:
+			if type(vote_id) is not int:
+				raise utils.ShowAlert('Not a valid id')
+			elif 'username' not in request.session:
+				raise utils.ShowAlert('You\'re not logged in')
+			else:
+				username = request.session['username']
+				userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
+				# Using str() because keys in session is stored as string
+				if str(vote_id) in userdata.setdefault('upvotes', {}):
+					auth = userdata['upvotes'][str(vote_id)]
+				else:
+					print('yo')
+					# Auth code not found in cache, going to have to manually get it from comment
+					hnparse.comments(vote_id, 0)
+					# Not using str() here because keys are only converted to string on save
+					if vote_id in userdata.setdefault('upvotes', {}):
+						auth = userdata['upvotes'][vote_id]
+					else:
+						# Giving up
+						raise utils.ShowAlert('Unable to get auth id')
+				if auth is None:
+					raise utils.ShowAlert('Already voted')
+				payload = {'for': vote_id, 'dir': direction, 'by': username, 'auth': auth}
+				h = {'user-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
+				c = {'user': request.session['usercookie']}
+				r = requests.get('https://news.ycombinator.com/vote', params=payload, headers=h, cookies=c)
+				if r.status_code != requests.codes.ok:
+					raise utils.ShowAlert('Unknown error')
+				elif r.text == 'User mismatch.':
+					raise utils.ShowAlert('Failed to vote due to wrong authcode')
+				elif r.text == 'Can\'t make that vote.':
+					raise utils.ShowAlert('Already voted or missing permissions to up/down vote', level='warning')
+				elif r.text == 'No such item.':
+					raise utils.ShowAlert('No such item')
+				elif r.text != '':
+					raise utils.ShowAlert(r.text)
+				else:
+					raise utils.ShowAlert('Voted successfully', level='success')
+		except utils.ShowAlert, e:
+			context['alerts'].append({'message': e.message, 'level': e.level})
+		# TODO: Redirect to referrer
+		return self.render_to_response(self.get_context_data(**context))
+
+
+class VoteJsonView(JSONResponseMixin, VoteView):
+	pass
 
 
 class UserView(ContextView):

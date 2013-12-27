@@ -161,8 +161,11 @@ def story_info(story_soup):
 	if username:
 		# Adding vote auth to session
 		userdata = get_request().session.setdefault('userdata', {}).setdefault(username, {})
-		auth_code = re.search(r'&auth=([a-z0-9]+)&whence', story_soup.a['href']).group(1)
-		userdata.setdefault('upvotes', {}).setdefault(story.id, {})[story.id] = auth_code
+		try:
+			auth_code = re.search(r'&auth=([a-z0-9]+)&whence', story_soup.a['href']).group(1)
+		except (TypeError, AttributeError):
+			auth_code = None
+		userdata.setdefault('upvotes', {})[story.id] = auth_code
 		get_request().session.modified = True
 	return story
 
@@ -225,8 +228,11 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 	if username:
 		# Adding vote auth to session
 		userdata = get_request().session.setdefault('userdata', {}).setdefault(username, {})
-		auth_code = re.search(r'&auth=([a-z0-9]+)&whence', comment_soup.find_all('td', {'valign': 'top'})[0].a['href']).group(1)
-		userdata.setdefault('upvotes', {}).setdefault(story_id, {})[comment.id] = auth_code
+		try:
+			auth_code = re.search(r'&auth=([a-z0-9]+)&whence', comment_soup.find_all('td', {'valign': 'top'})[0].a['href']).group(1)
+		except (TypeError, AttributeError):
+			auth_code = None
+		userdata.setdefault('upvotes', {})[comment.id] = auth_code
 		get_request().session.modified = True
 
 	# Traversing over child comments:

@@ -47,6 +47,35 @@ $(function () {
 			}
 		});
 	}
+
+	function vote(id, dir) {
+		$.get('/vote/' + id + '.json', {'dir': dir}, function(data) {
+			data['alerts'].forEach(function(alert) {
+				showAlert(alert['message'], alert['level'])
+			});
+		}, 'json');
+	}
+
+	var showAlert = function(message, level, delay) {
+		/* Allowed levels: error, success, info and default (empty) */
+		if(level) {
+			level = 'alert-' + level;
+		}
+		else {
+			level = '';
+		}
+		var alert = $(
+			'<div class="alert ' + level + ' fade in">' +
+			'	<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+			'	' + message +
+			'</div>');
+		alert.appendTo($('.alerts'));
+		if(delay) {
+			setTimeout(function() {
+				alert.alert('close');
+			}, delay);
+		}
+	};
 	// Toggle show for comments
 	$('.comments .hidetoggle').click(function (e) {
 		var toggler = $(this);
@@ -87,5 +116,10 @@ $(function () {
 	$(".comments .comment").click(function () {
 		$(".comments .comment").removeClass("selected");
 		$(this).addClass("selected");
+	});
+	$(".vote a").click(function(e) {
+		e.preventDefault();
+		var found = $(this).attr('href').match(/\/vote\/(\d+)\?dir=(up|down)/);
+		vote(found[1], found[2]);
 	});
 });
