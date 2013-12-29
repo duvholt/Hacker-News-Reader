@@ -6,6 +6,11 @@ import reader.utils as utils
 register = template.Library()
 
 
+@register.filter
+def get_value(dict, key):
+	return dict.get(key)
+
+
 @register.simple_tag(takes_context=True)
 def active(context, pattern):
 	if re.search(pattern, context['request'].path):

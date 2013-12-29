@@ -177,6 +177,10 @@ class CommentsView(ContextView):
 				context['perma'] = True
 			except HNComments.DoesNotExist:
 				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
+		username = request.session.get('username')
+		if username:
+			userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
+			context['votes'] = userdata.setdefault('upvotes', [])
 		return self.render_to_response(self.get_context_data(**context))
 
 	def full_comments_list(self):
@@ -342,6 +346,9 @@ class VoteView(ContextView):
 				elif r.text != '':
 					raise utils.ShowAlert(r.text)
 				else:
+					# Setting auth to None to signify that item has been voted on
+					userdata['upvotes'][str(vote_id)] = None
+					request.session.modified = True
 					raise utils.ShowAlert('Voted successfully', level='success')
 		except utils.ShowAlert, e:
 			context['alerts'].append({'message': e.message, 'level': e.level})
