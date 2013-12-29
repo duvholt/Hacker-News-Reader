@@ -6,7 +6,7 @@ import re
 
 
 class ShowAlert(Exception):
-	def __init__(self, message, level='error'):
+	def __init__(self, message, level='danger'):
 		self.message = message
 		self.level = level
 

@@ -33,7 +33,7 @@ class JSONResponseMixin(object):
 		self.prepare_context()
 		if 'alerts' in self.context:
 			for alert in self.context['alerts']:
-				if alert['level'] == 'error':
+				if alert['level'] == 'danger':
 					return json.dumps({'alerts': context['alerts']})
 			# Remove if empty
 			if not self.context['alerts']:
@@ -176,7 +176,7 @@ class CommentsView(ContextView):
 						self.context['story'] = None
 				self.context['perma'] = True
 			except HNComments.DoesNotExist:
-				self.context['alerts'].append({'message': 'Item not found', 'level': 'error'})
+				self.context['alerts'].append({'message': 'Item not found'})
 		username = request.session.get('username')
 		if username:
 			userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
@@ -415,9 +415,9 @@ class LoginView(ContextView):
 					request.session['usercookie'] = s.cookies['user']
 					self.context['alerts'].append({'message': 'Logged in as ' + username, 'level': 'success'})
 				else:
-					self.context['alerts'].append({'message': 'Username or password wrong', 'level': 'error'})
+					self.context['alerts'].append({'message': 'Username or password wrong'})
 			else:
-				self.context['alerts'].append({'message': 'Username or password missing', 'level': 'error'})
+				self.context['alerts'].append({'message': 'Username or password missing'})
 		return self.render_view()
 
 
