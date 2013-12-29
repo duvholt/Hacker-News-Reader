@@ -165,7 +165,7 @@ def story_info(story_soup):
 			auth_code = re.search(r'&auth=([a-z0-9]+)&whence', story_soup.a['href']).group(1)
 		except (TypeError, AttributeError):
 			auth_code = None
-		userdata.setdefault('upvotes', {})[str(story.id)] = auth_code
+		userdata.setdefault('votes', {})[str(story.id)] = auth_code
 		get_request().session.modified = True
 	return story
 
@@ -232,7 +232,7 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 			auth_code = re.search(r'&auth=([a-z0-9]+)&whence', comment_soup.find_all('td', {'valign': 'top'})[0].a['href']).group(1)
 		except (TypeError, AttributeError):
 			auth_code = None
-		userdata.setdefault('upvotes', {})[str(comment.id)] = auth_code
+		userdata.setdefault('votes', {})[str(comment.id)] = auth_code
 		get_request().session.modified = True
 
 	# Traversing over child comments:

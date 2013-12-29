@@ -180,7 +180,7 @@ class CommentsView(ContextView):
 		username = request.session.get('username')
 		if username:
 			userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
-			context['votes'] = userdata.setdefault('upvotes', [])
+			context['votes'] = userdata.setdefault('votes', [])
 		return self.render_to_response(self.get_context_data(**context))
 
 	def full_comments_list(self):
@@ -317,15 +317,14 @@ class VoteView(ContextView):
 				username = request.session['username']
 				userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
 				# Using str() because keys in session is stored as string
-				if str(vote_id) in userdata.setdefault('upvotes', {}):
-					auth = userdata['upvotes'][str(vote_id)]
+				if str(vote_id) in userdata.setdefault('votes', {}):
+					auth = userdata['votes'][str(vote_id)]
 				else:
-					print('yo')
 					# Auth code not found in cache, going to have to manually get it from comment
 					hnparse.comments(vote_id, 0)
 					# Not using str() here because keys are only converted to string on save
-					if vote_id in userdata.setdefault('upvotes', {}):
-						auth = userdata['upvotes'][vote_id]
+					if vote_id in userdata.setdefault('votes', {}):
+						auth = userdata['votes'][vote_id]
 					else:
 						# Giving up
 						raise utils.ShowAlert('Unable to get auth id')
@@ -347,7 +346,7 @@ class VoteView(ContextView):
 					raise utils.ShowAlert(r.text)
 				else:
 					# Setting auth to None to signify that item has been voted on
-					userdata['upvotes'][str(vote_id)] = None
+					userdata['votes'][str(vote_id)] = None
 					request.session.modified = True
 					raise utils.ShowAlert('Voted successfully', level='success')
 		except utils.ShowAlert, e:
