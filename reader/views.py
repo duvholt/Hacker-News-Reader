@@ -22,46 +22,49 @@ class JSONResponseMixin(object):
 	"""
 	response_class = HttpResponse
 
-	def render_to_response(self, context, **response_kwargs):
+	def render_view(self, **response_kwargs):
 		"""
 		Returns a JSON response, transforming 'context' to make the payload.
 		"""
 		response_kwargs['content_type'] = 'application/json'
-		return self.response_class(self.convert_context_to_json(context), **response_kwargs)
+		return self.response_class(self.convert_context_to_json(), **response_kwargs)
 
-	def convert_context_to_json(self, context):
-		if 'alerts' in context:
-			for alert in context['alerts']:
+	def convert_context_to_json(self):
+		self.prepare_context()
+		if 'alerts' in self.context:
+			for alert in self.context['alerts']:
 				if alert['level'] == 'error':
-					return	json.dumps({'alerts': context['alerts']})
+					return json.dumps({'alerts': context['alerts']})
 			# Remove if empty
-			if not context['alerts']:
-				context.pop('alerts')
-		return json.dumps(context)
+			if not self.context['alerts']:
+				self.context.pop('alerts')
+		return json.dumps(self.context)
 
-	def clean_context(self, context):
+	def prepare_context(self):
+		pass
+
+	def clean_context(self):
 		"""
 		Used to clear up the context so it can be redone
 		"""
-		if 'alerts' in context:
-			context = {'alerts': context['alerts']}
+		if 'alerts' in self.context:
+			self.context = {'alerts': self.context['alerts']}
 		else:
-			context = {}
-		return context
+			self.context = {}
 
 
 class ContextView(TemplateView):
-	def get_context_data(self, **kwargs):
-		if 'alerts' not in kwargs:
-			kwargs['alerts'] = []
-		return kwargs
+	context = {'alerts': []}
+
+	def render_view(self, *args, **kwargs):
+		kwargs['context'] = self.context
+		return super(ContextView, self).render_to_response(*args, **kwargs)
 
 
 class IndexView(ContextView):
 	template_name = 'templates/index.html'
 
 	def get(self, request, *args, **kwargs):
-		context = super(IndexView, self).get_context_data()
 		story_type = kwargs.get('story_type', 'news')
 		try:
 			page = int(request.GET.get('page'))
@@ -73,7 +76,7 @@ class IndexView(ContextView):
 		except (ValueError, TypeError):
 			over = None
 
-		limit = request.GET.get('limit', None)
+		limit = request.GET.get('limit')
 		if not limit:
 			limit = request.COOKIES.get('stories_limit')
 		try:
@@ -85,13 +88,13 @@ class IndexView(ContextView):
 			cachetime = cache.update_stories(story_type=story_type, over_filter=over)
 			stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 		except utils.ShowAlert, e:
-			context['alerts'].append({'message': e.message, 'level': e.level})
-			return self.render_to_response(self.get_context_data(**context))
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
+			return self.render_view()
 
 		pages = self.get_active_pages(stories, page)
 
-		context.update({'stories': stories, 'pages': pages, 'limit': limit, 'cache': cachetime})
-		response = self.render_to_response(self.get_context_data(**context))
+		self.context.update({'stories': stories, 'pages': pages, 'limit': limit, 'cache': cachetime})
+		response = self.render_view()
 		response.set_cookie('stories_limit', limit)
 		return response
 
@@ -113,11 +116,10 @@ class IndexView(ContextView):
 
 
 class IndexJsonView(JSONResponseMixin, IndexView):
-	def get_context_data(self, **kwargs):
-		context = super(IndexJsonView, self).get_context_data(**kwargs)
-		stories = context['stories']
-		context = self.clean_context(context)
-		context['stories'] = []
+	def prepare_context(self):
+		stories = self.context['stories']
+		self.clean_context()
+		self.context['stories'] = []
 		for story in stories:
 			story_json = {
 				'id': story.id,
@@ -136,52 +138,50 @@ class IndexJsonView(JSONResponseMixin, IndexView):
 			if not story.selfpost:
 				story_json['url'] = story.url
 				story_json['domain'] = utils.domain(story.url)
-			context['stories'].append(story_json)
-		context['page'] = {'current': stories.number, 'total': stories.paginator.num_pages}
-		return context
+			self.context['stories'].append(story_json)
+		self.context['page'] = {'current': stories.number, 'total': stories.paginator.num_pages}
 
 
 class CommentsView(ContextView):
 	template_name = 'templates/comments.html'
 
 	def get(self, request, *args, **kwargs):
-		context = super(CommentsView, self).get_context_data()
 		self.comment_id = kwargs['commentid']
 		if self.comment_id:
 			try:
 				self.comment_id = int(self.comment_id, 10)
 			except ValueError:
 				self.comment_id = None
-		context.update({'story': None, 'polls': None, 'total_votes': 0})
+		self.context.update({'story': None, 'polls': None, 'total_votes': 0})
 		try:
 			cache.update_comments(commentid=self.comment_id)
 		except utils.ShowAlert, e:
-			context['alerts'].append({'message': e.message, 'level': e.level})
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
 		try:
-			context['story'] = Stories.objects.get(pk=self.comment_id)
-			if context['story'].poll:
-				context['polls'] = Poll.objects.filter(story_id=self.comment_id).order_by('id')
-				for poll in context['polls']:
-					context['total_votes'] += poll.score
-			context['comments'] = []
-			context['comments'] = self.full_comments_list()
+			self.context['story'] = Stories.objects.get(pk=self.comment_id)
+			if self.context['story'].poll:
+				self.context['polls'] = Poll.objects.filter(story_id=self.comment_id).order_by('id')
+				for poll in self.context['polls']:
+					self.context['total_votes'] += poll.score
+			self.context['comments'] = []
+			self.context['comments'] = self.full_comments_list()
 		except Stories.DoesNotExist:
 			try:
 				comment = HNComments.objects.get(id=self.comment_id)
-				context['comments'] = self.permalink_comments_list(comment)
+				self.context['comments'] = self.permalink_comments_list(comment)
 				if comment:
 					try:
-						context['story'] = Stories.objects.get(pk=comment.story_id)
+						self.context['story'] = Stories.objects.get(pk=comment.story_id)
 					except Stories.DoesNotExist:
-						context['story'] = None
-				context['perma'] = True
+						self.context['story'] = None
+				self.context['perma'] = True
 			except HNComments.DoesNotExist:
-				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
+				self.context['alerts'].append({'message': 'Item not found', 'level': 'error'})
 		username = request.session.get('username')
 		if username:
 			userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
-			context['votes'] = userdata.setdefault('votes', [])
-		return self.render_to_response(self.get_context_data(**context))
+			self.context['votes'] = userdata.setdefault('votes', [])
+		return self.render_view()
 
 	def full_comments_list(self):
 		return self.get_children(list(HNComments.objects.filter(story_id=self.comment_id)))
@@ -238,15 +238,14 @@ class CommentsView(ContextView):
 
 class CommentsJsonView(JSONResponseMixin, CommentsView):
 
-	def get_context_data(self, **kwargs):
-		context = super(CommentsJsonView, self).get_context_data(**kwargs)
-		story = context.get('story', None)
-		polls = context.get('polls', None)
-		total_votes = context.get('total_votes', None)
-		root_comments = self.list_to_nested(context.get('comments', None))
-		context = self.clean_context(context)
+	def prepare_context(self):
+		story = self.context.get('story')
+		polls = self.context.get('polls')
+		total_votes = self.context.get('total_votes')
+		root_comments = self.list_to_nested(self.context.get('comments'))
+		self.clean_context()
 		if story:
-			context['story'] = {
+			self.context['story'] = {
 				'id': story.id,
 				'title': story.title,
 				'selfpost': story.selfpost,
@@ -260,25 +259,25 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 				'cache_unix': format(story.cache, 'U')
 			}
 			if story.selfpost:
-				context['story']['selfpost_text'] = story.selfpost_text
+				self.context['story']['selfpost_text'] = story.selfpost_text
 			else:
-				context['story']['url'] = story.url
-				context['story']['domain'] = utils.domain(story.url)
+				self.context['story']['url'] = story.url
+				self.context['story']['domain'] = utils.domain(story.url)
 			if story.dead:
-				context['story']['dead'] = True
+				self.context['story']['dead'] = True
 		if polls:
-			context['polls'] = []
+			self.context['polls'] = []
 			for poll in polls:
-				context['polls'].append({
+				self.context['polls'].append({
 					'name': poll.name,
 					'votes': poll.score,
 					'percentage': utils.poll_percentage(poll.score, total_votes, 2)
 				})
-		context['comments'] = []
+		self.context['comments'] = []
 		# recursive_comment_to_dict and list_to_nested could be combined to reduce looping
 		for root_comment in root_comments:
-			context['comments'].append(self.recursive_comment_to_dict(root_comment, bool(story)))
-		return context
+			self.context['comments'].append(self.recursive_comment_to_dict(root_comment, bool(story)))
+		return self.context
 
 	def recursive_comment_to_dict(self, comment, story):
 		result = {
@@ -305,8 +304,10 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 
 class VoteView(ContextView):
 	def get(self, request, *args, **kwargs):
-		context = super(VoteView, self).get_context_data()
-		vote_id = int(kwargs.get('id') or None)
+		try:
+			vote_id = int(kwargs.get('id'))
+		except (ValueError, TypeError):
+			vote_id = None
 		direction = request.GET.get('dir', 'up')
 		try:
 			if type(vote_id) is not int:
@@ -350,9 +351,9 @@ class VoteView(ContextView):
 					request.session.modified = True
 					raise utils.ShowAlert('Voted successfully', level='success')
 		except utils.ShowAlert, e:
-			context['alerts'].append({'message': e.message, 'level': e.level})
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
 		# TODO: Redirect to referrer
-		return self.render_to_response(self.get_context_data(**context))
+		return self.render_view()
 
 
 class VoteJsonView(JSONResponseMixin, VoteView):
@@ -363,25 +364,23 @@ class UserView(ContextView):
 	template_name = 'templates/user.html'
 
 	def get(self, request, *args, **kwargs):
-		context = super(UserView, self).get_context_data()
 		username = kwargs['username']
 		try:
 			cache.update_userpage(username=username)
-			context['userinfo'] = cache.userinfo(username)
+			self.context['userinfo'] = cache.userinfo(username)
 		except UserInfo.DoesNotExist:
-			context['alerts'].append({'message': 'User not found'})
+			self.context['alerts'].append({'message': 'User not found'})
 		except utils.ShowAlert, e:
-			context['alerts'].append({'message': e.message, 'level': e.level})
-		return self.render_to_response(self.get_context_data(**context))
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
+		return self.render_view()
 
 
 class UserJsonView(JSONResponseMixin, UserView):
-	def get_context_data(self, **kwargs):
-		context = super(UserJsonView, self).get_context_data(**kwargs)
-		userinfo = context.get('userinfo', None)
-		context = self.clean_context(context)
+	def prepare_context(self):
+		userinfo = self.context.get('userinfo', None)
+		self.clean_context()
 		if userinfo:
-			context['user'] = {
+			self.context['user'] = {
 				'username': userinfo.username,
 				'created': format(userinfo.created, 'r'),
 				'created_unix': format(userinfo.created, 'U'),
@@ -391,19 +390,16 @@ class UserJsonView(JSONResponseMixin, UserView):
 				'cache_unix': format(userinfo.cache, 'U')
 			}
 			if userinfo.about:
-				context['user']['about'] = userinfo.about
-		return context
+				self.context['user']['about'] = userinfo.about
 
 
 class LoginView(ContextView):
 	template_name = 'templates/login.html'
 
 	def get(self, request, *args, **kwargs):
-		context = super(LoginView, self).get_context_data()
-		return self.render_to_response(self.get_context_data(**context))
+		return self.render_view()
 
 	def post(self, request):
-		context = super(LoginView, self).get_context_data()
 		if all(key in request.POST for key in ['username', 'password']):
 			username = request.POST['username']
 			password = request.POST['password']
@@ -417,15 +413,15 @@ class LoginView(ContextView):
 				if 'user' in s.cookies:
 					request.session['username'] = username
 					request.session['usercookie'] = s.cookies['user']
-					context['alerts'].append({'message': 'Logged in as ' + username, 'level': 'success'})
+					self.context['alerts'].append({'message': 'Logged in as ' + username, 'level': 'success'})
 				else:
-					context['alerts'].append({'message': 'Username or password wrong', 'level': 'error'})
+					self.context['alerts'].append({'message': 'Username or password wrong', 'level': 'error'})
 			else:
-				context['alerts'].append({'message': 'Username or password missing', 'level': 'error'})
-		return self.render_to_response(self.get_context_data(**context))
+				self.context['alerts'].append({'message': 'Username or password missing', 'level': 'error'})
+		return self.render_view()
 
 
-class  LogoutView(ContextView):
+class LogoutView(ContextView):
 	def get(self, request, *args, **kwargs):
 		try:
 			del request.session['username']
