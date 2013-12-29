@@ -34,7 +34,7 @@ class JSONResponseMixin(object):
 		if 'alerts' in self.context:
 			for alert in self.context['alerts']:
 				if alert['level'] == 'danger':
-					return json.dumps({'alerts': context['alerts']})
+					return json.dumps({'alerts': self.context['alerts']})
 			# Remove if empty
 			if not self.context['alerts']:
 				self.context.pop('alerts')
@@ -54,7 +54,9 @@ class JSONResponseMixin(object):
 
 
 class ContextView(TemplateView):
-	context = {'alerts': []}
+	def __init__(self, **kwargs):
+		super(ContextView, self).__init__(**kwargs)
+		self.context = {'alerts': []}
 
 	def render_view(self, *args, **kwargs):
 		kwargs['context'] = self.context
@@ -242,7 +244,7 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 		story = self.context.get('story')
 		polls = self.context.get('polls')
 		total_votes = self.context.get('total_votes')
-		root_comments = self.list_to_nested(self.context.get('comments'))
+		root_comments = self.list_to_nested(self.context.get('comments', []))
 		self.clean_context()
 		if story:
 			self.context['story'] = {
