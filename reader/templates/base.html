@@ -55,7 +55,7 @@
 			<div class="alerts">
 				{% if alerts %}
 					{% for alert in alerts %}
-						<div class="alert alert-{{ alert.level|default:"default" }}  fade in">
+						<div class="alert alert-{{ alert.level|default:"info" }}  fade in">
 							{% if alert.dismiss %}<button type="button" class="close" data-dismiss="alert">&times;</button>{% endif %}
 							{{ alert.message|safe }}
 						</div>

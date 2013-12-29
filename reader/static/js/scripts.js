@@ -62,7 +62,7 @@ $(function () {
 			level = 'alert-' + level;
 		}
 		else {
-			level = '';
+			level = 'alert-info';
 		}
 		var alert = $(
 			'<div class="alert ' + level + ' fade in">' +

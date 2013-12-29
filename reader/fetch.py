@@ -40,7 +40,7 @@ def read(url):
 		elif re.match(r'^No such user.$', r.text):
 			raise utils.ShowAlert('No such user.')
 		elif re.match(r'^No such item.$', r.text):
-			raise utils.ShowAlert('No such item.')
+			raise utils.ShowAlert('Item not found')
 		elif re.match(r'^((?!<body>).)*$', r.text):
 			raise utils.ShowAlert('Hacker News is either not working or parsing failed')
 		elif re.match(r'<title>Error</title>', r.text):
