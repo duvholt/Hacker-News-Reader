@@ -325,9 +325,8 @@ class VoteView(ContextView):
 				else:
 					# Auth code not found in cache, going to have to manually get it from comment
 					hnparse.comments(vote_id, 0)
-					# Not using str() here because keys are only converted to string on save
-					if vote_id in userdata.setdefault('votes', {}):
-						auth = userdata['votes'][vote_id]
+					if str(vote_id) in userdata['votes']:
+						auth = userdata['votes'][str(vote_id)]
 					else:
 						# Giving up
 						raise utils.ShowAlert('Unable to get auth id')
