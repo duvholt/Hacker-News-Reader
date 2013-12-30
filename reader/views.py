@@ -182,7 +182,7 @@ class CommentsView(ContextView):
 		username = request.session.get('username')
 		if username:
 			userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
-			self.context['votes'] = userdata.setdefault('votes', [])
+			self.context['votes'] = userdata.setdefault('votes', {})
 		return self.render_view()
 
 	def full_comments_list(self):
