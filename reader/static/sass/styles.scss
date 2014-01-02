@@ -1,8 +1,6 @@
 @import "bootstrap-variables";
 @import "bootstrap/bootstrap";
 @import "pratt";
-//@import url(http://fonts.googleapis.com/css?family=Cabin+Condensed);
-@import url(//fonts.googleapis.com/css?family=Patua+One);
 @import url(//fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic);
 @import url(//fonts.googleapis.com/css?family=Raleway:400,300,700);
 
@@ -238,7 +236,7 @@ table.table {
 // Bootstrap related
 .navbar-brand {
 	padding: 15px 14px;
-	font-family: 'Patua One', sans-serif;
+	font-weight: bold;
 }
 .progress {
 	margin-bottom: 0;
