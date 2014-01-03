@@ -15,17 +15,6 @@ h1, h2, h3, h4, h5, h6 {
 	color: #333;
 }
 
-
-/* Paragraph & Typographic */
-p {
-	line-height: 28px;
-	margin-bottom: 25px;
-}
-
-.centered {
-	text-align: center;
-}
-
 /* Links */
 a {
 	@include transition(color 0.1s ease-in, background 0.1s ease-in);
