@@ -7,13 +7,20 @@
 // Local variables
 $gray: #5F5F5F;
 $comment-even-bg: #EBEBEB;
+$bg-color: #f2f2f2;
 
 $small-font-size: 0.85em;
 
 $max-width: 800px;
 // Start styles
 body {
+	padding-top: 50px;
 	padding-bottom: 20px;
+}
+.container {
+	@media (max-width: $screen-sm) {
+		padding: 0;
+	}
 }
 table.table {
 	a.comments, a.score {
@@ -173,9 +180,15 @@ table.table {
 	a {
 		word-wrap:break-word;
 	}
+	@media (max-width: $screen-md) {
+		ul {
+			padding-left: 20px;
+		}
+	}
 	@media (max-width: $screen-sm) {
 		ul {
 			margin: 0 0 4px 0px;
+			padding-left: 0px;
 		}
 		> ul > li, ul.children > li {
 			padding: 0px 1px 0px 5px;
@@ -233,10 +246,48 @@ table.table {
 		}
 	}
 }
-// Bootstrap related
-.navbar-brand {
-	padding: 15px 14px;
-	font-weight: bold;
+.hn-nav {
+	text-shadow: 0 -1px 0 rgba(0,0,0,.15);
+	background-color: $bg-color;
+	border-color: darken($bg-color, 10%);
+	box-shadow: 0 1px 0 rgba(255,255,255,.1);
+	.container {
+		@media (max-width: $screen-sm) {
+			> .navbar-header, > .navbar-collapse {
+				margin-right: 0;
+				margin-left: 0;
+			}
+		}
+	}
+	.navbar {
+		margin-bottom: 0;
+	}
+	.navbar-brand {
+		padding: 15px 14px;
+		font-weight: bold;
+	}
+	.navbar-collapse {
+		max-height: none;
+	}
+	.navbar-nav {
+		@media (max-width: $screen-sm) {
+			margin: 7.5px;
+		}
+	}
+	.navbar-toggle {
+		background-color: $link-hover-color;
+		border-color: $link-hover-color;
+		.icon-bar {
+			background-color: $bg-color;
+		}
+		&:hover {
+			background-color: darken($link-hover-color, 15%);
+		}
+	}
+}
+.login-menu {
+	width: 300px;
+	padding: 0 15px 0 15px;
 }
 .progress {
 	margin-bottom: 0;

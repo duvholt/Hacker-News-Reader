@@ -4407,7 +4407,12 @@ hr {
   padding: 0; }
 
 body {
+  padding-top: 50px;
   padding-bottom: 20px; }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0; } }
 
 table.table a.comments, table.table a.score {
   color: #555555;
@@ -4527,9 +4532,13 @@ table.table a.comments:visited, table.table a.score:visited {
         margin: 0; }
 .comments a {
   word-wrap: break-word; }
+@media (max-width: 992px) {
+  .comments ul {
+    padding-left: 20px; } }
 @media (max-width: 768px) {
   .comments ul {
-    margin: 0 0 4px 0px; }
+    margin: 0 0 4px 0px;
+    padding-left: 0px; }
   .comments > ul > li, .comments ul.children > li {
     padding: 0px 1px 0px 5px;
     margin: 4px 1px 4px 1px; } }
@@ -4564,9 +4573,36 @@ table.table a.comments:visited, table.table a.score:visited {
     padding-left: 30px;
     font-size: 90%; }
 
-.navbar-brand {
-  padding: 15px 14px;
-  font-weight: bold; }
+.hn-nav {
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15);
+  background-color: #f2f2f2;
+  border-color: #d8d8d8;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1); }
+  @media (max-width: 768px) {
+    .hn-nav .container > .navbar-header, .hn-nav .container > .navbar-collapse {
+      margin-right: 0;
+      margin-left: 0; } }
+  .hn-nav .navbar {
+    margin-bottom: 0; }
+  .hn-nav .navbar-brand {
+    padding: 15px 14px;
+    font-weight: bold; }
+  .hn-nav .navbar-collapse {
+    max-height: none; }
+  @media (max-width: 768px) {
+    .hn-nav .navbar-nav {
+      margin: 7.5px; } }
+  .hn-nav .navbar-toggle {
+    background-color: #81251d;
+    border-color: #81251d; }
+    .hn-nav .navbar-toggle .icon-bar {
+      background-color: #f2f2f2; }
+    .hn-nav .navbar-toggle:hover {
+      background-color: #43120f; }
+
+.login-menu {
+  width: 300px;
+  padding: 0 15px 0 15px; }
 
 .progress {
   margin-bottom: 0; }
