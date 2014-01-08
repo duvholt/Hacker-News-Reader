@@ -24,6 +24,10 @@ def upto(value, delimiter=None):
 	return value.split(delimiter)[0]
 upto.is_safe = True
 
+@register.filter
+def split(value, delimiter=None):
+	return value.split(delimiter)
+
 
 @register.simple_tag(takes_context=True)
 def create_url(context, number, prefix='page'):
@@ -40,16 +44,16 @@ def create_url(context, number, prefix='page'):
 @register.simple_tag(takes_context=True)
 def active_limit(context, number):
 	if context['request'].COOKIES['stories_limit'] == number:
-		return 'active'
+		return 'selected'
 	return ''
 
 
 @register.simple_tag(takes_context=True)
 def active_score(context, number):
 	if context['request'].GET.get('over') == number:
-		return 'active'
+		return 'selected'
 	elif number == '0' and not context['request'].GET.get('over'):
-		return 'active'
+		return 'selected'
 	return ''
 
 

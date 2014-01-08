@@ -14,37 +14,48 @@
 		<div class="sidebar-container">
 			<ul class="hn-sidebar nav sidebar-collapse">
 				<li>
-					Sorting
-					<ul class="nav">
-						<li class="{% active '(^/$)' %}"><a href="/">Frontpage</a></li>
-						<li class="{% active '^/self' %}"><a href="/self">Selfpost</a>
-							<ul class="nav nav-list">
-								<li class="{% active '^/ask' %}"><a href="/ask">Ask HN</a></li>
-							</ul>
-						</li>
-						<li class="{% active '^/show' %}"><a href="/show">Show HN</a></li>
-						<li class="{% active '^/poll' %}"><a href="/poll">Poll</a></li>
-						<li class="{% active '^/best' %}"><a href="/best">Best</a></li>
-						<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
-					</ul>
+					<div class="dropdown">
+						<button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+							Sorting
+							<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu">
+							<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
+							<li class="{% active '(^/$)' %}"><a href="/">Frontpage</a></li>
+							<li class="{% active '^/self' %}"><a href="/self">Selfpost</a>
+								<ul>
+									<li class="{% active '^/ask' %}"><a href="/ask">Ask HN</a></li>
+								</ul>
+							</li>
+							<li class="{% active '^/show' %}"><a href="/show">Show HN</a></li>
+							<li class="{% active '^/poll' %}"><a href="/poll">Poll</a></li>
+							<li class="{% active '^/best' %}"><a href="/best">Best</a></li>
+							<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
+						</ul>
+					</div>
 				</li>
-				<li>
-					Score over
-					<ul class="nav">
-						<li class="{% active_score '0' %}"><a href="{% query_string "over=0" "" %}">Show All</a></li>
-						<li class="{% active_score '50' %}"><a href="{% query_string "over=50" "" %}">50</a></li>
-						<li class="{% active_score '75' %}"><a href="{% query_string "over=75" "" %}">75</a></li>
-						<li class="{% active_score '100' %}"><a href="{% query_string "over=100" "" %}">100</a></li>
-					</ul>
-				</li>
-				<li>
-					Show per page
-					<ul class="nav nav-list">
-						<li{% if limit == 25 %} class="active"{% endif %}><a href="{% query_string "limit=25" "" %}">25</a></li>
-						<li{% if limit == 50 %} class="active"{% endif %}><a href="{% query_string "limit=50" "" %}">50</a></li>
-						<li{% if limit == 100 %} class="active"{% endif %}><a href="{% query_string "limit=100" "" %}">100</a></li>
-					</ul>
-				</li>
+				<form>
+					<li>
+						Score over
+						<select class="form-control" name="score">
+							{% for n in '0,50,75,100'|split:',' %}
+							<option value="{{ n }}" {% active_score n %}>
+								{% if n == '0' %}Show All {% else %}{{ n }}{% endif %}
+							</option>
+							{% endfor %}
+						</select>
+					</li>
+					<li>
+						Show per page
+						<select class="form-control" name="limit">
+							{% for n in '25,50,100'|split:',' %}
+							<option value="{{ n }}" {% active_limit n %}>
+								{{ n }}
+							</option>
+							{% endfor %}
+						</select>
+					</li>
+				</form>
 			</ul>
 		</div>
 	</div>
