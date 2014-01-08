@@ -43,7 +43,7 @@ def create_url(context, number, prefix='page'):
 
 @register.simple_tag(takes_context=True)
 def active_limit(context, number):
-	if context['request'].COOKIES['stories_limit'] == number:
+	if context['request'].COOKIES.get('stories_limit') == number:
 		return 'selected'
 	return ''
 
