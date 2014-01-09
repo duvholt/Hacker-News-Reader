@@ -10,33 +10,33 @@
 {% endblock %}
 {% block container %}
 <div class="row">
-	<div class="col-lg-3">
+	<div class="col-sm-3">
 		<div class="sidebar-container">
 			<ul class="hn-sidebar nav sidebar-collapse">
-				<li>
-					<div class="dropdown">
-						<button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
-							Sorting
-							<span class="caret"></span>
-						</button>
-						<ul class="dropdown-menu">
-							<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
-							<li class="{% active '(^/$)' %}"><a href="/">Frontpage</a></li>
-							<li class="{% active '^/self' %}"><a href="/self">Selfpost</a>
-								<ul>
-									<li class="{% active '^/ask' %}"><a href="/ask">Ask HN</a></li>
-								</ul>
-							</li>
-							<li class="{% active '^/show' %}"><a href="/show">Show HN</a></li>
-							<li class="{% active '^/poll' %}"><a href="/poll">Poll</a></li>
-							<li class="{% active '^/best' %}"><a href="/best">Best</a></li>
-							<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
-						</ul>
+				<form class="form-inline-reverse">
+					<div class="form-group">
+						<div class="dropdown">
+							<button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+								Sorting
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu">
+								<li class="{% active '(^/$)' %}"><a href="/">Frontpage</a></li>
+								<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
+								<li class="{% active '^/self' %}"><a href="/self">Selfpost</a>
+									<ul>
+								<li class="{% active '^/ask' %}"><a href="/ask">Ask HN</a></li>
+									</ul>
+								</li>
+								<li class="{% active '^/show' %}"><a href="/show">Show HN</a></li>
+								<li class="{% active '^/poll' %}"><a href="/poll">Poll</a></li>
+								<li class="{% active '^/best' %}"><a href="/best">Best</a></li>
+								<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
+							</ul>
+						</div>
 					</div>
-				</li>
-				<form>
-					<li>
-						Score over
+					<div class="form-group">
+						<label>Score over</label>
 						<select class="form-control" name="score">
 							{% for n in '0,50,75,100'|split:',' %}
 							<option value="{{ n }}" {% active_score n %}>
@@ -44,9 +44,9 @@
 							</option>
 							{% endfor %}
 						</select>
-					</li>
-					<li>
-						Show per page
+					</div>
+					<div class="form-group">
+						<label>Show per page</label>
 						<select class="form-control" name="limit">
 							{% for n in '25,50,100'|split:',' %}
 							<option value="{{ n }}" {% active_limit n %}>
@@ -54,12 +54,13 @@
 							</option>
 							{% endfor %}
 						</select>
-					</li>
+					</div>
+					<button class="btn" type="submit">Apply filters</button>
 				</form>
 			</ul>
 		</div>
 	</div>
-	<div class="col-lg-9">
+	<div class="col-sm-9">
 		{% if cache %}
 			<div class="cache">Displaying cache from {{ cache|timesince }} ago</div>
 		{% endif %}

@@ -327,3 +327,45 @@ table.table {
 		height: 0;
 	}
 }
+
+// Reusable styles
+
+.form-inline-reverse {
+
+	// Kick in the inline
+	// Using max-width instead of min-width to reverse it
+	@media (max-width: $screen-sm) {
+		// Inline-block all the things for "inline"
+		.form-group  {
+			display: inline-block;
+			margin-bottom: 0;
+			vertical-align: middle;
+		}
+
+		// In navbar-form, allow folks to *not* use `.form-group`
+		.form-control {
+			display: inline-block;
+		}
+
+		// Override `width: 100%;` when not within a `.form-group`
+		select.form-control {
+		width: auto;
+		}
+
+		// Remove default margin on radios/checkboxes that were used for stacking, and
+		// then undo the floating of radios and checkboxes to match (which also avoids
+		// a bug in WebKit: https://github.com/twbs/bootstrap/issues/1969).
+		.radio,
+		.checkbox {
+			display: inline-block;
+			margin-top: 0;
+			margin-bottom: 0;
+			padding-left: 0;
+		}
+		.radio input[type="radio"],
+		.checkbox input[type="checkbox"] {
+			float: none;
+			margin-left: 0;
+		}
+	}
+}

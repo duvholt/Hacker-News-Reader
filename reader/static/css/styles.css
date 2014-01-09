@@ -4634,3 +4634,21 @@ table.table a.comments:visited, table.table a.score:visited {
     .poll-collapse {
       overflow: hidden;
       height: 0; } }
+
+@media (max-width: 768px) {
+  .form-inline-reverse .form-group {
+    display: inline-block;
+    margin-bottom: 0;
+    vertical-align: middle; }
+  .form-inline-reverse .form-control {
+    display: inline-block; }
+  .form-inline-reverse select.form-control {
+    width: auto; }
+  .form-inline-reverse .radio, .form-inline-reverse .checkbox {
+    display: inline-block;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0; }
+  .form-inline-reverse .radio input[type="radio"], .form-inline-reverse .checkbox input[type="checkbox"] {
+    float: none;
+    margin-left: 0; } }
