@@ -80,7 +80,7 @@ $(function () {
 	$('.comments .hidetoggle').click(function (e) {
 		var toggler = $(this);
 		var content = $(this).siblings('.content');
-		var children = $(this).parent().siblings('.children');
+		var children = $(this).closest('.comment').siblings('.children');
 		var hiddencontent = content.siblings('.hiddencontent');
 		if(toggler.data("state") === 'hidden') {
 			toggler.html('[-]');
