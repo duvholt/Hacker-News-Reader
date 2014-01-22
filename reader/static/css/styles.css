@@ -4642,7 +4642,8 @@ table.table a.comments:visited, table.table a.score:visited {
   .form-inline-reverse .form-group {
     display: inline-block;
     margin-bottom: 0;
-    vertical-align: middle; }
+    vertical-align: middle;
+    margin-left: 5px; }
   .form-inline-reverse .form-control {
     display: inline-block; }
   .form-inline-reverse select.form-control {
