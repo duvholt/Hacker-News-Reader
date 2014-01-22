@@ -64,6 +64,7 @@
 		{% if cache %}
 			<div class="cache">Displaying cache from {{ cache|timesince }} ago</div>
 		{% endif %}
+
 		<table id="stories" class="table table-striped table-hover table-condensed">
 			<tbody>
 				<thead class="hidden-phone">
@@ -91,7 +92,7 @@
 			</tbody>
 		</table>
 		{% if pages|length > 1 %}
-		<ul class="pagination pagination-centered">
+		<ul class="pagination hn-pagination">
 			{% if stories.number != 1 %}
 			<li><a href="{% query_string "page=1" "" %}">&laquo;</a></li>
 			{% else %}

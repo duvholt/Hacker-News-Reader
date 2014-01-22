@@ -2992,7 +2992,7 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
       line-height: 1.42857;
       text-decoration: none;
       background-color: white;
-      border: 1px solid #dddddd;
+      border: 1px solid #cccccc;
       margin-left: -1px; }
     .pagination > li:first-child > a, .pagination > li:first-child > span {
       margin-left: 0;
@@ -3012,7 +3012,7 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
   .pagination > .disabled > span, .pagination > .disabled > span:hover, .pagination > .disabled > span:focus, .pagination > .disabled > a, .pagination > .disabled > a:hover, .pagination > .disabled > a:focus {
     color: #999999;
     background-color: white;
-    border-color: #dddddd;
+    border-color: #cccccc;
     cursor: not-allowed; }
 
 .pagination-lg > li > a, .pagination-lg > li > span {
@@ -3051,7 +3051,7 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
       display: inline-block;
       padding: 5px 14px;
       background-color: white;
-      border: 1px solid #dddddd;
+      border: 1px solid #cccccc;
       border-radius: 15px; }
     .pager li > a:hover, .pager li > a:focus {
       text-decoration: none;
@@ -4634,6 +4634,9 @@ table.table a.comments:visited, table.table a.score:visited {
     .poll-collapse {
       overflow: hidden;
       height: 0; } }
+
+.hn-pagination > li {
+  font-weight: normal; }
 
 @media (max-width: 768px) {
   .form-inline-reverse .form-group {
