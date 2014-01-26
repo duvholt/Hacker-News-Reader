@@ -4475,14 +4475,14 @@ table.table a.comments:visited, table.table a.score:visited {
     padding: 7px 0 0 0;
     margin: 0 5px 0 0; }
     .story ul.vote li {
-      line-height: 20px;
-      font-size: 20px; }
+      line-height: 18px;
+      font-size: px; }
       .story ul.vote li a:hover {
         text-decoration: none; }
       .story ul.vote li p {
         margin: 0; }
     .story ul.vote li:nth-child(2) {
-      font-size: 15px; }
+      font-size: 17px; }
   .story .info {
     overflow: hidden; }
 

@@ -69,7 +69,6 @@
 		<div class="stories">
 			{% for story in stories %}
 			<div class="story">
-				{% if request.session.username %}
 				<ul class="vote">
 				{% with story.id|stringformat:'s' as storyid %}
 				{% if storyid in votes and votes|get_value:storyid == None %}
@@ -83,7 +82,6 @@
 				{% endif %}
 				{% endwith %}
 				</ul>
-				{% endif %}
 				<div class="info">
 					<h5>{% if story.dead %}
 						{{ story.title|safe }} <span class="muted">(dead)</span>
@@ -100,7 +98,7 @@
 					</div>
 				</div>
 				<div class="comments">
-					<a href=""><span class="glyphicon glyphicon-comment"></span></a>
+					<a href="/comments/{{ story.id }}"><span class="glyphicon glyphicon-comment"></span></a>
 				</div>
 			</div>
 			{% endfor %}

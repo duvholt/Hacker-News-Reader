@@ -19,7 +19,6 @@
 {% if story %}
 <div class="story">
 	<div>
-		{% if request.session.username %}
 		<ul class="vote">
 		{% with story.id|stringformat:'s' as storyid %}
 		{% if storyid in votes and votes|get_value:storyid == None %}
@@ -33,7 +32,6 @@
 		{% endif %}
 		{% endwith %}
 		</ul>
-		{% endif %}
 		<div class="info">
 			{% if story.dead %}
 			<h4>{{ story.title|safe }} <span class="muted">(dead)</span></h4>
@@ -94,17 +92,17 @@
 		<li class="{% if info.level|divisibleby:"2" %}even{% endif %}" id="{{ comment.id }}">
 			<div class="comment {% if comment.dead %}dead{% endif %}">
 				{% if request.session.username %}
-					<ul class="vote">
-					{% with comment.id|stringformat:'s' as commentid %}
-					{% if comment.dead or commentid in votes and votes|get_value:commentid == None %}
-						<li><p class="up">▲</p></li>
-						<li><p class="down">▼</p></li>
-					{% else %}
-						<li><a href="/vote/{{ comment.id }}?dir=up" class="up">▲</a></li>
-						<li><a href="/vote/{{ comment.id }}?dir=down" class="down">▼</a></li>
-					{% endif %}
-					{% endwith %}
-					</ul>
+				<ul class="vote">
+				{% with comment.id|stringformat:'s' as commentid %}
+				{% if comment.dead or commentid in votes and votes|get_value:commentid == None %}
+					<li><p class="up">▲</p></li>
+					<li><p class="down">▼</p></li>
+				{% else %}
+					<li><a href="/vote/{{ comment.id }}?dir=up" class="up">▲</a></li>
+					<li><a href="/vote/{{ comment.id }}?dir=down" class="down">▼</a></li>
+				{% endif %}
+				{% endwith %}
+				</ul>
 				{% endif %}
 				<div class="wrapper">
 					<a href="#" class="hidetoggle">[-]</a>
