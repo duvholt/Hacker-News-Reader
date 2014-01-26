@@ -56,6 +56,33 @@ table.table {
 .onhover {
 	text-decoration: underline;
 }
+.stories {
+	display: table;
+	border: 1px solid $table-border-color;
+	border-radius: 3px;
+	> .story:nth-child(odd) {
+		background-color: $table-bg-accent;
+	}
+	.story {
+		display: table-row;
+		background-color: $table-bg;
+		ul.vote, .info {
+			padding: 5px;
+			float: none;
+			display: table-cell;
+			vertical-align: middle;
+			border-bottom: 1px solid $table-border-color;
+		}
+		.comments {
+			padding: 10px;
+			font-size: 25px;
+			a {	
+				color: lighten($brand-primary, 10%);
+			}
+			
+		}
+	}
+}
 .story {
 	max-width: $max-width;
 	margin-left: 5px;

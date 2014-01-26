@@ -1592,8 +1592,8 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
 
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('bootstrap/glyphicons-halflings-regular.eot');
-  src: url('bootstrap/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('bootstrap/glyphicons-halflings-regular.woff') format('woff'), url('bootstrap/glyphicons-halflings-regular.ttf') format('truetype'), url('bootstrap/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg'); }
+  src: url('/static/fonts/bootstrap/glyphicons-halflings-regular.eot');
+  src: url('/static/fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/static/fonts/bootstrap/glyphicons-halflings-regular.woff') format('woff'), url('/static/fonts/bootstrap/glyphicons-halflings-regular.ttf') format('truetype'), url('/static/fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg'); }
 
 .glyphicon {
   position: relative;
@@ -4440,6 +4440,27 @@ table.table a.comments:visited, table.table a.score:visited {
 
 .onhover {
   text-decoration: underline; }
+
+.stories {
+  display: table;
+  border: 1px solid #dddddd;
+  border-radius: 3px; }
+  .stories > .story:nth-child(odd) {
+    background-color: #f9f9f9; }
+  .stories .story {
+    display: table-row;
+    background-color: transparent; }
+    .stories .story ul.vote, .stories .story .info {
+      padding: 5px;
+      float: none;
+      display: table-cell;
+      vertical-align: middle;
+      border-bottom: 1px solid #dddddd; }
+    .stories .story .comments {
+      padding: 10px;
+      font-size: 25px; }
+      .stories .story .comments a {
+        color: #d65448; }
 
 .story {
   max-width: 800px;
