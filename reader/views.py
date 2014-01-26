@@ -178,7 +178,10 @@ class CommentsView(ContextView):
 						self.context['story'] = None
 				self.context['perma'] = True
 			except HNComments.DoesNotExist:
-				self.context['alerts'].append({'message': 'Item not found'})
+				# Trying to prevent double messages for now
+				# TODO: Proper handling of this
+				if not self.context['alerts']:
+					self.context['alerts'].append({'message': 'Item not found'})
 		username = request.session.get('username')
 		if username:
 			userdata = request.session.setdefault('userdata', {}).setdefault(username, {})

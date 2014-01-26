@@ -50,9 +50,11 @@ def comments(commentid, cache_minutes=20):
 	soup = fetch.comments(commentid=commentid)
 	try:
 		story_soup = soup.html.body.table.find_all('table')[1].find('tr')
+		if not story_soup:
+			raise utils.ShowAlert('Item not found')
 	except AttributeError:
 		# Story does not exist
-		raise CouldNotParse('Story not found: ' + str(commentid))
+		raise utils.ShowAlert('Item not found')
 	if story_soup.findNext('tr').find('td', {'class': 'subtext'}):
 		# Updating story info
 		try:
