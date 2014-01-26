@@ -4407,7 +4407,7 @@ hr {
   padding: 0; }
 
 body {
-  padding-top: 50px;
+  padding-top: 60px;
   padding-bottom: 20px; }
 
 @media (max-width: 768px) {
@@ -4423,6 +4423,11 @@ table.table a:visited {
   color: #666666; }
 table.table a.comments:visited, table.table a.score:visited {
   color: #bbbbbb; }
+
+.alerts {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto; }
 
 .comment-well {
   max-width: 100%;
@@ -4450,12 +4455,13 @@ table.table a.comments:visited, table.table a.score:visited {
   .stories .story {
     display: table-row;
     background-color: transparent; }
-    .stories .story ul.vote, .stories .story .info {
-      padding: 5px;
-      float: none;
+    .stories .story > .vote, .stories .story .info, .stories .story .comments {
+      border-bottom: 1px solid #dddddd;
       display: table-cell;
       vertical-align: middle;
-      border-bottom: 1px solid #dddddd; }
+      float: none;
+      padding: 5px;
+      height: 100%; }
     .stories .story .comments {
       padding: 10px;
       font-size: 25px; }
@@ -4623,7 +4629,7 @@ table.table a.comments:visited, table.table a.score:visited {
 
 .login-menu {
   width: 300px;
-  padding: 0 15px 0 15px; }
+  padding: 15px 15px 0 15px; }
 
 .progress {
   margin-bottom: 0; }
