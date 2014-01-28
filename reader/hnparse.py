@@ -55,7 +55,8 @@ def comments(commentid, cache_minutes=20):
 	except AttributeError:
 		# Story does not exist
 		raise utils.ShowAlert('Item not found')
-	if story_soup and story_soup.findNext('tr').find('td', {'class': 'subtext'}):
+	print unicode(story_soup)
+	if story_soup.findNext('tr') and story_soup.findNext('tr').find('td', {'class': 'subtext'}):
 		# Updating story info
 		try:
 			story = story_info(story_soup)
