@@ -33,7 +33,7 @@ def read(url):
 		if request and 'usercookie' in request.session:
 			cookies = {'user': request.session['usercookie']}
 		try:
-			r = requests.get('https://news.ycombinator.com/' + url, headers=headers, cookies=cookies, timeout=10)
+			r = requests.get('https://news.ycombinator.com/' + url, headers=headers, cookies=cookies, timeout=5)
 		except requests.exceptions.Timeout:
 			raise utils.ShowAlert('Connection to news.ycombinator.com timed out')
 		if re.match(r'^We\'ve limited requests for old items', r.text):
