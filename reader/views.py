@@ -87,15 +87,14 @@ class IndexView(ContextView):
 			limit = 25
 
 		try:
-			cachetime = cache.update_stories(story_type=story_type, over_filter=over)
-			stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
+			self.context['cache'] = cache.update_stories(story_type=story_type, over_filter=over)
 		except utils.ShowAlert, e:
 			self.context['alerts'].append({'message': e.message, 'level': e.level})
-			return self.render_view()
 
+		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 		pages = self.get_active_pages(stories, page)
 
-		self.context.update({'stories': stories, 'pages': pages, 'limit': limit, 'cache': cachetime})
+		self.context.update({'stories': stories, 'pages': pages, 'limit': limit})
 		response = self.render_view()
 		response.set_cookie('stories_limit', limit)
 		return response
@@ -156,7 +155,7 @@ class CommentsView(ContextView):
 				self.comment_id = None
 		self.context.update({'story': None, 'polls': None, 'total_votes': 0})
 		try:
-			cache.update_comments(commentid=self.comment_id)
+			self.context['cache'] = cache.update_comments(commentid=self.comment_id)
 		except utils.ShowAlert, e:
 			self.context['alerts'].append({'message': e.message, 'level': e.level})
 		try:
@@ -370,7 +369,7 @@ class UserView(ContextView):
 	def get(self, request, *args, **kwargs):
 		username = kwargs['username']
 		try:
-			cache.update_userpage(username=username)
+			self.context['cache'] = cache.update_userpage(username=username)
 			self.context['userinfo'] = cache.userinfo(username)
 		except UserInfo.DoesNotExist:
 			self.context['alerts'].append({'message': 'User not found'})

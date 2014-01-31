@@ -44,7 +44,9 @@
 				{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }} |
 				<a href="http://news.ycombinator.com/item?id={{ story.id }}">news.ycombinator link</a>
 				<br>
-				<div class="cache">Displaying cache from {{ story.cache|timesince }} ago</div>
+				{% if cache %}
+				<div class="cache">Displaying cache from {{ cache|timesince }} ago</div>
+				{% endif %}
 			</div>
 		</div>
 	</div>

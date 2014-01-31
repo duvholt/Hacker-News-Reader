@@ -41,6 +41,9 @@ def update_comments(commentid, cache_minutes=20):
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
+		return None
+	else:
+		return cachetime
 
 
 def update_userpage(username, cache_minutes=60):
@@ -51,6 +54,9 @@ def update_userpage(username, cache_minutes=60):
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		hnparse.userpage(username=username)
+		return None
+	else:
+		return cachetime
 
 
 def stories(page=1, limit=25, story_type=None, over_filter=0):
