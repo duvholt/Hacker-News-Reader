@@ -2,7 +2,6 @@
 @import url(//fonts.googleapis.com/css?family=Raleway:400,300,700);
 @import "bootstrap-variables";
 @import "bootstrap/bootstrap";
-@import "pratt";
 
 // Local variables
 $gray: #5F5F5F;
@@ -16,7 +15,39 @@ $max-width: 800px;
 body {
 	padding-top: 60px;
 	padding-bottom: 20px;
+	background-color: #f2f2f2;
+	font-family: "Lato";
+	font-weight: 300;
+	font-size: 16px;
+	color: #555;
+	-webkit-font-smoothing: antialiased;
+	-webkit-overflow-scrolling: touch;
+
 }
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Raleway";
+	font-weight: 300;
+	color: #333;
+}
+
+
+a {
+	@include transition(color 0.1s ease-in, background 0.1s ease-in);
+}
+
+a:hover,
+a:focus {
+	text-decoration: none;
+	outline: 0;
+}
+
+a:before,
+a:after {
+	@include transition(color 0.1s ease-in, background 0.1s ease-in);
+}
+
+
 .container {
 	@media (max-width: $screen-sm) {
 		padding: 0;
