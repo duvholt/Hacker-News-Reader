@@ -15,56 +15,35 @@ $max-width: 800px;
 body {
 	padding-top: 60px;
 	padding-bottom: 20px;
-	background-color: #f2f2f2;
+	background-color: $bg-color;
 	font-family: "Lato";
 	font-weight: 300;
 	font-size: 16px;
 	color: #555;
 	-webkit-font-smoothing: antialiased;
 	-webkit-overflow-scrolling: touch;
-
 }
-
 h1, h2, h3, h4, h5, h6 {
 	font-family: "Raleway";
 	font-weight: 300;
 	color: #333;
 }
-
-
 a {
 	@include transition(color 0.1s ease-in, background 0.1s ease-in);
 }
-
 a:hover,
 a:focus {
 	text-decoration: none;
 	outline: 0;
 }
-
 a:before,
 a:after {
 	@include transition(color 0.1s ease-in, background 0.1s ease-in);
 }
 
-
 .container {
 	@media (max-width: $screen-sm) {
 		padding: 0;
-	}
-}
-table.table {
-	a.comments, a.score {
-		color: #555;
-		width: 100%;
-		height: 100%;
-		display: block;
-	}
-	a:visited {
-		color: #666;
-	}
-	a.comments:visited, a.score:visited {
-		color: #bbb;
 	}
 }
 .alerts {
@@ -150,6 +129,11 @@ table.table {
 	}
 	.info {
 		overflow: hidden;
+	}
+	.info, .comments {
+		a:visited {
+			color: #666;
+		}
 	}
 }
 .comments {
