@@ -86,19 +86,19 @@
 					<h5>{% if story.dead %}
 						{{ story.title|safe }} <span class="muted">(dead)</span>
 						{% elif story.selfpost %}
-						<a class="link" href="/comments/{{ story.id }}">{{ story.title|safe }}</a>
+						<a class="link" href="/comments/{{ story.id }}/">{{ story.title|safe }}</a>
 						{% else %}
-						<a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}
+						<a class="link" href="{{ story.url }}/">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}
 						{% endif %}
 					</h5>
 					<div class="meta">
-						by <a href="/user/{{ story.username }}">{{ story.username }}</a>
+						by <a href="/user/{{ story.username }}/">{{ story.username }}</a>
 						<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time> |
 						<a href="/comments/{{ story.id }}/">{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }}</a>
 					</div>
 				</div>
 				<div class="comments">
-					<a href="/comments/{{ story.id }}"><span class="glyphicon glyphicon-comment"></span></a>
+					<a href="/comments/{{ story.id }}/"><span class="glyphicon glyphicon-comment"></span></a>
 				</div>
 			</div>
 			{% endfor %}

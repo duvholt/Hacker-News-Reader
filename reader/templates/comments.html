@@ -39,7 +39,7 @@
 			<h4><a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}</h4>
 			{% endif %}
 			<div class="meta">
-				by <a href="/user/{{ story.username }}">{{ story.username }}</a>
+				by <a href="/user/{{ story.username }}/">{{ story.username }}</a>
 				<time title="{{ story.time|date:"r" }}" datetime="{{ story.time}}">{{ story.time|timesince|upto:',' }} ago</time> |
 				{{ story.comments|default:"0" }} comment{{ story.comments|pluralize }} |
 				<a href="http://news.ycombinator.com/item?id={{ story.id }}">news.ycombinator link</a>
@@ -76,9 +76,9 @@
 	<div class="well well-small comment-well">
 		You are viewing a part of the comments on this submission<br>
 		{% if story %}
-			<a href="/comments/{{ story.id }}">Click here to view all the comments</a>
+			<a href="/comments/{{ story.id }}/">Click here to view all the comments</a>
 		{% else %}
-			<a href="/comments/{{ comments.0.0.parent_id }}">Click here to load parent comment</a><br>
+			<a href="/comments/{{ comments.0.0.parent_id }}/">Click here to load parent comment</a><br>
 			Story ID is not known, try clicking parent a few times
 		{% endif %}
 	</div>
@@ -108,11 +108,11 @@
 				{% endif %}
 				<div class="wrapper">
 					<a href="#" class="hidetoggle">[-]</a>
-					<a{% if comment.username == story.username %} class="op"{% endif %} href="/user/{{ comment.username }}">{{ comment.username }}</a>
+					<a{% if comment.username == story.username %} class="op"{% endif %} href="/user/{{ comment.username }}/">{{ comment.username }}</a>
 					<span> <time title="{{ comment.time|date:"r" }}" datetime="{{ comment.time}}">{{ comment.time|timesince|upto:',' }} ago</time></span>
-					<a href="/comments/{{ comment.id }}">permalink</a>
+					<a href="/comments/{{ comment.id }}/">permalink</a>
 					{% if forloop.first and comment.parent_id %}
-						<a href="/comments/{{ comment.parent_id }}">parent</a>
+						<a href="/comments/{{ comment.parent_id }}/">parent</a>
 					{% elif not forloop.first and comment.parent_id %}
 						<a href="#{{ comment.parent_id }}">parent</a>
 					{% endif %}
