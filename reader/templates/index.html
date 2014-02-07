@@ -88,7 +88,7 @@
 						{% elif story.selfpost %}
 						<a class="link" href="/comments/{{ story.id }}/">{{ story.title|safe }}</a>
 						{% else %}
-						<a class="link" href="{{ story.url }}/">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}
+						<a class="link" href="{{ story.url }}">{{ story.title|safe }}</a> {% if not story.selfpost %}({{ story.url|domain }}){% endif %}
 						{% endif %}
 					</h5>
 					<div class="meta">
