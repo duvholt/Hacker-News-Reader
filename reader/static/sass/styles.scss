@@ -73,6 +73,7 @@ a:after {
 	display: table;
 	border: 1px solid $table-border-color;
 	border-radius: 3px;
+	width: 100%;
 	> .story:nth-child(odd) {
 		background-color: $table-bg-accent;
 	}
