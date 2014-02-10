@@ -1,4 +1,5 @@
 env
+node_modules
 *.pyc
 *.log
 *.pot
@@ -6,6 +7,7 @@ localsettings.py
 secret_key.py
 .sass-cache
 manifest.yml
-hn.db
-static
+*.db
+/static
 *.idea
+*.iml

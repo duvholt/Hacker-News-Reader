@@ -1,16 +1,9 @@
-from django.conf.urls.defaults import *
-# from django.contrib import admin
+from django.conf.urls import patterns, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
-import settings
 from reader.views import *
-from django.conf.urls import patterns
-
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
-
+import settings
 
 urlpatterns = patterns(
 	'',
@@ -25,12 +18,19 @@ urlpatterns = patterns(
 	# Comments
 	url(r'^comments/(?P<commentid>\d+)/$', CommentsView.as_view(), name='comments'),
 	url(r'^comments/(?P<commentid>\d+)\.json$', CommentsJsonView.as_view(), name='comments_json'),
+	# Voting
+	url(r'^vote/(?P<id>\d+)/$', VoteView.as_view(), name='vote'),
+	url(r'^vote/(?P<id>\d+).json$', VoteJsonView.as_view(), name='vote'),
 	# User page
 	url(r'^user/(?P<username>\w+)/$', UserView.as_view(), name='userpage'),
 	url(r'^user/(?P<username>\w+)\.json$', UserJsonView.as_view(), name='userpage_json'),
+	# User login
+	url(r'^login$', LoginView.as_view(), name='login'),
+	url(r'^logout', LogoutView.as_view(), name='logout'),
 	# Just a simple redirect for the favicon
 	url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
 	url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 )
+
 if settings.DEBUG:
 	urlpatterns += staticfiles_urlpatterns()

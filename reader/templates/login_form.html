@@ -1,0 +1,15 @@
+<form method="post" action="/login">
+	{% csrf_token %}
+	<div class="form-group">
+		<label class="control-label" for="loginUsername">Username</label>
+		<input type="text" class="form-control"  name="username" id="loginUsername" placeholder="Username" autocorrect="off" autocapitalize="off">
+	</div>
+	<div class="form-group">
+		<label class="control-label" for="loginPassword">Password</label>
+		<input type="password" class="form-control"  name="password" id="loginPassword" placeholder="Password">
+		<span class="help-block">Password will not be stored</span>
+	</div>
+	<div class="form-group">
+		<button type="submit"class="btn btn-default">Submit</button>
+	</div>
+</form>

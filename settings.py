@@ -1,6 +1,5 @@
-# Django settings for a generic project.
-import os
 from generate_secret_key import generate_secret_key
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -99,6 +98,7 @@ MIDDLEWARE_CLASSES = (
 	# Uncomment the next line for simple clickjacking protection:
 	# 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django.middleware.gzip.GZipMiddleware',
+	'middleware.GlobalRequestMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -134,7 +134,6 @@ INSTALLED_APPS = (
 	# 'django.contrib.admindocs',
 	'reader',
 	'south',
-	'treebeard',
 )
 
 # This will likely be overriden by localsettings.py

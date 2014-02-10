@@ -33,6 +33,9 @@ User not found
 	</div>
 	{% endif %}
 	<a href="http://news.ycombinator.com/user?id={{ userinfo.username }}">news.ycombinator link</a>
+	{% if cache %}
+	<div class="cache">Displaying cache from {{ cache|timesince }} ago</div>
+	{% endif %}
 </div>
 {% endif %}
 {% endblock %}

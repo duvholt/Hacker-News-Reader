@@ -1,12 +1,19 @@
+from django.shortcuts import redirect
 from django.http import HttpResponse
-import reader.cache as cache
-from reader.models import Stories, Poll, UserInfo, HNComments
-import reader.utils as utils
-from django.views.generic import TemplateView
-import json
 from django.utils.dateformat import format
-from utils import domain, poll_percentage
-from mptt.templatetags.mptt_tags import cache_tree_children
+from django.views.generic import TemplateView
+from middleware import get_request
+from models import Stories, HNComments, Poll, UserInfo
+import cache
+import fetch
+import hnparse
+import json
+import operator
+import requests
+import utils
+import settings
+
+# Warning levels: error, success, info and default (empty)
 
 
 class JSONResponseMixin(object):
@@ -15,46 +22,51 @@ class JSONResponseMixin(object):
 	"""
 	response_class = HttpResponse
 
-	def render_to_response(self, context, **response_kwargs):
+	def render_view(self, **response_kwargs):
 		"""
 		Returns a JSON response, transforming 'context' to make the payload.
 		"""
 		response_kwargs['content_type'] = 'application/json'
-		return self.response_class(self.convert_context_to_json(context), **response_kwargs)
+		return self.response_class(self.convert_context_to_json(), **response_kwargs)
 
-	def convert_context_to_json(self, context):
-		if 'alerts' in context:
-			for alert in context['alerts']:
-				if alert['level'] == 'error':
-					return	json.dumps({'alerts': context['alerts']})
+	def convert_context_to_json(self):
+		self.prepare_context()
+		if 'alerts' in self.context:
+			for alert in self.context['alerts']:
+				if alert['level'] == 'danger':
+					return json.dumps({'alerts': self.context['alerts']})
 			# Remove if empty
-			if not context['alerts']:
-				context.pop('alerts')
-		return json.dumps(context)
+			if not self.context['alerts']:
+				self.context.pop('alerts')
+		return json.dumps(self.context)
 
-	def clean_context(self, context):
+	def prepare_context(self):
+		pass
+
+	def clean_context(self):
 		"""
 		Used to clear up the context so it can be redone
 		"""
-		if 'alerts' in context:
-			context = {'alerts': context['alerts']}
+		if 'alerts' in self.context:
+			self.context = {'alerts': self.context['alerts']}
 		else:
-			context = {}
-		return context
+			self.context = {}
 
 
 class ContextView(TemplateView):
-	def get_context_data(self, **kwargs):
-		if 'alerts' not in kwargs:
-			kwargs['alerts'] = []
-		return kwargs
+	def __init__(self, **kwargs):
+		super(ContextView, self).__init__(**kwargs)
+		self.context = {'alerts': []}
+
+	def render_view(self, *args, **kwargs):
+		kwargs['context'] = self.context
+		return super(ContextView, self).render_to_response(*args, **kwargs)
 
 
 class IndexView(ContextView):
 	template_name = 'templates/index.html'
 
 	def get(self, request, *args, **kwargs):
-		context = super(IndexView, self).get_context_data()
 		story_type = kwargs.get('story_type', 'news')
 		try:
 			page = int(request.GET.get('page'))
@@ -66,7 +78,7 @@ class IndexView(ContextView):
 		except (ValueError, TypeError):
 			over = None
 
-		limit = request.GET.get('limit', None)
+		limit = request.GET.get('limit')
 		if not limit:
 			limit = request.COOKIES.get('stories_limit')
 		try:
@@ -75,16 +87,15 @@ class IndexView(ContextView):
 			limit = 25
 
 		try:
-			cachetime = cache.update_stories(story_type=story_type, over_filter=over)
-			stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
+			self.context['cache'] = cache.update_stories(story_type=story_type, over_filter=over)
 		except utils.ShowAlert, e:
-			context['alerts'].append({'message': e.message, 'level': e.level})
-			return self.render_to_response(self.get_context_data(**context))
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
 
+		stories = cache.stories(page, limit, story_type=story_type, over_filter=over)
 		pages = self.get_active_pages(stories, page)
 
-		context.update({'stories': stories, 'pages': pages, 'limit': limit, 'cache': cachetime})
-		response = self.render_to_response(self.get_context_data(**context))
+		self.context.update({'stories': stories, 'pages': pages, 'limit': limit})
+		response = self.render_view()
 		response.set_cookie('stories_limit', limit)
 		return response
 
@@ -106,11 +117,10 @@ class IndexView(ContextView):
 
 
 class IndexJsonView(JSONResponseMixin, IndexView):
-	def get_context_data(self, **kwargs):
-		context = super(IndexJsonView, self).get_context_data(**kwargs)
-		stories = context['stories']
-		context = self.clean_context(context)
-		context['stories'] = []
+	def prepare_context(self):
+		stories = self.context['stories']
+		self.clean_context()
+		self.context['stories'] = []
 		for story in stories:
 			story_json = {
 				'id': story.id,
@@ -128,65 +138,118 @@ class IndexJsonView(JSONResponseMixin, IndexView):
 			}
 			if not story.selfpost:
 				story_json['url'] = story.url
-				story_json['domain'] = domain(story.url)
-			context['stories'].append(story_json)
-		context['page'] = {'current': stories.number, 'total': stories.paginator.num_pages}
-		return context
+				story_json['domain'] = utils.domain(story.url)
+			self.context['stories'].append(story_json)
+		self.context['page'] = {'current': stories.number, 'total': stories.paginator.num_pages}
 
 
 class CommentsView(ContextView):
 	template_name = 'templates/comments.html'
 
 	def get(self, request, *args, **kwargs):
-		context = super(CommentsView, self).get_context_data()
-		commentid = kwargs['commentid']
-		if commentid:
+		self.comment_id = kwargs['commentid']
+		if self.comment_id:
 			try:
-				commentid = int(commentid, 10)
+				self.comment_id = int(self.comment_id, 10)
 			except ValueError:
-				commentid = None
-		context.update({'story': None, 'polls': None, 'total_votes': 0})
+				self.comment_id = None
+		self.context.update({'story': None, 'polls': None, 'total_votes': 0})
 		try:
-			cache.update_comments(commentid=commentid)
+			self.context['cache'] = cache.update_comments(commentid=self.comment_id)
 		except utils.ShowAlert, e:
-			context['alerts'].append({'message': e.message, 'level': e.level})
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
 		try:
-			context['story'] = Stories.objects.get(pk=commentid)
-			# Using list() to force evaluation
-			if context['story'].poll:
-				context['polls'] = Poll.objects.filter(story_id=commentid).order_by('id')
-				for poll in context['polls']:
-					context['total_votes'] += poll.score
-			# context['nodes'] = list(cache.comments(commentid))
-			context['comments'] = []
-			for root_node in HNComments.objects.filter(parent__isnull=True, story_id=commentid):
-				context['comments'].append(HNComments.get_annotated_list(parent=root_node))
+			self.context['story'] = Stories.objects.get(pk=self.comment_id)
+			if self.context['story'].poll:
+				self.context['polls'] = Poll.objects.filter(story_id=self.comment_id).order_by('id')
+				for poll in self.context['polls']:
+					self.context['total_votes'] += poll.score
+			self.context['comments'] = []
+			self.context['comments'] = self.full_comments_list()
 		except Stories.DoesNotExist:
 			try:
-				comment = HNComments.objects.get(id=commentid)
-				context['comments'] = [HNComments.get_annotated_list(parent=comment)]
+				comment = HNComments.objects.get(id=self.comment_id)
+				self.context['comments'] = self.permalink_comments_list(comment)
 				if comment:
 					try:
-						context['story'] = Stories.objects.get(pk=comment.story_id)
+						self.context['story'] = Stories.objects.get(pk=comment.story_id)
 					except Stories.DoesNotExist:
-						context['story'] = None
-				context['perma'] = True
+						self.context['story'] = None
+				self.context['perma'] = True
 			except HNComments.DoesNotExist:
-				context['alerts'].append({'message': 'Item not found', 'level': 'error'})
-		return self.render_to_response(self.get_context_data(**context))
+				# Trying to prevent double messages for now
+				# TODO: Proper handling of this
+				if not self.context['alerts']:
+					self.context['alerts'].append({'message': 'Item not found'})
+		username = request.session.get('username')
+		if username:
+			userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
+			self.context['votes'] = userdata.setdefault('votes', {})
+		return self.render_view()
+
+	def full_comments_list(self):
+		return self.get_children(list(HNComments.objects.filter(story_id=self.comment_id)))
+
+	def permalink_comments_list(self, comment):
+		comments = [(comment, {'level': 0, 'open': True, 'close': []})]
+		hncomments = list(HNComments.objects.filter(story_id=comment.story_id))
+		children = self.get_children(hncomments, parent_id=comment.id, level=1)
+		comments += children
+		if not children:
+			comments[0][1]['close'] = [1]
+		return comments
+
+	def get_children(self, comments, parent_id=None, level=0, root_close=0):
+		# Inspired by django-mptt's tree_info and treebeard's get_annotated_list
+		result = []
+		roots = [comment for comment in comments if comment.parent_id == parent_id]
+		order = HNComments._meta.ordering
+		roots_sorted = sorted(roots, key=operator.attrgetter(*order))
+		num_roots = len(roots_sorted)
+		for index, root in enumerate(roots_sorted):
+			info = {
+			'level': level,
+			'open': index == 0,
+			'close': [],
+			}
+			close = root_close
+			if index == (num_roots - 1):
+				close += 1
+			else:
+				close = 0
+			children = self.get_children(comments, root.id, level=level + 1, root_close=close)
+			if index == (num_roots - 1) and not children:
+				info['close'] = list(range(0, close))
+			result.append((root, info))
+			result += children
+		return result
+
+	def list_to_nested(self, comments):
+		# Inspired by django-mptt's cache_tree_children
+		current_path, root_nodes = [], []
+		for comment, info in comments:
+			comment._children = []
+			while len(current_path) > info['level']:
+				current_path.pop(-1)
+			# Root node
+			if info['level'] == 0:
+				root_nodes.append(comment)
+			else:
+				current_path[-1]._children.append(comment)
+			current_path.append(comment)
+		return root_nodes
 
 
 class CommentsJsonView(JSONResponseMixin, CommentsView):
 
-	def get_context_data(self, **kwargs):
-		context = super(CommentsJsonView, self).get_context_data(**kwargs)
-		story = context.get('story', None)
-		polls = context.get('polls', None)
-		total_votes = context.get('total_votes', None)
-		root_comments = cache_tree_children(context.get('nodes', None))
-		context = self.clean_context(context)
+	def prepare_context(self):
+		story = self.context.get('story')
+		polls = self.context.get('polls')
+		total_votes = self.context.get('total_votes')
+		root_comments = self.list_to_nested(self.context.get('comments', []))
+		self.clean_context()
 		if story:
-			context['story'] = {
+			self.context['story'] = {
 				'id': story.id,
 				'title': story.title,
 				'selfpost': story.selfpost,
@@ -200,67 +263,127 @@ class CommentsJsonView(JSONResponseMixin, CommentsView):
 				'cache_unix': format(story.cache, 'U')
 			}
 			if story.selfpost:
-				context['story']['selfpost_text'] = story.selfpost_text
+				self.context['story']['selfpost_text'] = story.selfpost_text
 			else:
-				context['story']['url'] = story.url
-				context['story']['domain'] = domain(story.url)
+				self.context['story']['url'] = story.url
+				self.context['story']['domain'] = utils.domain(story.url)
+			if story.dead:
+				self.context['story']['dead'] = True
 		if polls:
-			context['polls'] = []
+			self.context['polls'] = []
 			for poll in polls:
-				context['polls'].append({
+				self.context['polls'].append({
 					'name': poll.name,
 					'votes': poll.score,
-					'percentage': poll_percentage(poll.score, total_votes, 2)
+					'percentage': utils.poll_percentage(poll.score, total_votes, 2)
 				})
-		context['comments'] = []
+		self.context['comments'] = []
+		# recursive_comment_to_dict and list_to_nested could be combined to reduce looping
 		for root_comment in root_comments:
-			context['comments'].append(self.recursive_node_to_dict(root_comment, bool(story)))
-		return context
+			self.context['comments'].append(self.recursive_comment_to_dict(root_comment, bool(story)))
+		return self.context
 
-	def recursive_node_to_dict(self, node, story):
+	def recursive_comment_to_dict(self, comment, story):
 		result = {
-			'id': node.id,
-			'username': node.username,
-			'time': format(node.time, 'r'),
-			'time_unix': format(node.time, 'U'),
-			'hiddenpercent': node.hiddenpercent,
-			'text': node.text,
-			'cache': format(node.cache, 'r'),
-			'cache_unix': format(node.cache, 'U')
+			'id': comment.id,
+			'username': comment.username,
+			'time': format(comment.time, 'r'),
+			'time_unix': format(comment.time, 'U'),
+			'hiddenpercent': comment.hiddenpercent,
+			'text': comment.text,
+			'cache': format(comment.cache, 'r'),
+			'cache_unix': format(comment.cache, 'U')
 		}
-		if node.parent_id:
-			result['parent'] = node.parent_id
+		if comment.parent_id:
+			result['parent'] = comment.parent_id
 		elif not story:
-			result['parent'] = node.story_id
-		children = [self.recursive_node_to_dict(child, story) for child in node.get_children()]
+			result['parent'] = comment.story_id
+		if comment.dead:
+			result['dead'] = True
+		children = [self.recursive_comment_to_dict(child, story) for child in comment._children]
 		if children:
 			result['children'] = children
 		return result
+
+
+class VoteView(ContextView):
+	def get(self, request, *args, **kwargs):
+		try:
+			vote_id = int(kwargs.get('id'))
+		except (ValueError, TypeError):
+			vote_id = None
+		direction = request.GET.get('dir', 'up')
+		try:
+			if type(vote_id) is not int:
+				raise utils.ShowAlert('Not a valid id')
+			elif 'username' not in request.session:
+				raise utils.ShowAlert('You\'re not logged in')
+			else:
+				username = request.session['username']
+				userdata = request.session.setdefault('userdata', {}).setdefault(username, {})
+				# Using str() because keys in session is stored as string
+				if str(vote_id) in userdata.setdefault('votes', {}):
+					auth = userdata['votes'][str(vote_id)]
+				else:
+					# Auth code not found in cache, going to have to manually get it from comment
+					hnparse.comments(vote_id, 0)
+					if str(vote_id) in userdata['votes']:
+						auth = userdata['votes'][str(vote_id)]
+					else:
+						# Giving up
+						raise utils.ShowAlert('Unable to get auth id')
+				if auth is None:
+					raise utils.ShowAlert('Already voted')
+				payload = {'for': vote_id, 'dir': direction, 'by': username, 'auth': auth}
+				h = {'user-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
+				c = {'user': request.session['usercookie']}
+				r = requests.get('https://news.ycombinator.com/vote', params=payload, headers=h, cookies=c)
+				if r.status_code != requests.codes.ok:
+					raise utils.ShowAlert('Unknown error')
+				elif r.text == 'User mismatch.':
+					raise utils.ShowAlert('Failed to vote due to wrong authcode')
+				elif r.text == 'Can\'t make that vote.':
+					raise utils.ShowAlert('Already voted or missing permissions to up/down vote', level='warning')
+				elif r.text == 'No such item.':
+					raise utils.ShowAlert('No such item')
+				elif r.text != '':
+					raise utils.ShowAlert(r.text)
+				else:
+					# Setting auth to None to signify that item has been voted on
+					userdata['votes'][str(vote_id)] = None
+					request.session.modified = True
+					raise utils.ShowAlert('Voted successfully', level='success')
+		except utils.ShowAlert, e:
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
+		# TODO: Redirect to referrer
+		return self.render_view()
+
+
+class VoteJsonView(JSONResponseMixin, VoteView):
+	pass
 
 
 class UserView(ContextView):
 	template_name = 'templates/user.html'
 
 	def get(self, request, *args, **kwargs):
-		context = super(UserView, self).get_context_data()
 		username = kwargs['username']
 		try:
-			cache.update_userpage(username=username)
-			context['userinfo'] = cache.userinfo(username)
+			self.context['cache'] = cache.update_userpage(username=username)
+			self.context['userinfo'] = cache.userinfo(username)
 		except UserInfo.DoesNotExist:
-			context['alerts'].append({'message': 'User not found'})
+			self.context['alerts'].append({'message': 'User not found'})
 		except utils.ShowAlert, e:
-			context['alerts'].append({'message': e.message, 'level': e.level})
-		return self.render_to_response(self.get_context_data(**context))
+			self.context['alerts'].append({'message': e.message, 'level': e.level})
+		return self.render_view()
 
 
 class UserJsonView(JSONResponseMixin, UserView):
-	def get_context_data(self, **kwargs):
-		context = super(UserJsonView, self).get_context_data(**kwargs)
-		userinfo = context.get('userinfo', None)
-		context = self.clean_context(context)
+	def prepare_context(self):
+		userinfo = self.context.get('userinfo', None)
+		self.clean_context()
 		if userinfo:
-			context['user'] = {
+			self.context['user'] = {
 				'username': userinfo.username,
 				'created': format(userinfo.created, 'r'),
 				'created_unix': format(userinfo.created, 'U'),
@@ -270,5 +393,45 @@ class UserJsonView(JSONResponseMixin, UserView):
 				'cache_unix': format(userinfo.cache, 'U')
 			}
 			if userinfo.about:
-				context['user']['about'] = userinfo.about
-		return context
+				self.context['user']['about'] = userinfo.about
+
+
+class LoginView(ContextView):
+	template_name = 'templates/login.html'
+
+	def get(self, request, *args, **kwargs):
+		return self.render_view()
+
+	def post(self, request):
+		if all(key in request.POST for key in ['username', 'password']):
+			username = request.POST['username']
+			password = request.POST['password']
+			try:
+				if username and password:
+					soup = fetch.login()
+					fnid = soup.find('input', {'type': 'hidden'})['value']
+					payload = {'fnid': fnid, 'u': username, 'p': password}
+					s = requests.Session()
+					headers = {'user-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
+					s.post('https://news.ycombinator.com/y', data=payload, headers=headers)
+					if 'user' in s.cookies:
+						request.session['username'] = username
+						request.session['usercookie'] = s.cookies['user']
+						return redirect('index')
+					else:
+						raise utils.ShowAlert('Username or password wrong')
+				else:
+					raise utils.ShowAlert('Username or password missing')
+			except utils.ShowAlert, e:
+				self.context['alerts'].append({'message': e.message, 'level': e.level})
+		return self.render_view()
+
+
+class LogoutView(ContextView):
+	def get(self, request, *args, **kwargs):
+		try:
+			del request.session['username']
+			del request.session['usercookie']
+		except KeyError:
+			pass
+		return redirect('index')

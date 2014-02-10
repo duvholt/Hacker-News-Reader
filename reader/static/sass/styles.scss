@@ -1,41 +1,60 @@
 @import "bootstrap-variables";
 @import "bootstrap/bootstrap";
-@import "bootstrap/responsive";
-@import url(//fonts.googleapis.com/css?family=Cabin+Condensed);
 
 // Local variables
 $gray: #5F5F5F;
-$commentEvenBackground: #EBEBEB;
+$comment-even-bg: #EBEBEB;
+$bg-color: #f2f2f2;
 
-$smallFontSize: 0.85em;
+$small-font-size: 0.85em;
 
-$maxWidth: 800px;
+$max-width: 800px;
 // Start styles
 body {
+	padding-top: 60px;
 	padding-bottom: 20px;
+	background-color: $bg-color;
+	font-family: "Lato";
+	font-weight: 300;
+	font-size: 16px;
+	color: #555;
 }
-table.table {
-	a.comments, a.score {
-		color: #555;
-		width: 100%;
-		height: 100%;
-		display: block;
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Raleway";
+	font-weight: 300;
+	color: #333;
+}
+a {
+	@include transition(color 0.1s ease-in, background 0.1s ease-in);
+}
+a:hover,
+a:focus {
+	text-decoration: none;
+	outline: 0;
+}
+a:before,
+a:after {
+	@include transition(color 0.1s ease-in, background 0.1s ease-in);
+}
+
+.container {
+	@media (max-width: $screen-sm) {
+		padding: 0;
 	}
-	a:visited {
-		color: #666;
-	}
-	a.comments:visited, a.score:visited {
-		color: #bbb;
-	}
+}
+.alerts {
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
 }
 .comment-well {
 	max-width: 100%;
 	margin: 4px;
-	background-color: darken($wellBackground, 10%);
-	border: 1px solid darken($wellBackground, 17%);
+	background-color: darken($well-bg, 10%);
+	border: 1px solid darken($well-bg, 17%);
 }
 .about, .userinfo, .alerts {
-	max-width: $maxWidth;
+	max-width: $max-width;
 	padding-right: 20px;
 	padding-left: 20px;
 }
@@ -48,44 +67,103 @@ table.table {
 .onhover {
 	text-decoration: underline;
 }
-.story {
-	max-width: $maxWidth;
-}
-div.story {
-	margin-left: 5px;
-	> p {
-	font-size: $smallFontSize;
-	color: $gray;
+.stories {
+	display: table;
+	border: 1px solid $table-border-color;
+	border-radius: 3px;
+	width: 100%;
+	> .story:nth-child(odd) {
+		background-color: $table-bg-accent;
+	}
+	.story {
+		display: table-row;
+		background-color: $table-bg;
+		> .vote, .info, .comments {
+			border-bottom: 1px solid $table-border-color;
+			display: table-cell;
+			vertical-align: middle;
+			float: none;
+			padding: 5px;
+			height: 100%;
+		}
+		.comments {
+			padding: 10px;
+			font-size: 25px;
+			a {
+				color: lighten($brand-primary, 10%);
+			}
+		}
 	}
 }
-div.comments {
+.story {
+	max-width: $max-width;
+	margin-left: 5px;
+	> p {
+	font-size: $small-font-size;
+	color: $gray;
+	}
+	ul.vote {
+		float: left;
+		text-align: center;
+		list-style: none;
+		padding: 7px 0 0 0;
+		margin: 0 5px 0 0;
+		li {
+			line-height: 18px;
+			font-size:px;
+			a:hover {
+				text-decoration: none;
+			}
+			p {
+				margin: 0;
+			}
+		}
+		// Vote score
+		li:nth-child(2) {
+			font-size: 17px;
+		}
+	}
+	.info {
+		overflow: hidden;
+	}
+	.info, .comments {
+		a:visited {
+			color: #666;
+		}
+	}
+}
+.comments {
 	> ul {
+		padding: 0;
 		margin: 0 0 10px 0px;
 		> li {
 			margin-bottom: 10px;
 		}
 	}
-	li {
+	> ul > li, ul.children > li {
 		line-height: 20px;
 		background-color: white;
-		@include border-radius(5px);
+		border-radius: 5px;
 		padding: 7px 2px 2px 7px;
 		margin: 4px;
 		list-style-type: none;
 		border: 1px solid #DBDBDB;
 		&.even {
-			background-color: $commentEvenBackground;
+			background-color: $comment-even-bg;
 			pre {
 				background-color: white;
 			}
 		}
 		.comment {
-			> a, > span {
-				font-size: $smallFontSize;
-				color: $gray;
-			}
-			> a.op {
-				color: $linkColor;
+			.wrapper {
+				overflow: hidden;
+				> a, > span {
+					font-size: $small-font-size;
+					color: $gray;
+				}
+				> a.op {
+					color: $link-color;
+				}
 			}
 			&.selected {
 				outline: 1px dotted black;
@@ -94,8 +172,13 @@ div.comments {
 					color: #000000 !important; // :-(
 				}
 			}
+			&.dead {
+				.content {
+					color: #dddddd;
+				}
+			}
 			.content {
-				max-width: $maxWidth;
+				max-width: $max-width;
 			}
 			.hidetoggle {
 				letter-spacing: 0.4em;
@@ -116,107 +199,232 @@ div.comments {
 				background-color: #f5f5f5;
 				border: 1px solid #ddd;
 				color: #9da0a4;
-				@include border-radius(4px 0 4px 0);
+				border-radius: 4px 0 4px 0;
+			}
+			> ul.vote {
+				float: left;
+				height: 100%;
+				text-align: center;
+				list-style: none;
+				padding: 0;
+				margin: 0 5px 0 0;
+				li {
+					line-height: 20px;
+					font-size: 20px;
+					a:hover {
+						text-decoration: none;
+					}
+					p {
+						margin: 0;
+					}
+				}
 			}
 		}
 	}
 	a {
 		word-wrap:break-word;
 	}
-}
-// Used to display how old cache is
-.cache {
-	font-size: $smallFontSize;
-	color: $gray;
-	font-style: italic;
-}
-
-// Bootstrap related
-.navbar .brand {
-	font-family: 'Cabin Condensed', sans-serif;
-}
-.btn-group-centered {
-  text-align: center;
-}
-.btn-group {
-	padding-bottom: 10px;
-}
-.navbar-inner {
-	@include border-radius(1px);
-}
-.progress {
-	margin-bottom: 0;
-}
-.progress-hn .bar, .progress .bar-hn {
-  @include gradient-vertical($linkColor, darken($linkColor, 15%));
-}
-
-.btn-poll .icon-bar {
-	display: block;
-	width: 18px;
-	height: 2px;
-	background-color: #565656;
-	@include border-radius(1px);
-	@include box-shadow(#{0 1px 0 rgba(0,0,0,.25)});
-}
-.btn-poll .icon-bar + .icon-bar {
-	margin-top: 3px;
-}
-.btn-poll {
-	display: none;
-	float: right;
-	padding: 7px 10px;
-	margin: 0 25px 10px 5px;
-}
-.sidebar-collapse.collapse, .poll-collapse.collapse {
-	height: auto;
-	overflow: visible;
-}
-// Media styling
-// Tablet/small laptop
-@media (max-width: 979px) {
-	.btn-navbar {
-		display: none !important;
+	@media (max-width: $screen-md) {
+		ul {
+			padding-left: 20px;
+		}
 	}
-	.navbar .brand {
-		padding: 10px 20px 10px;
-		margin: 0 0 0 -20px;
-	}
-}
-// Phone
-@media (max-width: 767px) {
-	body {
-		padding-right: 0px;
-		padding-left: 0px;
-	}
-	.pagination ul > li > a, .pagination ul > li > span {
-		padding: 0 9px;
-	}
-	div.story {
-		margin-left: 8px;
-	}
-	div.comments {
+	@media (max-width: $screen-sm) {
 		ul {
 			margin: 0 0 4px 0px;
+			padding-left: 0px;
 		}
-		li {
+		> ul > li, ul.children > li {
 			padding: 0px 1px 0px 5px;
 			margin: 4px 1px 4px 1px;
 		}
 	}
-	.poll-collapse, .poll-collapse.collapse,
-	.sidebar-collapse, .sidebar-collapse.collapse {
+}
+// Used to display how old cache is
+.cache {
+	font-size: $small-font-size;
+	color: $gray;
+	font-style: italic;
+}
+// Filtering sidebar
+.hn-sidebar {
+	margin-top: 30px;
+	margin-bottom: 30px;
+	padding-top:    10px;
+	padding-bottom: 10px;
+	text-shadow: 0 1px 0 #fff;
+	//background-color: #f7f5fa;
+	border-radius: 5px;
+	&.affix {
+		position: static;
+	}
+	.nav {
+		> li {
+			> a {
+				display: block;
+				//color: #716b7a;
+				padding: 5px 20px;
+			}
+			> a:hover, > a:focus {
+				text-decoration: none;
+				//background-color: #e5e3e9;
+				//border-right: 1px solid #dbd8e0;
+			}
+		}
+		> .active > a,
+		> .active:hover > a,
+		> .active:focus > a {
+			font-weight: bold;
+			//color: #563d7c;
+			background-color: transparent;
+			//border-right: 1px solid #563d7c;
+		}
+		> .active > ul {
+			display: block;
+		}
+		.nav > li > a {
+			padding-top:    3px;
+			padding-bottom: 3px;
+			padding-left: 30px;
+			font-size: 90%;
+		}
+	}
+}
+.hn-nav {
+	text-shadow: 0 -1px 0 rgba(0,0,0,.15);
+	background-color: $bg-color;
+	border-color: darken($bg-color, 10%);
+	box-shadow: 0 1px 0 rgba(255,255,255,.1);
+	.container {
+		@media (max-width: $screen-sm) {
+			> .navbar-header, > .navbar-collapse {
+				margin-right: 0;
+				margin-left: 0;
+			}
+		}
+	}
+	.navbar {
+		margin-bottom: 0;
+	}
+	.navbar-brand {
+		padding: 15px 14px;
+		font-weight: bold;
+	}
+	.navbar-collapse {
+		max-height: none;
+	}
+	.navbar-nav {
+		@media (max-width: $screen-sm) {
+			margin: 7.5px;
+		}
+	}
+	.nav > li  {
+		&.active {
+			background-color: #e7e7e7;
+		}
+		> a:hover, > a:focus {
+			background-color: #dddddd;
+		}
+	}
+	.navbar-toggle {
+		background-color: $link-hover-color;
+		border-color: $link-hover-color;
+		.icon-bar {
+			background-color: $bg-color;
+		}
+		&:hover {
+			background-color: darken($link-hover-color, 15%);
+		}
+	}
+}
+.login-menu {
+	width: 300px;
+	padding: 15px 15px 0 15px;
+}
+.progress {
+	margin-bottom: 0;
+}
+// Toggle button for polls
+.poll-toggle {
+	margin-right: $navbar-padding-horizontal;
+	padding: 9px 10px;
+	border: 1px solid #ccc;
+	border-radius: $border-radius-base;
+	border-color: #ccc;
+	&:hover, &:focus {
+			background-color: #efe;
+	}
+	.icon-bar {
+		display: block;
+		width: 22px;
+		height: 2px;
+		border-radius: 1px;
+		background-color: #000;
+	}
+	.icon-bar + .icon-bar {
+		margin-top: 4px;
+	}
+
+	@media (min-width: $screen-sm) {
+		display: none;
+	}
+}
+// Wrapper for polls that will toggle
+.poll-collapse {
+	height: auto;
+	overflow: visible;
+
+	@media (max-width: $screen-sm) {
 		overflow: hidden;
 		height: 0;
 	}
-	.poll-collapse .btn,
-	.sidebar-collapse .btn {
-		padding: 4px 10px 4px;
+}
+
+.hn-pagination {
+	> li {
 		font-weight: normal;
-		@include border-radius(4px);
 	}
-	.btn-poll,
-	.btn-navbar {
-		display: block !important;
+}
+
+// Reusable styles
+
+.form-inline-reverse {
+
+	// Kick in the inline
+	// Using max-width instead of min-width to reverse it
+	@media (max-width: $screen-sm) {
+		// Inline-block all the things for "inline"
+		.form-group  {
+			display: inline-block;
+			margin-bottom: 0;
+			vertical-align: middle;
+			margin-left: 5px;
+		}
+
+		// In navbar-form, allow folks to *not* use `.form-group`
+		.form-control {
+			display: inline-block;
+		}
+
+		// Override `width: 100%;` when not within a `.form-group`
+		select.form-control {
+		width: auto;
+		}
+
+		// Remove default margin on radios/checkboxes that were used for stacking, and
+		// then undo the floating of radios and checkboxes to match (which also avoids
+		// a bug in WebKit: https://github.com/twbs/bootstrap/issues/1969).
+		.radio,
+		.checkbox {
+			display: inline-block;
+			margin-top: 0;
+			margin-bottom: 0;
+			padding-left: 0;
+		}
+		.radio input[type="radio"],
+		.checkbox input[type="checkbox"] {
+			float: none;
+			margin-left: 0;
+		}
 	}
 }
