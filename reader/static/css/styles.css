@@ -4517,6 +4517,10 @@ a:before, a:after {
   @media (max-width: 768px) {
     .hn-nav .navbar-nav {
       margin: 7.5px; } }
+  .hn-nav .nav > li.active {
+    background-color: #e7e7e7; }
+  .hn-nav .nav > li > a:hover, .hn-nav .nav > li > a:focus {
+    background-color: #dddddd; }
   .hn-nav .navbar-toggle {
     background-color: #81251d;
     border-color: #81251d; }

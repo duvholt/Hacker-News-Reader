@@ -320,6 +320,14 @@ a:after {
 			margin: 7.5px;
 		}
 	}
+	.nav > li  {
+		&.active {
+			background-color: #e7e7e7;
+		}
+		> a:hover, > a:focus {
+			background-color: #dddddd;
+		}
+	}
 	.navbar-toggle {
 		background-color: $link-hover-color;
 		border-color: $link-hover-color;
