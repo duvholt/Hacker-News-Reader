@@ -406,21 +406,24 @@ class LoginView(ContextView):
 		if all(key in request.POST for key in ['username', 'password']):
 			username = request.POST['username']
 			password = request.POST['password']
-			if username and password:
-				soup = fetch.login()
-				fnid = soup.find('input', {'type': 'hidden'})['value']
-				payload = {'fnid': fnid, 'u': username, 'p': password}
-				s = requests.Session()
-				headers = {'user-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
-				s.post('https://news.ycombinator.com/y', data=payload, headers=headers)
-				if 'user' in s.cookies:
-					request.session['username'] = username
-					request.session['usercookie'] = s.cookies['user']
-					self.context['alerts'].append({'message': 'Logged in as ' + username, 'level': 'success'})
+			try:
+				if username and password:
+					soup = fetch.login()
+					fnid = soup.find('input', {'type': 'hidden'})['value']
+					payload = {'fnid': fnid, 'u': username, 'p': password}
+					s = requests.Session()
+					headers = {'user-agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
+					s.post('https://news.ycombinator.com/y', data=payload, headers=headers)
+					if 'user' in s.cookies:
+						request.session['username'] = username
+						request.session['usercookie'] = s.cookies['user']
+						return redirect('index')
+					else:
+						raise utils.ShowAlert('Username or password wrong')
 				else:
-					self.context['alerts'].append({'message': 'Username or password wrong'})
-			else:
-				self.context['alerts'].append({'message': 'Username or password missing'})
+					raise utils.ShowAlert('Username or password missing')
+			except utils.ShowAlert, e:
+				self.context['alerts'].append({'message': e.message, 'level': e.level})
 		return self.render_view()
 
 
