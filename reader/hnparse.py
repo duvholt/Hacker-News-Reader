@@ -20,11 +20,18 @@ class CouldNotParse(Exception):
 	def __init__(self, value='Failed to parse'):
 		logger.error(value)
 
+def is_event(soup):
+	# Sometimes HN has special event link
+	return True if soup.find('span', {'class': 'pagetop'}) else False
+
 
 def stories(story_type, over_filter):
 	soup = fetch.stories(story_type=story_type, over_filter=over_filter)
 	# HN markup is odd. Basically every story use three rows each
-	stories_soup = soup.html.body.table.find_all('table')[1].find_all("tr")[::3]
+	i = 1
+	if is_event(soup.html.body.table.find_all('table')[1]):
+		i += 1
+	stories_soup = soup.html.body.table.find_all('table')[i].find_all("tr")[::3]
 	# Scraping all stories
 	for story_soup in stories_soup:
 		try:
@@ -49,7 +56,11 @@ def comments(commentid, cache_minutes=20):
 	# start_time = timezone.now()
 	soup = fetch.comments(commentid=commentid)
 	try:
-		story_soup = soup.html.body.table.find_all('table')[1].find('tr')
+		i = 1
+		if is_event(soup.html.body.table.find_all('table')[1]):
+			i += 1
+		story_soup = soup.html.body.table.find_all('table')[i].find('tr')
+		print story_soup
 		if not story_soup:
 			raise utils.ShowAlert('Item not found')
 	except AttributeError:
@@ -105,6 +116,8 @@ def comments(commentid, cache_minutes=20):
 		HNCommentsCache(id=commentid, time=timezone.now()).save()
 		# If there is a poll there will be an extra table before comments
 		i = 2
+		if is_event(soup.html.body.table.find_all('table')[1]):
+			i += 1
 		if poll:
 			i += 1
 		# Traversing all top comments
@@ -265,7 +278,10 @@ def traverse_comment(comment_soup, parent_object, story_id, perma=False):
 def userpage(username):
 	soup = fetch.userpage(username=username)
 	try:
-		userdata = soup.html.body.table.find_all('table')[1].find_all('tr')
+		i = 1
+		if is_event(soup.html.body.table.find_all('table')[1]):
+			i += 1
+		userdata = soup.html.body.table.find_all('table')[i].find_all('tr')
 	except AttributeError:
 		raise CouldNotParse('Couldn\'t get userdata' + username)
 	created = utils.parse_time(userdata[1].find_all('td')[1].decode_contents())
