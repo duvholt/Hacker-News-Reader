@@ -19,7 +19,7 @@ urlpatterns = patterns(
 	url(r'^comments/(?P<commentid>\d+)/$', CommentsView.as_view(), name='comments'),
 	url(r'^comments/(?P<commentid>\d+)\.json$', CommentsJsonView.as_view(), name='comments_json'),
 	# Voting
-	url(r'^vote/(?P<id>\d+)/$', VoteView.as_view(), name='vote'),
+	#url(r'^vote/(?P<id>\d+)/$', VoteView.as_view(), name='vote'),
 	url(r'^vote/(?P<id>\d+).json$', VoteJsonView.as_view(), name='vote'),
 	# User page
 	url(r'^user/(?P<username>\w+)/$', UserView.as_view(), name='userpage'),
