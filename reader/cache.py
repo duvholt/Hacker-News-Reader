@@ -4,18 +4,13 @@ from reader.models import Stories, StoryCache, HNComments, HNCommentsCache, User
 from tzlocal import get_localzone
 import datetime
 import utils
-import hnparse
+from api import API
 
 
 tz = get_localzone()
 
 
-def update_stories(cache_minutes=20, story_type='news', over_filter=0):
-	# Poll is not a real story type
-	if story_type == 'poll':
-		story_type = 'news'
-	elif story_type in ['self', 'show']:
-		story_type = 'ask'
+def update_stories(cache_minutes=0, story_type='news', over_filter=None):
 	try:
 		if story_type == 'news' and over_filter:
 			# Over points can have different values meaning that it can't be cached normal
@@ -27,33 +22,41 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=0):
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	# More than cache_minutes since cache was updated
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
-		hnparse.stories(story_type=story_type, over_filter=over_filter)
+		API.stories(story_type=story_type, over_filter=over_filter)
+		# Updating cache
+		if story_type == 'news' and over_filter:
+			over = over_filter
+		else:
+			over = None
+		story_cache, created = StoryCache.objects.get_or_create(name=story_type, over=over)
+		story_cache.time = timezone.now()
+		story_cache.save()
 		return None
 	else:
 		return cachetime
 
 
-def update_comments(commentid, cache_minutes=20):
+def update_comments(itemid, cache_minutes=0):
 	try:
-		cachetime = HNCommentsCache.objects.get(pk=commentid).time
+		cachetime = HNCommentsCache.objects.get(pk=itemid).time
 	except HNCommentsCache.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
-		hnparse.comments(commentid=commentid, cache_minutes=cache_minutes)
+		API.comments(itemid=itemid, cache_minutes=cache_minutes)
 		return None
 	else:
 		return cachetime
 
 
-def update_userpage(username, cache_minutes=60):
+def update_userpage(username, cache_minutes=0):
 	try:
 		cachetime = UserInfo.objects.get(pk=username).cache
 	except UserInfo.DoesNotExist:
 		# Force updating cache
 		cachetime = timezone.now() - datetime.timedelta(days=1)
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
-		hnparse.userpage(username=username)
+		API.userpage(username=username)
 		return None
 	else:
 		return cachetime
@@ -64,7 +67,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 	stories = Stories.objects.all()
 	# Only show the last week
 	enddate = datetime.datetime.now(tz)
-	startdate = enddate - datetime.timedelta(days=7)
+	startdate = enddate - datetime.timedelta(days=14)
 	stories = stories.filter(time__range=[startdate, enddate])
 	if story_type:
 		if story_type == 'best':
@@ -83,7 +86,7 @@ def stories(page=1, limit=25, story_type=None, over_filter=0):
 			stories = stories.filter(story_type=story_type)
 	if over_filter > 0:
 		stories = stories.filter(score__gte=over_filter)
-	if not story_type in ['newest', 'best']:
+	if story_type not in ['newest', 'best']:
 		# HN Sorting
 		sorted_stories = []
 		for story in stories:

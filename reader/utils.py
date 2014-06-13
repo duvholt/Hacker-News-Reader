@@ -28,6 +28,7 @@ def html2markup(comment):
 	comment = re.sub(r'<a href="(.+?)" rel="nofollow">.+?</a>', r'\1', comment)
 	# Change <i> to *
 	comment = re.sub(r'</?i>', r'*', comment)
+	comment = re.sub(r'\\n', r'\n', comment)
 	# Change <p> to \n
 	comment = re.sub(r'<p>', r'\n\n', comment)
 	comment = re.sub(r'</p>', r'', comment)

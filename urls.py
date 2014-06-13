@@ -16,8 +16,8 @@ urlpatterns = patterns(
 	url(r'^\.json$', IndexJsonView.as_view(), name='index_json'),
 	url(r'^(?P<story_type>news|newest|best|active|self|poll|show|ask)\.json$', IndexJsonView.as_view(), name='index_type_json'),
 	# Comments
-	url(r'^comments/(?P<commentid>\d+)/$', CommentsView.as_view(), name='comments'),
-	url(r'^comments/(?P<commentid>\d+)\.json$', CommentsJsonView.as_view(), name='comments_json'),
+	url(r'^comments/(?P<itemid>\d+)/$', CommentsView.as_view(), name='comments'),
+	url(r'^comments/(?P<itemid>\d+)\.json$', CommentsJsonView.as_view(), name='comments_json'),
 	# Voting
 	#url(r'^vote/(?P<id>\d+)/$', VoteView.as_view(), name='vote'),
 	url(r'^vote/(?P<id>\d+).json$', VoteJsonView.as_view(), name='vote'),

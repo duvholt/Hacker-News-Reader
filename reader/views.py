@@ -147,28 +147,28 @@ class CommentsView(ContextView):
 	template_name = 'templates/comments.html'
 
 	def get(self, request, *args, **kwargs):
-		self.comment_id = kwargs['commentid']
-		if self.comment_id:
+		self.itemid = kwargs['itemid']
+		if self.itemid:
 			try:
-				self.comment_id = int(self.comment_id, 10)
+				self.itemid = int(self.itemid, 10)
 			except ValueError:
-				self.comment_id = None
+				self.itemid = None
 		self.context.update({'story': None, 'polls': None, 'total_votes': 0})
 		try:
-			self.context['cache'] = cache.update_comments(commentid=self.comment_id)
+			self.context['cache'] = cache.update_comments(itemid=self.itemid)
 		except utils.ShowAlert, e:
 			self.context['alerts'].append({'message': e.message, 'level': e.level})
 		try:
-			self.context['story'] = Stories.objects.get(pk=self.comment_id)
+			self.context['story'] = Stories.objects.get(pk=self.itemid)
 			if self.context['story'].poll:
-				self.context['polls'] = Poll.objects.filter(story_id=self.comment_id).order_by('id')
+				self.context['polls'] = Poll.objects.filter(story_id=self.itemid).order_by('id')
 				for poll in self.context['polls']:
 					self.context['total_votes'] += poll.score
 			self.context['comments'] = []
 			self.context['comments'] = self.full_comments_list()
 		except Stories.DoesNotExist:
 			try:
-				comment = HNComments.objects.get(id=self.comment_id)
+				comment = HNComments.objects.get(id=self.itemid)
 				self.context['comments'] = self.permalink_comments_list(comment)
 				if comment:
 					try:
@@ -188,7 +188,7 @@ class CommentsView(ContextView):
 		return self.render_view()
 
 	def full_comments_list(self):
-		return self.get_children(list(HNComments.objects.filter(story_id=self.comment_id)))
+		return self.get_children(list(HNComments.objects.filter(story_id=self.itemid)))
 
 	def permalink_comments_list(self, comment):
 		comments = [(comment, {'level': 0, 'open': True, 'close': []})]

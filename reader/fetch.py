@@ -6,8 +6,8 @@ import requests
 import utils
 
 
-def comments(commentid):
-	return read('item?id=' + unicode(commentid))
+def comments(itemid):
+	return read('item?id=' + unicode(itemid))
 
 
 def stories(story_type, over_filter=None):

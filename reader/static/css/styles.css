@@ -4336,9 +4336,6 @@ a:before, a:after {
 .userinfo table {
   width: auto; }
 
-.onhover {
-  text-decoration: underline; }
-
 .stories {
   display: table;
   border: 1px solid #ddd;
@@ -4401,6 +4398,11 @@ a:before, a:after {
   margin: 4px;
   list-style-type: none;
   border: 1px solid #DBDBDB; }
+  .comments > ul > li[id] .comment, .comments ul.children > li[id] .comment {
+    padding-top: 40px;
+    margin-top: -40px;
+    display: inline-block;
+    /* required for webkit browsers */ }
   .comments > ul > li.even, .comments ul.children > li.even {
     background-color: #EBEBEB; }
     .comments > ul > li.even pre, .comments ul.children > li.even pre {

@@ -63,10 +63,6 @@ a:after {
 		width: auto;
 	}
 }
-// Hacky way for hover effect on both score and comments
-.onhover {
-	text-decoration: underline;
-}
 .stories {
 	display: table;
 	border: 1px solid $table-border-color;

@@ -52,9 +52,9 @@ def stories(story_type, over_filter):
 	story_cache.save()
 
 
-def comments(commentid, cache_minutes=20):
+def comments(itemid, cache_minutes=20):
 	# start_time = timezone.now()
-	soup = fetch.comments(commentid=commentid)
+	soup = fetch.comments(itemid=itemid)
 	try:
 		i = 1
 		if is_event(soup.html.body.table.find_all('table')[1]):
@@ -74,27 +74,27 @@ def comments(commentid, cache_minutes=20):
 			raise utils.ShowAlert('Story or comment deleted')
 		parent_object = None
 		permalink = False
-		story_id = commentid
+		story_id = itemid
 	else:
 		# For permalinked comments
 		try:
 			# If comment already is in db get the info
-			parent_object = HNComments.objects.get(id=commentid)
+			parent_object = HNComments.objects.get(id=itemid)
 			if parent_object.cache + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 				try:
 					traverse_comment(story_soup.parent, parent_object.parent, parent_object.story_id, perma=True)
 				except CouldNotParse:
 					pass
-				parent_object = HNComments.objects.get(id=commentid)
+				parent_object = HNComments.objects.get(id=itemid)
 		except HNComments.DoesNotExist:
 			# Since the comment doesn't exist we have to improvise with the data a bit
 			# Story is is not provided for permalinked comments, but parent id is
 			# Story id will therefore temporarely be set to the comment id
 			try:
-				traverse_comment(story_soup.parent, None, commentid, perma=True)
+				traverse_comment(story_soup.parent, None, itemid, perma=True)
 			except CouldNotParse:
 				return
-			parent_object = HNComments.objects.get(id=commentid)
+			parent_object = HNComments.objects.get(id=itemid)
 		story_id = parent_object.story_id
 		permalink = True
 		story = None
@@ -113,7 +113,7 @@ def comments(commentid, cache_minutes=20):
 		story.save()
 	if story or permalink:
 		# Updating cache
-		HNCommentsCache(id=commentid, time=timezone.now()).save()
+		HNCommentsCache(id=itemid, time=timezone.now()).save()
 		# If there is a poll there will be an extra table before comments
 		i = 2
 		if is_event(soup.html.body.table.find_all('table')[1]):
@@ -133,7 +133,7 @@ def comments(commentid, cache_minutes=20):
 					except CouldNotParse:
 						continue
 		# Slow
-		# HNComments.objects.filter(cache__lt=start_time, story_id=commentid).update(dead=True)
+		# HNComments.objects.filter(cache__lt=start_time, story_id=itemid).update(dead=True)
 
 def story_info(story_soup):
 	if not story_soup.find('td'):
