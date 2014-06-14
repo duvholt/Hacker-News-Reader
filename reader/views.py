@@ -1,3 +1,4 @@
+from api import builtin
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.utils.dateformat import format
@@ -6,7 +7,6 @@ from middleware import get_request
 from models import Stories, HNComments, Poll, UserInfo
 import cache
 import fetch
-import hnparse
 import json
 import operator
 import requests
@@ -326,7 +326,7 @@ class VoteView(ContextView):
 					auth = userdata['votes'][str(vote_id)]
 				else:
 					# Auth code not found in cache, going to have to manually get it from comment
-					hnparse.comments(vote_id, 0)
+					builtin.BuiltinAPI().comments(vote_id, 0)
 					if str(vote_id) in userdata['votes']:
 						auth = userdata['votes'][str(vote_id)]
 					else:
