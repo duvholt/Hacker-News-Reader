@@ -46,7 +46,7 @@ def update_comments(itemid, cache_minutes=20):
 		except Stories.DoesNotExist:
 			# Force updating cache
 			cachetime = timezone.now() - datetime.timedelta(days=1)
-	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
+	if not cachetime or cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		API.comments(itemid=itemid, cache_minutes=cache_minutes)
 		return None
 	else:
