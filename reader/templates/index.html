@@ -17,17 +17,13 @@
 					<div class="form-group">
 						<div class="dropdown">
 							<button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
-								Sorting
+								Sorting ({% filter_text %})
 								<span class="caret"></span>
 							</button>
 							<ul class="dropdown-menu">
 								<li class="{% active '(^/$)' %}"><a href="/">Frontpage</a></li>
-								<li class="{% active '^/newest' %}"><a href="/newest">Newest</a></li>
-								<li class="{% active '^/self' %}"><a href="/self">Selfpost</a>
-									<ul>
+								<li class="{% active '^/self' %}"><a href="/self">Selfpost</a></li>
 								<li class="{% active '^/ask' %}"><a href="/ask">Ask HN</a></li>
-									</ul>
-								</li>
 								<li class="{% active '^/show' %}"><a href="/show">Show HN</a></li>
 								<li class="{% active '^/poll' %}"><a href="/poll">Poll</a></li>
 								<li class="{% active '^/best' %}"><a href="/best">Best</a></li>

@@ -87,3 +87,21 @@ def lastpageobject(page):
 @register.filter
 def domain(url):
 	return utils.domain(url)
+
+
+@register.simple_tag(takes_context=True)
+def filter_text(context):
+	if re.search(r'(^/$)', context['request'].path):
+		return 'Frontpage'
+	elif re.search(r'^/newest', context['request'].path):
+		return 'Newest'
+	elif re.search(r'^/self', context['request'].path):
+		return 'Selfpost'
+	elif re.search(r'^/ask', context['request'].path):
+		return 'Ask HN'
+	elif re.search(r'^/show', context['request'].path):
+		return 'Show HN'
+	elif re.search(r'^/poll', context['request'].path):
+		return 'Poll'
+	elif re.search(r'^/best', context['request'].path):
+		return 'Best'

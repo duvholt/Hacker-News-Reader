@@ -4398,11 +4398,6 @@ a:before, a:after {
   margin: 4px;
   list-style-type: none;
   border: 1px solid #DBDBDB; }
-  .comments > ul > li[id] .comment, .comments ul.children > li[id] .comment {
-    padding-top: 40px;
-    margin-top: -40px;
-    display: inline-block;
-    /* required for webkit browsers */ }
   .comments > ul > li.even, .comments ul.children > li.even {
     background-color: #EBEBEB; }
     .comments > ul > li.even pre, .comments ul.children > li.even pre {
@@ -4482,6 +4477,8 @@ a:before, a:after {
   border-radius: 5px; }
   .hn-sidebar.affix {
     position: static; }
+  .hn-sidebar .btn, .hn-sidebar .dropdown {
+    width: 100%; }
   .hn-sidebar .nav > li > a {
     display: block;
     padding: 5px 20px; }

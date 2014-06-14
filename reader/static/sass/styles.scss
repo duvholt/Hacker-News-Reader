@@ -254,6 +254,9 @@ a:after {
 	&.affix {
 		position: static;
 	}
+	.btn, .dropdown {
+		width: 100%;
+	}
 	.nav {
 		> li {
 			> a {
