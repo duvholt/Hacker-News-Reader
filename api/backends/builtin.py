@@ -35,7 +35,7 @@ class BuiltinAPI(BaseAPI):
                 story = self.story_info(story_soup)
                 story.story_type = story_type
                 story.poll = F('poll')
-                story.cache = timezone.now()
+                # story.cache = timezone.now()
                 story.save()
             except CouldNotParse:
                 continue
@@ -101,7 +101,7 @@ class BuiltinAPI(BaseAPI):
             story.save()
         if story or permalink:
             # Updating cache
-            HNCommentsCache(id=itemid, time=timezone.now()).save()
+            # HNCommentsCache(id=itemid, time=timezone.now()).save()
             # If there is a poll there will be an extra table before comments
             i = 2
             if self.is_event(soup.html.body.table.find_all('table')[1]):
@@ -228,7 +228,7 @@ class BuiltinAPI(BaseAPI):
         comment.cache = timezone.now()
         comment.parent = parent_object
         comment.save()
-        HNCommentsCache(id=comment.id, time=timezone.now()).save()
+        # HNCommentsCache(id=comment.id, time=timezone.now()).save()
 
         username = get_request().session.get('username', None)
         if username:

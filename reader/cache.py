@@ -38,10 +38,14 @@ def update_stories(cache_minutes=20, story_type='news', over_filter=None):
 
 def update_comments(itemid, cache_minutes=20):
 	try:
-		cachetime = HNCommentsCache.objects.get(pk=itemid).time
-	except HNCommentsCache.DoesNotExist:
-		# Force updating cache
-		cachetime = timezone.now() - datetime.timedelta(days=1)
+		# cachetime = HNCommentsCache.objects.get(pk=itemid).time
+		cachetime = HNComments.objects.get(pk=itemid).cache
+	except HNComments.DoesNotExist:
+		try:
+			cachetime = Stories.objects.get(pk=itemid).cache
+		except Stories.DoesNotExist:
+			# Force updating cache
+			cachetime = timezone.now() - datetime.timedelta(days=1)
 	if cachetime + datetime.timedelta(minutes=cache_minutes) < timezone.now():
 		API.comments(itemid=itemid, cache_minutes=cache_minutes)
 		return None

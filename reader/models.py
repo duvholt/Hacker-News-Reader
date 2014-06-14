@@ -39,6 +39,7 @@ class StoryCache(models.Model):
 	over = models.IntegerField(null=True)
 
 
+# Not really used anymore
 class HNCommentsCache(models.Model):
 	id = models.PositiveIntegerField(primary_key=True)
 	time = models.DateTimeField(null=True, auto_now=True)

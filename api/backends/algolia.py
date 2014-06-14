@@ -60,7 +60,7 @@ class AlgoliaAPI(BaseAPI):
                     story_object.selfpost_text = story['story_text']
                 if 'poll' in story['_tags']:
                     story_object.poll = True
-                story_object.cache = timezone.now()
+                # story_object.cache = timezone.now()
                 story_object.save()
 
     def comments(self, itemid, cache_minutes):
@@ -80,7 +80,7 @@ class AlgoliaAPI(BaseAPI):
                 self.story.poll = True
                 self.poll_info(comments['options'])
             self.story.save()
-            models.HNCommentsCache(id=self.itemid, time=timezone.now()).save()
+            # models.HNCommentsCache(id=self.itemid, time=timezone.now()).save()
         elif comments['type'] == 'comment':
             self.story = None
             try:
@@ -96,7 +96,7 @@ class AlgoliaAPI(BaseAPI):
                 except models.Stories.DoesNotExist:
                     pass
             self.traverse_comments(comments, None)
-            models.HNCommentsCache(id=self.itemid, time=timezone.now()).save()
+            # models.HNCommentsCache(id=self.itemid, time=timezone.now()).save()
         elif comments['type'] == 'pollopt':
             raise utils.ShowAlert('Item is a poll option', level='info')
 
@@ -116,7 +116,7 @@ class AlgoliaAPI(BaseAPI):
         HNComment.time = self.dateformat(comment['created_at'])
         HNComment.cache = timezone.now()
         HNComment.save()
-        models.HNCommentsCache(id=HNComment.id, time=timezone.now()).save()
+        # models.HNCommentsCache(id=HNComment.id, time=timezone.now()).save()
         count = 0
         for comment_child in comment['children']:
             count += 1
@@ -126,6 +126,7 @@ class AlgoliaAPI(BaseAPI):
     def story_info(self, story):
         self.story = models.Stories()
         self.story.id = self.story_id
+        self.story.cache = timezone.now()
         self.story.title = story['title']
         if story['text']:
             self.story.selfpost = True
