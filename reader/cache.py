@@ -10,7 +10,7 @@ from api import API
 tz = get_localzone()
 
 
-def update_stories(cache_minutes=0, story_type='news', over_filter=None):
+def update_stories(cache_minutes=20, story_type='news', over_filter=None):
 	try:
 		if story_type == 'news' and over_filter:
 			# Over points can have different values meaning that it can't be cached normal
@@ -36,7 +36,7 @@ def update_stories(cache_minutes=0, story_type='news', over_filter=None):
 		return cachetime
 
 
-def update_comments(itemid, cache_minutes=0):
+def update_comments(itemid, cache_minutes=20):
 	try:
 		cachetime = HNCommentsCache.objects.get(pk=itemid).time
 	except HNCommentsCache.DoesNotExist:
@@ -49,7 +49,7 @@ def update_comments(itemid, cache_minutes=0):
 		return cachetime
 
 
-def update_userpage(username, cache_minutes=0):
+def update_userpage(username, cache_minutes=20):
 	try:
 		cachetime = UserInfo.objects.get(pk=username).cache
 	except UserInfo.DoesNotExist:

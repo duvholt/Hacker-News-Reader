@@ -87,7 +87,9 @@ class AlgoliaAPI(BaseAPI):
                 comment_object = models.HNComments.objects.get(id=self.itemid)
                 self.story_id = comment_object.story_id
             except models.HNComments.DoesNotExist:
-                self.story_id = comments['story_id']
+                # Story is not saved, so let's fetch the entire story instead of just the comment tree.
+                # TODO: Check if this is too slow
+                return self.comments(comments['story_id'], cache_minutes)
             if self.story_id:
                 try:
                     self.story = models.Stories.objects.get(id=self.story_id)
@@ -101,7 +103,6 @@ class AlgoliaAPI(BaseAPI):
     def traverse_comments(self, comment, parent_object=None):
         if not parent_object and not self.story:
             parent_object = self.parent(comment['parent_id'])
-            print parent_object.id
         if 'author' not in comment:
             # Dead comment with no info
             return 0
@@ -191,7 +192,6 @@ class AlgoliaFetch(object):
         return self.fetch(self.users + username)
 
     def fetch(self, url):
-        print url
         headers = {'User-Agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
         r = requests.get(url, headers=headers, timeout=5)
         try:
