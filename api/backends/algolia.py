@@ -127,7 +127,7 @@ class AlgoliaAPI(BaseAPI):
         self.story = models.Stories()
         self.story.id = self.story_id
         self.story.title = story['title']
-        if 'text' in story:
+        if story['text']:
             self.story.selfpost = True
             self.story.selfpost_text = utils.html2markup(story['text'])
         self.story.username = story['author']
