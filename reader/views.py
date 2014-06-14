@@ -74,7 +74,7 @@ class IndexView(ContextView):
 			page = 1
 
 		try:
-			over = int(request.GET.get('over'))
+			over = int(request.GET.get('score'))
 		except (ValueError, TypeError):
 			over = None
 
