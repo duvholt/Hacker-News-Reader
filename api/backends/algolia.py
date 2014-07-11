@@ -194,7 +194,10 @@ class AlgoliaFetch(object):
 
     def fetch(self, url):
         headers = {'User-Agent': 'Hacker News Reader (' + settings.DOMAIN_URL + ')'}
-        r = requests.get(url, headers=headers, timeout=5)
+        try:
+            r = requests.get(url, headers=headers, timeout=5)
+        except (requests.exceptions.Timeout, requests.exceptions.SSLError) as e:
+            raise utils.ShowAlert('Connection timed out')
         try:
             return r.json()
         except ValueError:
