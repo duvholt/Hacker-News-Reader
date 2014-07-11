@@ -41,6 +41,7 @@ class AlgoliaAPI(BaseAPI):
             filters['tags'] = '(story,poll)'
         two_weeks_ago = datetime.datetime.now() - datetime.timedelta(days=14)
         filters['numericFilters'] = 'points%3E' + unicode(over_filter) + ',created_at_i%3E' + two_weeks_ago.strftime('%s')
+        filters['hitsPerPage'] = '100'
         stories = self.fetch.stories(filters, by_date)
         if stories['nbHits'] > 0:
             for story in stories['hits']:
