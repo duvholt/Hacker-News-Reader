@@ -69,6 +69,8 @@ class AlgoliaAPI(BaseAPI):
         comments = self.fetch.comments(self.itemid)
         if 'message' in comments:
             raise utils.ShowAlert(comments['message'])
+        elif 'error' in comments:
+            raise utils.ShowAlert(comments['error'])
         if comments['type'] in ['story', 'poll']:
             self.story_id = self.itemid
             self.story_info(comments)
