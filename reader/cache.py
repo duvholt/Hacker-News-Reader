@@ -112,4 +112,4 @@ def comments(story_id):
 
 
 def userinfo(username):
-	return UserInfo.objects.get(pk__iexact=username)
+	return UserInfo.objects.get(pk=username)
