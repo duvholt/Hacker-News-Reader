@@ -56,6 +56,6 @@ class UserInfo(models.Model):
 
 class Poll(models.Model):
 	id = models.PositiveIntegerField(primary_key=True)
-	name = models.CharField(max_length=100)
+	name = models.CharField(max_length=1000)
 	score = models.PositiveIntegerField(max_length=5)
 	story_id = models.PositiveIntegerField(max_length=10, default=0, null=True)
