@@ -7,7 +7,7 @@ TEMPLATE_DEBUG = DEBUG
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 ADMINS = (
-	# ('Your Name', 'your_email@example.com'),
+    # ('Your Name', 'your_email@example.com'),
 )
 
 # Domain URL e.g. hn.cxhristian.com
@@ -61,37 +61,37 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-	# Put strings here, like "/home/html/static" or "C:/www/django/static".
-	# Always use forward slashes, even on Windows.
-	# Don't forget to use absolute paths, not relative paths.
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
 )
 
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
-	'django.contrib.staticfiles.finders.FileSystemFinder',
-	'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-	# 'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Importing SECRET_KEY from file or generating a new one if missing.
 try:
-	from secret_key import SECRET_KEY
+    from secret_key import SECRET_KEY
 except ImportError:
-	generate_secret_key(os.path.join(PROJECT_ROOT, 'secret_key.py'))
-	from secret_key import SECRET_KEY
+    generate_secret_key(os.path.join(PROJECT_ROOT, 'secret_key.py'))
+    from secret_key import SECRET_KEY
 
 
 MIDDLEWARE_CLASSES = (
-	'django.middleware.common.CommonMiddleware',
-	'django.contrib.sessions.middleware.SessionMiddleware',
-	'django.middleware.csrf.CsrfViewMiddleware',
-	# 'django.contrib.auth.middleware.AuthenticationMiddleware',
-	'django.contrib.messages.middleware.MessageMiddleware',
-	# Uncomment the next line for simple clickjacking protection:
-	# 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'django.middleware.gzip.GZipMiddleware',
-	'middleware.GlobalRequestMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    # Uncomment the next line for simple clickjacking protection:
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
+    'middleware.GlobalRequestMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -100,42 +100,42 @@ ROOT_URLCONF = 'urls'
 WSGI_APPLICATION = 'wsgi.application'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-	# 'django.contrib.auth.context_processors.auth',
-	'django.core.context_processors.debug',
-	# 'django.core.context_processors.i18n',
-	# 'django.core.context_processors.media',
-	'django.core.context_processors.static',
-	# 'django.core.context_processors.tz',
-	'django.contrib.messages.context_processors.messages',
-	'django.core.context_processors.request',
+    # 'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    # 'django.core.context_processors.i18n',
+    # 'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    # 'django.core.context_processors.tz',
+    'django.contrib.messages.context_processors.messages',
+    'django.core.context_processors.request',
 )
 
 INSTALLED_APPS = (
-	# 'django.contrib.auth',
-	'django.contrib.contenttypes',
-	'django.contrib.sessions',
-	'django.contrib.sites',
-	'django.contrib.messages',
-	'django.contrib.staticfiles',
-	# Uncomment the next line to enable the admin:
-	# 'django.contrib.admin',
-	# Uncomment the next line to enable admin documentation:
-	# 'django.contrib.admindocs',
-	'reader',
+    # 'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # Uncomment the next line to enable the admin:
+    # 'django.contrib.admin',
+    # Uncomment the next line to enable admin documentation:
+    # 'django.contrib.admindocs',
+    'reader',
 )
 
 # This will likely be overriden by localsettings.py
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': 'hn.db',
-	},
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'hn.db',
+    },
 }
 
 
 ALLOWED_HOSTS = ['localhost']
 
 try:
-	from localsettings import *
+    from localsettings import *
 except ImportError:
-	pass
+    pass
