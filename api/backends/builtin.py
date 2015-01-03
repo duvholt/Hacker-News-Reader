@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import F
-from middleware import get_request
+from reader.middleware import get_request
 from reader.models import Stories, HNComments, StoryCache, HNCommentsCache, Poll, UserInfo
 from reader import fetch, utils
 from requests.compat import unquote
