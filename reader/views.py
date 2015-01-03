@@ -64,7 +64,7 @@ class ContextView(TemplateView):
 
 
 class IndexView(ContextView):
-	template_name = 'templates/index.html'
+	template_name = 'index.html'
 
 	def get(self, request, *args, **kwargs):
 		story_type = kwargs.get('story_type', 'news')
@@ -144,7 +144,7 @@ class IndexJsonView(JSONResponseMixin, IndexView):
 
 
 class CommentsView(ContextView):
-	template_name = 'templates/comments.html'
+	template_name = 'comments.html'
 
 	def get(self, request, *args, **kwargs):
 		self.itemid = kwargs['itemid']
@@ -364,7 +364,7 @@ class VoteJsonView(JSONResponseMixin, VoteView):
 
 
 class UserView(ContextView):
-	template_name = 'templates/user.html'
+	template_name = 'user.html'
 
 	def get(self, request, *args, **kwargs):
 		username = kwargs['username']
@@ -397,7 +397,7 @@ class UserJsonView(JSONResponseMixin, UserView):
 
 
 class LoginView(ContextView):
-	template_name = 'templates/login.html'
+	template_name = 'login.html'
 
 	def get(self, request, *args, **kwargs):
 		return self.render_view()
