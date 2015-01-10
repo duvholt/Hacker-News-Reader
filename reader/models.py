@@ -49,7 +49,7 @@ class UserInfo(models.Model):
     username = models.CharField(max_length=150, primary_key=True)
     created = models.DateTimeField()
     karma = models.IntegerField(null=True, default=1)
-    avg = models.DecimalField(null=True, default="", max_digits=20, decimal_places=2)
+    avg = models.DecimalField(null=True, default=None, max_digits=20, decimal_places=2)
     about = models.TextField(default="", null=True)
     cache = models.DateTimeField(auto_now_add=True, null=True)
 

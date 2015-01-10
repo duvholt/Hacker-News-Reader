@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
-from reader.views import *
+from views import *
 import settings
 
 urlpatterns = patterns(
@@ -22,7 +22,7 @@ urlpatterns = patterns(
     # url(r'^vote/(?P<id>\d+)/$', VoteView.as_view(), name='vote'),
     url(r'^vote/(?P<id>\d+).json$', VoteJsonView.as_view(), name='vote'),
     # User page
-    url(r'^user/(?P<username>\w+)/$', UserView.as_view(), name='userpage'),
+    url(r'^user/(?P<username>[\w-]+)/$', UserView.as_view(), name='userpage'),
     url(r'^user/(?P<username>\w+)\.json$', UserJsonView.as_view(), name='userpage_json'),
     # User login
     url(r'^login$', LoginView.as_view(), name='login'),

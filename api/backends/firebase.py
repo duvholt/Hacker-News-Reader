@@ -8,9 +8,9 @@ import pytz
 import time
 
 
-class AlgoliaAPI(BaseAPI):
+class FirebaseAPI(BaseAPI):
     def __init__(self):
-        self.fetch = AlgoliaFetch()
+        self.fetch = FirebaseFetch()
 
     def stories(self, story_type, over_filter=20):
         by_date = True
@@ -148,13 +148,14 @@ class AlgoliaAPI(BaseAPI):
 
     def userpage(self, username):
         userpage = self.fetch.userpage(username)
+        if not userpage:
+            # User doesn't exist
+            return
         user = models.UserInfo()
-        if 'message' in userpage:
-            raise utils.ShowAlert(userpage['message'])
-        user.username = userpage['username']
-        user.created = self.dateformat(userpage['created_at'])
+        user.username = userpage['id']
+        user.created = self.dateformat(userpage['created'])
         user.karma = userpage['karma']
-        user.avg = userpage['avg']
+        # user.avg = userpage['avg']
         if userpage['about']:
             user.about = utils.html2markup(userpage['about'])
         else:
@@ -173,15 +174,10 @@ class AlgoliaAPI(BaseAPI):
             return datetime.datetime.fromtimestamp(datecreate)
 
 
-class AlgoliaFetch(BaseFetch):
-    items = 'http://hn.algolia.com/api/v1/items/'
-    users = 'http://hn.algolia.com/api/v1/users/'
-    search = 'http://hn.algolia.com/api/v1/search'
-    search_by_date = 'http://hn.algolia.com/api/v1/search_by_date'
+class FirebaseFetch(BaseFetch):
+    items = 'https://hacker-news.firebaseio.com/v0/item/'
+    users = 'https://hacker-news.firebaseio.com/v0/user/'
+    ext = '.json'
 
     def stories(self, filters, by_date=False):
-        if by_date:
-            search_method = self.search_by_date
-        else:
-            search_method = self.search
-        return self.fetch(search_method + self.querystring(filters))
+        pass

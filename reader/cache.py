@@ -53,7 +53,7 @@ def update_comments(itemid, cache_minutes=20):
         return cachetime
 
 
-def update_userpage(username, cache_minutes=20):
+def update_userpage(username, cache_minutes=0):
     try:
         cachetime = UserInfo.objects.get(pk=username).cache
     except UserInfo.DoesNotExist:

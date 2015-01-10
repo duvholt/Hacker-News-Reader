@@ -14,7 +14,7 @@ ADMINS = (
 DOMAIN_URL = 'hn.cxhristian.com'
 
 # HN API Backend
-API_BACKEND = 'algolia'
+API_BACKEND = 'firebase'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -94,7 +94,7 @@ MIDDLEWARE_CLASSES = (
     'reader.middleware.GlobalRequestMiddleware',
 )
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'reader.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'wsgi.application'

@@ -21,10 +21,12 @@ User not found
 			<td>Karma</td>
 			<td>{{ userinfo.karma }}</td>
 		</tr>
+		{% if userinfo.avg %}
 		<tr>
 			<td>Average karma</td>
 			<td>{{ userinfo.avg }}</td>
 		</tr>
+		{% endif %}
 	</table>
 	{% if userinfo.about %}
 	<h4>About</h4>
