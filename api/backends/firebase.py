@@ -3,6 +3,7 @@ from django.utils import timezone
 from reader import models
 from reader import utils
 from tzlocal import get_localzone
+import algolia
 import datetime
 import pytz
 import time
@@ -13,54 +14,9 @@ class FirebaseAPI(BaseAPI):
         self.fetch = FirebaseFetch()
 
     def stories(self, story_type, over_filter=20):
-        by_date = True
-        if not over_filter:
-            over_filter = 20
-        filters = {}
-
-        if story_type == 'best':
-            filters['tags'] = '(story,poll)'
-            by_date = False
-        elif story_type == 'newest':
-            filters['tags'] = '(story,poll)'
-            over_filter = 0
-        # elif story_type == 'self':
-        #     filters['tags'] = '(story,poll)'
-        elif story_type == 'show':
-            filters['tags'] = 'show_hn'
-            over_filter = 0
-        elif story_type == 'ask':
-            filters['tags'] = 'ask_hn'
-            over_filter = 0
-        elif story_type == 'poll':
-            filters['tags'] = 'poll'
-            over_filter = 0
-        else:
-            filters['tags'] = '(story,poll)'
-        two_weeks_ago = datetime.datetime.now() - datetime.timedelta(days=14)
-        filters['numericFilters'] = 'points%3E' + unicode(over_filter) + ',created_at_i%3E' + two_weeks_ago.strftime('%s')
-        filters['hitsPerPage'] = '100'
-        stories = self.fetch.stories(filters, by_date)
-        if stories['nbHits'] > 0:
-            for story in stories['hits']:
-                story_object = models.Stories()
-                story_object.time = self.dateformat(story['created_at'])
-                story_object.title = story['title']
-                story_object.username = story['author']
-                story_object.score = story['points']
-                story_object.id = story['objectID']
-                story_object.comments = story['num_comments']
-                if not story['url']:
-                    story_object.url = ''
-                else:
-                    story_object.url = story['url']
-                if story['story_text']:
-                    story_object.selfpost = True
-                    story_object.selfpost_text = story['story_text']
-                if 'poll' in story['_tags']:
-                    story_object.poll = True
-                # story_object.cache = timezone.now()
-                story_object.save()
+        # Firebase doesn't have any proper story api yet (only topstories)
+        algolia_api = algolia.AlgoliaAPI()
+        return algolia_api.stories(story_type, over_filter)
 
     def comments(self, itemid, cache_minutes):
         self.itemid = itemid
