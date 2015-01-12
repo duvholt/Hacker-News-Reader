@@ -151,6 +151,8 @@ class AlgoliaAPI(BaseAPI):
         user = models.UserInfo()
         if 'message' in userpage:
             raise utils.ShowAlert(userpage['message'])
+        if 'status' in userpage:
+            raise utils.ShowAlert('Failed to retrieve user information')
         user.username = userpage['username']
         user.created = self.dateformat(userpage['created_at'])
         user.karma = userpage['karma']
